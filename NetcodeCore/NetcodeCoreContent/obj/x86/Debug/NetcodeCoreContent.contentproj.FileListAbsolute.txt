@@ -1,3 +1,0 @@
-c:\users\lambo\Projects\NetcodeCore\NetcodeCore\NetcodeCoreContent\obj\x86\Debug\NetcodeCoreContent.contentprojResolveAssemblyReference.cache
-C:\dev\NetcodeCore\NetcodeCore\NetcodeCoreContent\obj\x86\Debug\NetcodeCoreContent.contentprojResolveAssemblyReference.cache
-C:\dev\NetcodeCore\NetcodeCore\NetcodeCoreContent\obj\x86\Debug\NetcodeCoreContent.contentproj.CoreCompileInputs.cache

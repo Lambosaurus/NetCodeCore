@@ -1,9 +1,0 @@
-C:\dev\NetcodeCore\NetCode\obj\Debug\NetCode.csprojResolveAssemblyReference.cache
-C:\dev\NetcodeCore\NetCode\obj\Debug\NetCode.csproj.CoreCompileInputs.cache
-C:\dev\NetcodeCore\NetCode\bin\Debug\NetCode.dll.config
-C:\dev\NetcodeCore\NetCode\bin\Debug\NetCode.dll
-C:\dev\NetcodeCore\NetCode\bin\Debug\NetCode.pdb
-C:\dev\NetcodeCore\NetCode\obj\Debug\NetCode.dll
-C:\dev\NetcodeCore\NetCode\obj\Debug\NetCode.pdb
-C:\dev\NetcodeCore\NetCode\bin\Debug\System.Half.dll
-C:\dev\NetcodeCore\NetCode\bin\Debug\System.Half.pdb
