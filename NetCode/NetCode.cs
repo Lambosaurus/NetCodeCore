@@ -25,24 +25,22 @@ namespace NetCode
 
     public class NetCodeManager
     {
-        Dictionary<string, SynchronisableEntityDescriptor> entityDescriptors = new Dictionary<string, SynchronisableEntityDescriptor>();
+        Dictionary<RuntimeTypeHandle, SynchronisableEntityDescriptor> entityDescriptors = new Dictionary<RuntimeTypeHandle, SynchronisableEntityDescriptor>();
         SynchronisableFieldGenerator fieldGenerator = new SynchronisableFieldGenerator();
         
         public void RegisterType(Type sync_type)
         {
-            string name = sync_type.Name;
-            entityDescriptors[name] = new SynchronisableEntityDescriptor(fieldGenerator, sync_type);
+            entityDescriptors[sync_type.TypeHandle] = new SynchronisableEntityDescriptor(fieldGenerator, sync_type);
         }
 
         public void RegisterField(Type synchronisableType, Type fieldType, SyncFlags flags = SyncFlags.None)
         {
-            fieldGenerator.RegisterSynchronisableField(synchronisableType, fieldType, flags);
+            fieldGenerator.RegisterSynchronisableFieldType(synchronisableType, fieldType, flags);
         }
 
-        public SynchronisableEntityDescriptor GetDescriptor(Type type)
+        internal SynchronisableEntityDescriptor GetDescriptor(Type type)
         {
-            string name = type.Name;
-            return entityDescriptors[name];
+            return entityDescriptors[type.TypeHandle];
         }
 
     }

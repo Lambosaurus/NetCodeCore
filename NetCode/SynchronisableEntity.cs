@@ -8,11 +8,11 @@ namespace NetCode
 {
     public class SyncHandle
     {
-        public SynchronisableEntity sync;
-        public Object obj;
+        internal SynchronisableEntity sync;
+        public Object obj { get; internal set; }
     }
 
-    public class SynchronisableEntity
+    internal class SynchronisableEntity
     {
         const int UUID_HEADER_LENGTH = sizeof(uint);
         const int FIELD_COUNT_HEADER_LENGTH = sizeof(byte);
@@ -25,7 +25,7 @@ namespace NetCode
         public uint Uuid { get; private set; }
 
 
-        public SynchronisableEntity(SynchronisableEntityDescriptor _descriptor, uint id)
+        internal SynchronisableEntity(SynchronisableEntityDescriptor _descriptor, uint id)
         {
             descriptor = _descriptor;
             Uuid = id;
@@ -83,54 +83,33 @@ namespace NetCode
         {
             for (int i = 0; i < descriptor.FieldCount; i++)
             {
-                object value = descriptor.GetValue(obj, i);
+                object value = descriptor.GetField(obj, i);
                 fields[i].Update(value);
                 if (fields[i].Changed) { Changed++; }
             }
         }
     }
 
-    public class SynchronisableEntityDescriptor
+    internal class SynchronisableEntityDescriptor
     {
-        private class SynchronisableFieldDescriptor
-        {
-            public FieldInfo info;
-            public SyncFlags flags;
-            public int typeindex;
-        }
-
         List<SynchronisableFieldDescriptor> fieldDescriptors = new List<SynchronisableFieldDescriptor>();
-
-        private Func<object> constructor;
+        Func<object> constructor;
 
         public int FieldCount { get; private set; }
+        
 
-        SynchronisableFieldGenerator field_generator;
-
-        public SynchronisableEntityDescriptor(SynchronisableFieldGenerator _field_generator, Type sync_type)
+        public SynchronisableEntityDescriptor(SynchronisableFieldGenerator fieldGenerator, Type entityType)
         {
-            field_generator = _field_generator;
-            constructor = DelegateGenerator.GenerateConstructor(sync_type);
+            constructor = DelegateGenerator.GenerateConstructor(entityType);
             
-            //constructorinfo = sync_type.GetConstructor(new Type[0]);
-            //if (constructorinfo == null)
-            //{
-            //    throw new NotSupportedException(string.Format("Type {0} must provide a constructor with zero arguments.", sync_type.Name));
-            //}
-
-            foreach (FieldInfo info in sync_type.GetFields())
+            foreach (FieldInfo info in entityType.GetFields())
             {
                 foreach (object attribute in info.GetCustomAttributes(true))
                 {
                     if (attribute is SynchronisableAttribute)
                     {
                         SyncFlags flags = ((SynchronisableAttribute)attribute).flags;
-                        SynchronisableFieldDescriptor descriptor = new SynchronisableFieldDescriptor
-                        {
-                            info = info,
-                            flags = flags,
-                            typeindex = field_generator.LookupFieldIndex( info.FieldType, flags )
-                        };
+                        SynchronisableFieldDescriptor descriptor = fieldGenerator.GenerateFieldDescriptor(info, flags);
 
                         fieldDescriptors.Add(descriptor);
                     }
@@ -144,26 +123,25 @@ namespace NetCode
             SynchronisableField[] fields = new SynchronisableField[fieldDescriptors.Count];
             for (int i = 0; i < fieldDescriptors.Count; i++)
             {
-                fields[i] = field_generator.GenerateField(fieldDescriptors[i].typeindex);
+                fields[i] = fieldDescriptors[i].GenerateField();
             }
             return fields;
         }
 
         
-        public void SetVariable(object obj, int index, object value)
+        public void SetField(object obj, int index, object value)
         {
-            fieldDescriptors[index].info.SetValue(obj, value);
+            fieldDescriptors[index].Setter(obj, value);
         }
 
-        public object GetValue(object obj, int index)
+        public object GetField(object obj, int index)
         {
-            return fieldDescriptors[index].info.GetValue(obj);
+            return fieldDescriptors[index].Getter(obj);
         }
         
-
         public object ConstructObject()
         {
-            return constructor();
+            return constructor.Invoke();
         }
 
     }

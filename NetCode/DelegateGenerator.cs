@@ -13,6 +13,10 @@ namespace NetCode
         public static Func<object> GenerateConstructor(Type type)
         {
             ConstructorInfo constructor = type.GetConstructor(new Type[0]);
+            if (constructor == null)
+            {
+                throw new NotSupportedException(string.Format("Type {0} must provide a constructor with zero arguments.", type.Name));
+            }
 
             // Create the dynamic method
             DynamicMethod method =
@@ -53,7 +57,7 @@ namespace NetCode
             return (Func<object, object>)method.CreateDelegate(typeof(Func<object, object>));
         }
 
-        public static Func<object, object> GenerateSetter(FieldInfo field)
+        public static Action<object, object> GenerateSetter(FieldInfo field)
         {
             DynamicMethod method = new DynamicMethod(
                 "Set" + field.Name,
@@ -73,7 +77,7 @@ namespace NetCode
             // return the value on the top of the stack
             gen.Emit(OpCodes.Ret);
 
-            return (Func<object, object>)method.CreateDelegate(typeof(Func<object, object>));
+            return (Action<object, object>)method.CreateDelegate(typeof(Action<object, object>));
         }
     }
 }

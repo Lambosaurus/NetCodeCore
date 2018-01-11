@@ -66,81 +66,122 @@ namespace NetCode
         /// <param name="data"> The packet to read from </param>
         /// <param name="index"> The index to begin reading at. The index will be incremented by the number of bytes written </param>
         protected abstract void Read(byte[] data, ref int index);
-
     }
 
 
-    public class SynchronisableFieldGenerator
+    internal class SynchronisableFieldDescriptor
     {
-        List<Func<object>> SyncFieldConstructors = new List<Func<object>>();
+        SyncFlags flags;
 
-        Dictionary<RuntimeTypeHandle, int> FieldConstructorLookup = new Dictionary<RuntimeTypeHandle, int>();
-        Dictionary<RuntimeTypeHandle, int> HalfPrecisionFieldConstructorLookup = new Dictionary<RuntimeTypeHandle, int>();
-       
-        public SynchronisableFieldGenerator()
+        Func<object> constructor;
+        public Func<object, object> Getter;
+        public Action<object, object> Setter;
+
+        public SynchronisableFieldDescriptor( Func<object> fieldConstructor, Func<object,object> fieldGetter, Action<object, object> fieldSetter, SyncFlags syncFlags )
         {
-            RegisterSynchronisableField(typeof(SynchronisableEnum), typeof(System.Enum));
-            RegisterSynchronisableField(typeof(SynchronisableByte), typeof(byte));
-            RegisterSynchronisableField(typeof(SynchronisableShort), typeof(short));
-            RegisterSynchronisableField(typeof(SynchronisableUShort), typeof(ushort));
-            RegisterSynchronisableField(typeof(SynchronisableInt), typeof(short));
-            RegisterSynchronisableField(typeof(SynchronisableUInt), typeof(ushort));
-            RegisterSynchronisableField(typeof(SynchronisableLong), typeof(long));
-            RegisterSynchronisableField(typeof(SynchronisableULong), typeof(ulong));
-            RegisterSynchronisableField(typeof(SynchronisableFloat), typeof(float));
-            RegisterSynchronisableField(typeof(SynchronisableString), typeof(string));
-            RegisterSynchronisableField(typeof(SynchronisableHalf), typeof(float), SyncFlags.HalfPrecisionFloats);
+            constructor = fieldConstructor;
+            Getter = fieldGetter;
+            Setter = fieldSetter;
+            flags = syncFlags;
         }
         
-        public int LookupFieldIndex(Type type, SyncFlags flags)
+        public SynchronisableField GenerateField()
         {
+            return (SynchronisableField)(constructor.Invoke());
+        }
+    }
+
+
+    internal class SynchronisableFieldGenerator
+    {
+        Dictionary<RuntimeTypeHandle, Func<object>> FieldConstructorLookup = new Dictionary<RuntimeTypeHandle, Func<object>>();
+        Dictionary<RuntimeTypeHandle, Func<object>> HalfPrecisionFieldConstructorLookup = new Dictionary<RuntimeTypeHandle, Func<object>>();
+       
+        internal SynchronisableFieldGenerator()
+        {
+            RegisterSynchronisableFieldType(typeof(SynchronisableEnum), typeof(System.Enum));
+            RegisterSynchronisableFieldType(typeof(SynchronisableByte), typeof(byte));
+            RegisterSynchronisableFieldType(typeof(SynchronisableShort), typeof(short));
+            RegisterSynchronisableFieldType(typeof(SynchronisableUShort), typeof(ushort));
+            RegisterSynchronisableFieldType(typeof(SynchronisableInt), typeof(int));
+            RegisterSynchronisableFieldType(typeof(SynchronisableUInt), typeof(uint));
+            RegisterSynchronisableFieldType(typeof(SynchronisableLong), typeof(long));
+            RegisterSynchronisableFieldType(typeof(SynchronisableULong), typeof(ulong));
+            RegisterSynchronisableFieldType(typeof(SynchronisableFloat), typeof(float));
+            RegisterSynchronisableFieldType(typeof(SynchronisableString), typeof(string));
+            RegisterSynchronisableFieldType(typeof(SynchronisableHalf), typeof(float), SyncFlags.HalfPrecisionFloats);
+        }
+        
+        internal SynchronisableFieldDescriptor GenerateFieldDescriptor( FieldInfo fieldInfo, SyncFlags syncFlags)
+        {
+            Type type = fieldInfo.FieldType;
+
             if (type.BaseType == typeof(System.Enum))
             {
                 type = typeof(System.Enum);
             }
             RuntimeTypeHandle typeHandle = type.TypeHandle;
-            
-            if ((flags & SyncFlags.HalfPrecisionFloats) != 0)
+
+
+            Func<object> constructor = null;
+
+            if ((syncFlags & SyncFlags.HalfPrecisionFloats) != 0)
             {
                 if (HalfPrecisionFieldConstructorLookup.Keys.Contains(typeHandle))
                 {
-                    return HalfPrecisionFieldConstructorLookup[typeHandle];
+                    constructor = HalfPrecisionFieldConstructorLookup[typeHandle];
                 }
+
+                if (constructor == null)
                 throw new NotSupportedException(string.Format("Type {0} not compatible with half precision.", type.Name));
             }
-
-            if (FieldConstructorLookup.Keys.Contains(typeHandle))
+            else if (FieldConstructorLookup.Keys.Contains(typeHandle))
             {
-                return FieldConstructorLookup[typeHandle];
+                constructor = FieldConstructorLookup[typeHandle];
+
+                if (constructor == null)
+                {
+                    throw new NotImplementedException(string.Format("Type {0} not synchronisable.", type.Name));
+                }
             }
-            throw new NotImplementedException(string.Format("Type {0} not synchronisable.", type.Name));
+
+            return new SynchronisableFieldDescriptor(
+                constructor,
+                DelegateGenerator.GenerateGetter(fieldInfo),
+                DelegateGenerator.GenerateSetter(fieldInfo),
+                syncFlags
+                );
         }
 
-
-        public SynchronisableField GenerateField(int index)
-        {
-            return (SynchronisableField)(SyncFieldConstructors[index].Invoke());
-        }
-
-        public void RegisterSynchronisableField( Type syncFieldType, Type fieldType, SyncFlags flags = SyncFlags.None )
+        public void RegisterSynchronisableFieldType( Type syncFieldType, Type fieldType, SyncFlags flags = SyncFlags.None, bool overrideExistingFieldTypes = false )
         {
             if ( !(syncFieldType.BaseType.Equals(typeof(SynchronisableField)) ) )
             {
                 throw new NotSupportedException(string.Format(" {0} base type must be SynchronisableField.", syncFieldType.Name));
             }
 
-            int index = SyncFieldConstructors.Count;
-
-            if ((flags & SyncFlags.HalfPrecisionFloats) != 0)
+            if (fieldType.BaseType == typeof(System.Enum))
             {
-                HalfPrecisionFieldConstructorLookup[fieldType.TypeHandle] = index;
+                fieldType = typeof(System.Enum);
             }
-            else
+            RuntimeTypeHandle fieldTypeHandle = fieldType.TypeHandle;
+
+
+            Func<object> constructor = DelegateGenerator.GenerateConstructor(syncFieldType);
+
+            Dictionary<RuntimeTypeHandle, Func<object>> constructorLookup =
+                ((flags & SyncFlags.HalfPrecisionFloats) != 0) ?
+                HalfPrecisionFieldConstructorLookup : FieldConstructorLookup;
+
+            if (!overrideExistingFieldTypes)
             {
-                FieldConstructorLookup[fieldType.TypeHandle] = index;
+                if (constructorLookup.ContainsKey(fieldTypeHandle))
+                {
+                    throw new NotSupportedException(string.Format("A SynchronisableField has already been registered against {0} with flags {1}", fieldType.Name, flags));
+                }
             }
 
-            SyncFieldConstructors.Add( DelegateGenerator.GenerateConstructor(syncFieldType) );
+            constructorLookup[fieldTypeHandle] = constructor;
         }
     }
 
