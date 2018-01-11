@@ -38,7 +38,7 @@ namespace NetCode
                 "Get" + field.Name,
                 field.FieldType,
                 new Type[] { typeof(object) },
-                //field.DeclaringType,
+                field.DeclaringType,
                 true
                 );
 
@@ -50,7 +50,30 @@ namespace NetCode
             // return the value on the top of the stack
             gen.Emit(OpCodes.Ret);
 
-            return (Func<object>)method.CreateDelegate(typeof(Func<object, object>));
+            return (Func<object, object>)method.CreateDelegate(typeof(Func<object, object>));
+        }
+
+        public static Func<object, object> GenerateSetter(FieldInfo field)
+        {
+            DynamicMethod method = new DynamicMethod(
+                "Set" + field.Name,
+                null,
+                new Type[] { typeof(object), typeof(object) },
+                field.DeclaringType,
+                true
+                );
+
+            ILGenerator gen = method.GetILGenerator();
+            // Load the instance of the object (argument 0) onto the stack
+            gen.Emit(OpCodes.Ldarg_0);
+            // Load the field value
+            gen.Emit(OpCodes.Ldarg_1);
+            // Set the field
+            gen.Emit(OpCodes.Stfld, field);
+            // return the value on the top of the stack
+            gen.Emit(OpCodes.Ret);
+
+            return (Func<object, object>)method.CreateDelegate(typeof(Func<object, object>));
         }
     }
 }
