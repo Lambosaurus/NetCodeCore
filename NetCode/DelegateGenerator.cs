@@ -40,7 +40,7 @@ namespace NetCode
         {
             DynamicMethod method = new DynamicMethod(
                 "Get" + field.Name,
-                field.FieldType,
+                typeof(object),
                 new Type[] { typeof(object) },
                 field.DeclaringType,
                 true
@@ -51,10 +51,17 @@ namespace NetCode
             gen.Emit(OpCodes.Ldarg_0);
             // Load the value of the object's field (fi) onto the stack
             gen.Emit(OpCodes.Ldfld, field);
+
+            // If the field is a valuetype, we need to box it into an object, otherwise it acts as a object pointer.
+            if (field.FieldType != typeof(object))
+            {
+                gen.Emit(OpCodes.Box, field.FieldType);
+            }
+
             // return the value on the top of the stack
             gen.Emit(OpCodes.Ret);
 
-            return (Func<object, object>)method.CreateDelegate(typeof(Func<object, object>));
+            return (Func<object, object>)(method.CreateDelegate(typeof(Func<object, object>)));
         }
 
         public static Action<object, object> GenerateSetter(FieldInfo field)
@@ -68,13 +75,19 @@ namespace NetCode
                 );
 
             ILGenerator gen = method.GetILGenerator();
-            // Load the instance of the object (argument 0) onto the stack
+            // Load the object onto the stack
             gen.Emit(OpCodes.Ldarg_0);
             // Load the field value
             gen.Emit(OpCodes.Ldarg_1);
+
+            // If the field is a valuetype, we need to box it into an object, otherwise it acts as a object pointer.
+            if (field.FieldType != typeof(object))
+            {
+                gen.Emit(OpCodes.Unbox_Any, field.FieldType);
+            }
             // Set the field
             gen.Emit(OpCodes.Stfld, field);
-            // return the value on the top of the stack
+            // return
             gen.Emit(OpCodes.Ret);
 
             return (Action<object, object>)method.CreateDelegate(typeof(Action<object, object>));
