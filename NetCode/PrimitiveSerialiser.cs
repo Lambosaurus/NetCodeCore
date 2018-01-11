@@ -8,31 +8,6 @@ using System.Reflection.Emit;
 
 namespace NetCode
 {
-    internal static class ConstructorGenerator
-    {
-        public static Delegate GenerateConstructorDelegate(Type type, Type delegateType)
-        {
-            ConstructorInfo constructor = type.GetConstructor(new Type[0]);
-
-            // Create the dynamic method
-            DynamicMethod method =
-                new DynamicMethod(
-                    string.Format("{0}__{1}", constructor.DeclaringType.Name, Guid.NewGuid().ToString().Replace("-", "")),
-                    constructor.DeclaringType,
-                    new Type[0],
-                    true
-                    );
-
-            // Create the il
-            ILGenerator gen = method.GetILGenerator();
-            gen.Emit(OpCodes.Newobj, constructor);
-            gen.Emit(OpCodes.Ret);
-
-            // Return the delegate
-            return method.CreateDelegate(delegateType);
-        }
-    }
-
     public static class PrimitiveSerialiser
     {
         public static void Write(byte[] data, ref int index, byte value)

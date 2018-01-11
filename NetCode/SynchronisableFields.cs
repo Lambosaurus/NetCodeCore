@@ -72,7 +72,7 @@ namespace NetCode
 
     public class SynchronisableFieldGenerator
     {
-        List<Func<SynchronisableField>> SyncFieldConstructors = new List<Func<SynchronisableField>>();
+        List<Func<object>> SyncFieldConstructors = new List<Func<object>>();
 
         Dictionary<RuntimeTypeHandle, int> FieldConstructorLookup = new Dictionary<RuntimeTypeHandle, int>();
         Dictionary<RuntimeTypeHandle, int> HalfPrecisionFieldConstructorLookup = new Dictionary<RuntimeTypeHandle, int>();
@@ -92,7 +92,7 @@ namespace NetCode
             RegisterSynchronisableField(typeof(SynchronisableHalf), typeof(float), SyncFlags.HalfPrecisionFloats);
         }
         
-        public int FieldIndexLookup(Type type, SyncFlags flags)
+        public int LookupFieldIndex(Type type, SyncFlags flags)
         {
             if (type.BaseType == typeof(System.Enum))
             {
@@ -117,9 +117,9 @@ namespace NetCode
         }
 
 
-        public SynchronisableField GetField(int index)
+        public SynchronisableField GenerateField(int index)
         {
-            return SyncFieldConstructors[index].Invoke();
+            return (SynchronisableField)(SyncFieldConstructors[index].Invoke());
         }
 
         public void RegisterSynchronisableField( Type syncFieldType, Type fieldType, SyncFlags flags = SyncFlags.None )
@@ -140,16 +140,8 @@ namespace NetCode
                 FieldConstructorLookup[fieldType.TypeHandle] = index;
             }
 
-            SyncFieldConstructors.Add( (Func<SynchronisableField>)ConstructorGenerator.GenerateConstructorDelegate(syncFieldType, typeof(Func<SynchronisableField>) ) );
+            SyncFieldConstructors.Add( DelegateGenerator.GenerateConstructor(syncFieldType) );
         }
-
-        public SynchronisableField GenerateField(int index)
-        {
-            return SyncFieldConstructors[index].Invoke();
-        }
-
-
-
     }
 
     public class SynchronisableEnum : SynchronisableField

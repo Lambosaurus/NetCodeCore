@@ -110,7 +110,7 @@ namespace NetCode
         public SynchronisableEntityDescriptor(SynchronisableFieldGenerator _field_generator, Type sync_type)
         {
             field_generator = _field_generator;
-            constructor = (Func<object> )ConstructorGenerator.GenerateConstructorDelegate(sync_type, typeof(Func<object>));
+            constructor = DelegateGenerator.GenerateConstructor(sync_type);
             
             //constructorinfo = sync_type.GetConstructor(new Type[0]);
             //if (constructorinfo == null)
@@ -129,7 +129,7 @@ namespace NetCode
                         {
                             info = info,
                             flags = flags,
-                            typeindex = field_generator.FieldIndexLookup( info.FieldType, flags )
+                            typeindex = field_generator.LookupFieldIndex( info.FieldType, flags )
                         };
 
                         fieldDescriptors.Add(descriptor);

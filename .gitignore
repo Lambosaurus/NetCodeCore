@@ -15,3 +15,7 @@ TestResult.xml
 Version.cs
 Version.h
 Version.cpp
+*.ide-wal
+*.ide-shm
+*.ide
+*.lock

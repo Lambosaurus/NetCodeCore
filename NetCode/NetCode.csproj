@@ -39,6 +39,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DelegateGenerator.cs" />
     <Compile Include="NetCode.cs" />
     <Compile Include="PrimitiveSerialiser.cs" />
     <Compile Include="SynchronisableEntity.cs" />
