@@ -19,3 +19,4 @@ Version.cpp
 *.ide-shm
 *.ide
 *.lock
+*.cachefile
