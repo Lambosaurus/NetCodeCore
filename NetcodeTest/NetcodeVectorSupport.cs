@@ -6,7 +6,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using NetCode;
 
-namespace NetcodeCore
+namespace NetcodeTest
 {
     public class SynchronisableVector2 : SynchronisableField
     {

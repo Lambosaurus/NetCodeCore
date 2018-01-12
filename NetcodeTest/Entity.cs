@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
 using NetCode;
 
-namespace NetcodeCore
+namespace NetcodeTest
 {
     public class Entity
     {

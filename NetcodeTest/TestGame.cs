@@ -4,16 +4,15 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 
 using NetCode;
 
-namespace NetcodeCore
+namespace NetcodeTest
 {
-    public class Game1 : Microsoft.Xna.Framework.Game
+    public class TestGame : Microsoft.Xna.Framework.Game
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -22,8 +21,8 @@ namespace NetcodeCore
         OutgoingSyncPool outgoingPool;
 
         Entity entity;
-            
-        public Game1()
+        
+        public TestGame()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";

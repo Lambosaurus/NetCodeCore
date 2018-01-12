@@ -62,7 +62,7 @@ namespace NetCode
         {
             if (!Changed) { return; }
 
-            uint changed_fields = 0;
+            byte changed_fields = 0;
             foreach (SynchronisableField field in fields)
             {
                 if (field.Changed)
