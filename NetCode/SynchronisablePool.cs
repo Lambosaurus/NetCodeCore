@@ -31,38 +31,18 @@ namespace NetCode
         {
 
         }
-
-        /*
+        
         private void ReadHeader(byte[] data, ref int index, out uint packet_id)
         {
-            packet_id PrimitiveSerialiser.Write(data, ref index);
+            packet_id = PrimitiveSerialiser.ReadUInt(data, ref index);
         }
-        */
-
-        public void ParseDeltaPacket(byte[] data)
+        
+        public void ParseDeltaPacket(byte[] data, int index)
         {
+            uint packet_id;
+            ReadHeader(data, ref index, out packet_id);
 
-
-            /*
-            int packetsize = HeaderSize();
-            foreach (SyncHandle handle in handles)
-            {
-                packetsize += handle.sync.WriteSize();
-            }
-
-            int index = 0;
-            byte[] data = new byte[packetsize];
-
-            uint packet_id = GetNewPacketId();
-            WriteHeader(data, ref index, packet_id);
-
-            foreach (SyncHandle handle in handles)
-            {
-                handle.sync.WriteToPacket(data, ref index, packet_id);
-            }
-
-            return data;
-            */
+            
         }
     }
 
@@ -90,7 +70,7 @@ namespace NetCode
             SyncHandle handle = new SyncHandle();
 
             handle.obj = instance;
-            handle.sync = new SynchronisableEntity( netcode.GetDescriptor(instance.GetType()), GetNewObjectId());
+            handle.sync = new SyncEntity( netcode.GetDescriptor(instance.GetType()), GetNewObjectId());
             handles.Add(handle);
 
             return handle;
@@ -108,8 +88,7 @@ namespace NetCode
                 handle.sync.UpdateFromLocal(handle.obj);
             }
         }
-
-
+        
         public byte[] GenerateDeltaPacket()
         {
             int packetsize = HeaderSize();

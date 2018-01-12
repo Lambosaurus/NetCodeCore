@@ -8,24 +8,24 @@ namespace NetCode
 {
     public class SyncHandle
     {
-        internal SynchronisableEntity sync;
+        internal SyncEntity sync;
         public Object obj { get; internal set; }
     }
 
-    internal class SynchronisableEntity
+    internal class SyncEntity
     {
         const int UUID_HEADER_LENGTH = sizeof(uint);
         const int FIELD_COUNT_HEADER_LENGTH = sizeof(byte);
         const int FIELD_ID_HEADER_LENGTH = sizeof(byte);
 
-        private SynchronisableEntityDescriptor descriptor;
+        private SyncEntityDescriptor descriptor;
         private SynchronisableField[] fields;
 
-        public byte Changed { get; private set; } = 0;
+        public bool Changed { get; private set; } = true;
         public uint Uuid { get; private set; }
 
 
-        internal SynchronisableEntity(SynchronisableEntityDescriptor _descriptor, uint id)
+        internal SyncEntity(SyncEntityDescriptor _descriptor, uint id)
         {
             descriptor = _descriptor;
             Uuid = id;
@@ -39,7 +39,7 @@ namespace NetCode
         /// </summary>
         public int WriteSize()
         {
-            if (Changed == 0) { return 0; }
+            if (!Changed) { return 0; }
 
             int size = UUID_HEADER_LENGTH + FIELD_COUNT_HEADER_LENGTH;
             foreach (SynchronisableField field in fields)
@@ -60,10 +60,19 @@ namespace NetCode
         /// <param name="index">The index to begin writing to</param>
         public void WriteToPacket(byte[] data, ref int index, uint packet_id)
         {
-            if (Changed == 0) { return; }
+            if (!Changed) { return; }
+
+            uint changed_fields = 0;
+            foreach (SynchronisableField field in fields)
+            {
+                if (field.Changed)
+                {
+                    changed_fields++;
+                }
+            }
 
             PrimitiveSerialiser.Write(data, ref index, Uuid);
-            PrimitiveSerialiser.Write(data, ref index, Changed);
+            PrimitiveSerialiser.Write(data, ref index, changed_fields);
 
             for (byte i = 0; i < descriptor.FieldCount; i++)
             {
@@ -76,7 +85,7 @@ namespace NetCode
                 }
             }
 
-            Changed = 0;
+            Changed = false;
         }
 
         public void UpdateFromLocal(object obj)
@@ -85,20 +94,20 @@ namespace NetCode
             {
                 object value = descriptor.GetField(obj, i);
                 fields[i].Update(value);
-                if (fields[i].Changed) { Changed++; }
+                if (fields[i].Changed) { Changed = true; }
             }
         }
     }
 
-    internal class SynchronisableEntityDescriptor
+    internal class SyncEntityDescriptor
     {
-        List<SynchronisableFieldDescriptor> fieldDescriptors = new List<SynchronisableFieldDescriptor>();
+        List<SyncFieldDescriptor> fieldDescriptors = new List<SyncFieldDescriptor>();
         Func<object> constructor;
 
         public int FieldCount { get; private set; }
         
 
-        public SynchronisableEntityDescriptor(SynchronisableFieldGenerator fieldGenerator, Type entityType)
+        public SyncEntityDescriptor(SyncFieldgenerator fieldGenerator, Type entityType)
         {
             constructor = DelegateGenerator.GenerateConstructor(entityType);
             
@@ -109,7 +118,7 @@ namespace NetCode
                     if (attribute is SynchronisableAttribute)
                     {
                         SyncFlags flags = ((SynchronisableAttribute)attribute).flags;
-                        SynchronisableFieldDescriptor descriptor = fieldGenerator.GenerateFieldDescriptor(info, flags);
+                        SyncFieldDescriptor descriptor = fieldGenerator.GenerateFieldDescriptor(info, flags);
 
                         fieldDescriptors.Add(descriptor);
                     }

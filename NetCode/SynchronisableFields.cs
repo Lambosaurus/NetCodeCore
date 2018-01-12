@@ -69,7 +69,7 @@ namespace NetCode
     }
 
 
-    internal class SynchronisableFieldDescriptor
+    internal class SyncFieldDescriptor
     {
         SyncFlags flags;
 
@@ -77,7 +77,7 @@ namespace NetCode
         public Func<object, object> Getter;
         public Action<object, object> Setter;
 
-        public SynchronisableFieldDescriptor( Func<object> fieldConstructor, Func<object,object> fieldGetter, Action<object, object> fieldSetter, SyncFlags syncFlags )
+        public SyncFieldDescriptor( Func<object> fieldConstructor, Func<object,object> fieldGetter, Action<object, object> fieldSetter, SyncFlags syncFlags )
         {
             constructor = fieldConstructor;
             Getter = fieldGetter;
@@ -92,12 +92,12 @@ namespace NetCode
     }
 
 
-    internal class SynchronisableFieldGenerator
+    internal class SyncFieldgenerator
     {
         Dictionary<RuntimeTypeHandle, Func<object>> FieldConstructorLookup = new Dictionary<RuntimeTypeHandle, Func<object>>();
         Dictionary<RuntimeTypeHandle, Func<object>> HalfPrecisionFieldConstructorLookup = new Dictionary<RuntimeTypeHandle, Func<object>>();
        
-        internal SynchronisableFieldGenerator()
+        internal SyncFieldgenerator()
         {
             RegisterSynchronisableFieldType(typeof(SynchronisableEnum), typeof(System.Enum));
             RegisterSynchronisableFieldType(typeof(SynchronisableByte), typeof(byte));
@@ -112,7 +112,7 @@ namespace NetCode
             RegisterSynchronisableFieldType(typeof(SynchronisableHalf), typeof(float), SyncFlags.HalfPrecisionFloats);
         }
         
-        internal SynchronisableFieldDescriptor GenerateFieldDescriptor( FieldInfo fieldInfo, SyncFlags syncFlags)
+        internal SyncFieldDescriptor GenerateFieldDescriptor( FieldInfo fieldInfo, SyncFlags syncFlags)
         {
             Type type = fieldInfo.FieldType;
 
@@ -145,7 +145,7 @@ namespace NetCode
                 }
             }
 
-            return new SynchronisableFieldDescriptor(
+            return new SyncFieldDescriptor(
                 constructor,
                 DelegateGenerator.GenerateGetter(fieldInfo),
                 DelegateGenerator.GenerateSetter(fieldInfo),
