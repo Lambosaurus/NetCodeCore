@@ -43,8 +43,7 @@ namespace NetcodeTest
             spriteBatch = new SpriteBatch(GraphicsDevice);
             Entity.Load(Content);
 
-            netcode.RegisterField(typeof(SynchronisableVector2), typeof(Vector2));
-            netcode.RegisterField(typeof(SynchronisableHalfVector2), typeof(Vector2), SyncFlags.HalfPrecisionFloats);
+            NetcodeFieldSupport.RegisterCustomFields(netcode);
 
             netcode.RegisterType(typeof(Entity));
             outgoingPool = netcode.GenerateOutgoingPool(1);

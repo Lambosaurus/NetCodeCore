@@ -9,6 +9,16 @@ using NetCode.SyncField;
 
 namespace NetcodeTest
 {
+
+    public static class NetcodeFieldSupport
+    {
+        public static void RegisterCustomFields(NetCodeManager netcode)
+        {
+            netcode.RegisterField(typeof(SynchronisableVector2), typeof(Vector2));
+            netcode.RegisterField(typeof(SynchronisableHalfVector2), typeof(Vector2), SyncFlags.HalfPrecisionFloats);
+        }
+    }
+
     public class SynchronisableVector2 : SynchronisableField
     {
         internal Vector2 value;
