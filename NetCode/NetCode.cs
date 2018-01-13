@@ -32,25 +32,26 @@ namespace NetCode
 
     public class NetCodeManager
     {
-        Dictionary<RuntimeTypeHandle, SyncEntityDescriptor> entityDescriptors = new Dictionary<RuntimeTypeHandle, SyncEntityDescriptor>();
-        SyncFieldgenerator fieldGenerator = new SyncFieldgenerator();
 
-        ushort last_typeid = 0;
-        private ushort GetNewTypeID()
+        internal SyncFieldGenerator fieldGenerator;
+        internal SyncEntityGenerator entityGenerator;
+
+        public NetCodeManager()
         {
-            if (last_typeid == ushort.MaxValue) { throw new NetcodeOverloadedException(string.Format("There may not be more than {0} unique types registered.",ushort.MaxValue)); }
-            return last_typeid++;
+            fieldGenerator = new SyncFieldGenerator();
+            entityGenerator = new SyncEntityGenerator(fieldGenerator);
         }
 
+        
         /// <summary>
         /// Registers a new type of synchronisable entity to the manager.
         /// This must be done before the entity is added to any SyncPools
         /// Objects must be registered in the same order for any client Netcode
         /// </summary>
         /// <param name="sync_type">The synchronisable entity to register</param>
-        public void RegisterType(Type sync_type)
+        public void RegisterType(Type syncType)
         {
-            entityDescriptors[sync_type.TypeHandle] = new SyncEntityDescriptor(fieldGenerator, sync_type, GetNewTypeID());
+            entityGenerator.RegisterEntityType(syncType);
         }
 
         /// <summary>
@@ -62,29 +63,18 @@ namespace NetCode
         /// <param name="flags">The field implentation may be registered against SyncFlags.HalfPrecision</param>
         public void RegisterField(Type synchronisableType, Type fieldType, SyncFlags flags = SyncFlags.None)
         {
-            if (synchronisableType.BaseType != typeof(SynchronisableField))
-            {
-                throw new ArgumentException(string.Format("{0} must inherit from {1}", synchronisableType.Name, typeof(SynchronisableField).Name));
-            }
-
-            fieldGenerator.RegisterSynchronisableFieldType(synchronisableType, fieldType, flags);
+            fieldGenerator.RegisterFieldType(synchronisableType, fieldType, flags);
         }
 
-        internal SyncEntityDescriptor GetDescriptor(RuntimeTypeHandle typeHandle)
-        {
-            return entityDescriptors[typeHandle];
-        }
-
-        
         public OutgoingSyncPool GenerateOutgoingPool( ushort poolID )
         {
-            OutgoingSyncPool outgoingPool = new OutgoingSyncPool(this, poolID);
+            OutgoingSyncPool outgoingPool = new OutgoingSyncPool(entityGenerator, poolID);
             return outgoingPool;
         }
 
         public IncomingSyncPool GenerateIncomingPool(ushort poolID)
         {
-            IncomingSyncPool incomingPool = new IncomingSyncPool(this, poolID);
+            IncomingSyncPool incomingPool = new IncomingSyncPool(entityGenerator, poolID);
             return incomingPool;
         }
 

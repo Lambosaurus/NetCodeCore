@@ -11,22 +11,23 @@ namespace NetCode.SyncEntity
 {
     internal class SynchronisableEntity
     {
-        const int UUID_HEADER_LENGTH = sizeof(ushort);
-        const int TYPE_HEADER_LENGTH = sizeof(ushort);
+        const int ID_HEADER_LENGTH = sizeof(ushort);
+        const int TYPEID_HEADER_LENGTH = sizeof(ushort);
         const int FIELD_COUNT_HEADER_LENGTH = sizeof(byte);
-        const int FIELD_ID_HEADER_LENGTH = sizeof(byte);
+        const int FIELDID_HEADER_LENGTH = sizeof(byte);
 
         private SyncEntityDescriptor descriptor;
         private SynchronisableField[] fields;
 
         public bool Changed { get; private set; } = true;
-        public uint Uuid { get; private set; }
+        public uint EntityID { get; private set; }
+        public ushort TypeID { get { return descriptor.TypeID; } }
 
 
-        internal SynchronisableEntity(SyncEntityDescriptor _descriptor, uint id)
+        internal SynchronisableEntity(SyncEntityDescriptor _descriptor, uint entityID)
         {
             descriptor = _descriptor;
-            Uuid = id;
+            EntityID = entityID;
 
             fields = descriptor.GenerateFields();
         }
@@ -39,22 +40,22 @@ namespace NetCode.SyncEntity
         {
             if (!Changed) { return 0; }
 
-            int size = UUID_HEADER_LENGTH + FIELD_COUNT_HEADER_LENGTH + TYPE_HEADER_LENGTH;
+            int size = ID_HEADER_LENGTH + FIELD_COUNT_HEADER_LENGTH + TYPEID_HEADER_LENGTH;
             foreach (SynchronisableField field in fields)
             {
                 if (field.Changed)
                 {
-                    size += FIELD_ID_HEADER_LENGTH + field.WriteSize();
+                    size += FIELDID_HEADER_LENGTH + field.WriteSize();
                 }
             }
             return size;
         }
 
 
-        public static void ReadHeader(byte[] data, ref int index, out uint Uuid, out ushort TypeID)
+        public static void ReadHeader(byte[] data, ref int index, out uint entityID, out ushort typeID)
         {
-            Uuid = PrimitiveSerialiser.ReadUShort(data, ref index);
-            TypeID = PrimitiveSerialiser.ReadUShort(data, ref index);
+            entityID = PrimitiveSerialiser.ReadUShort(data, ref index);
+            typeID = PrimitiveSerialiser.ReadUShort(data, ref index);
         }
 
 
@@ -77,7 +78,7 @@ namespace NetCode.SyncEntity
                 }
             }
 
-            PrimitiveSerialiser.WriteUShort(data, ref index, (ushort)Uuid);
+            PrimitiveSerialiser.WriteUShort(data, ref index, (ushort)EntityID);
             PrimitiveSerialiser.WriteUShort(data, ref index, descriptor.TypeID);
             PrimitiveSerialiser.WriteByte(data, ref index, changed_fields);
 

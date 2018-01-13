@@ -11,7 +11,7 @@ namespace NetCode.SyncPool
     {
         const uint MAX_PACKET_LENGTH = ushort.MaxValue;
 
-        internal OutgoingSyncPool(NetCodeManager _netcode, ushort poolID) : base(_netcode, poolID)
+        internal OutgoingSyncPool(SyncEntityGenerator generator, ushort poolID) : base(generator, poolID)
         {
 
         }
@@ -29,7 +29,7 @@ namespace NetCode.SyncPool
 
             // start searching for free keys from where we found our last free key
             // This will be empty most of the time
-            while (handles.ContainsKey(potential_object_id))
+            while (Handles.ContainsKey(potential_object_id))
             {
                 potential_object_id++;
 
@@ -50,27 +50,28 @@ namespace NetCode.SyncPool
 
         public SyncHandle RegisterEntity(object instance)
         {
-            SyncHandle handle = new SyncHandle();
+            SyncHandle handle = new SyncHandle(
+                new SynchronisableEntity(entityGenerator.GetEntityDescriptor(instance.GetType().TypeHandle), GetNewObjectId()),
+                instance
+                );
 
-            handle.obj = instance;
-            handle.sync = new SynchronisableEntity(netcode.GetDescriptor(instance.GetType().TypeHandle), GetNewObjectId());
-            handles[handle.sync.Uuid] = handle;
+            Handles[handle.sync.EntityID] = handle;
 
             return handle;
         }
 
         public void UpdateFromLocal()
         {
-            foreach (SyncHandle handle in handles.Values)
+            foreach (SyncHandle handle in Handles.Values)
             {
-                handle.sync.UpdateFromLocal(handle.obj);
+                handle.sync.UpdateFromLocal(handle.Obj);
             }
         }
 
         public byte[] GenerateDeltaPacket(uint packet_id)
         {
             int packetsize = HeaderSize();
-            foreach (SyncHandle handle in handles.Values)
+            foreach (SyncHandle handle in Handles.Values)
             {
                 packetsize += handle.sync.WriteSize();
             }
@@ -80,7 +81,7 @@ namespace NetCode.SyncPool
 
             WriteHeader(data, ref index);
 
-            foreach (SyncHandle handle in handles.Values)
+            foreach (SyncHandle handle in Handles.Values)
             {
                 handle.sync.WriteToPacket(data, ref index, packet_id);
             }

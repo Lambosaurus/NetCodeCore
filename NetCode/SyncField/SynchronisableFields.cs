@@ -11,7 +11,7 @@ namespace NetCode.SyncField
     public abstract class SynchronisableField
     {
         public bool Changed { get; private set; } = true; // Defaults to true so value is changed when created
-        public uint LastPacketUUID { get; private set; } = 0; // Indicates the UUID of the last packet this field was updated in
+        public uint LastPacketID { get; private set; } = 0; // Indicates the UUID of the last packet this field was updated in
 
         internal void Update(object new_value)
         {
@@ -22,11 +22,11 @@ namespace NetCode.SyncField
             }
         }
 
-        internal void WriteToPacket(byte[] data, ref int index, uint packet_uuid)
+        internal void WriteToPacket(byte[] data, ref int index, uint packetID)
         {
             Write(data, ref index);
             Changed = false;
-            LastPacketUUID = packet_uuid;
+            LastPacketID = packetID;
         }
 
 

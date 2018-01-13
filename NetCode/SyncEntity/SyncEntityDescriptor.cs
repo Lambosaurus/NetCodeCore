@@ -12,15 +12,15 @@ namespace NetCode.SyncEntity
     internal class SyncEntityDescriptor
     {
         List<SyncFieldDescriptor> fieldDescriptors = new List<SyncFieldDescriptor>();
-        Func<object> constructor;
+        Func<object> Constructor;
 
         public int FieldCount { get; private set; }
         public ushort TypeID { get; private set; }
 
-        public SyncEntityDescriptor(SyncFieldgenerator fieldGenerator, Type entityType, ushort typeID)
+        public SyncEntityDescriptor(SyncFieldGenerator fieldGenerator, Type entityType, ushort typeID)
         {
             TypeID = typeID;
-            constructor = DelegateGenerator.GenerateConstructor(entityType);
+            Constructor = DelegateGenerator.GenerateConstructor(entityType);
 
             foreach (FieldInfo info in entityType.GetFields())
             {
@@ -62,7 +62,7 @@ namespace NetCode.SyncEntity
 
         public object ConstructObject()
         {
-            return constructor.Invoke();
+            return Constructor.Invoke();
         }
 
     }

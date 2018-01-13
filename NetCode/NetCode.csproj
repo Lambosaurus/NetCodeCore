@@ -44,6 +44,7 @@
     <Compile Include="Packet.cs" />
     <Compile Include="PrimitiveSerialiser.cs" />
     <Compile Include="SyncEntity\SyncEntityDescriptor.cs" />
+    <Compile Include="SyncEntity\SyncEntityGenerator.cs" />
     <Compile Include="SyncField\SyncFieldDescriptor.cs" />
     <Compile Include="SyncEntity\SynchronisableEntity.cs" />
     <Compile Include="SyncField\SyncFieldGenerator.cs" />

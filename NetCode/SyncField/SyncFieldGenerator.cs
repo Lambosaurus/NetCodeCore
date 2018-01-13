@@ -7,24 +7,24 @@ using System.Reflection;
 
 namespace NetCode.SyncField
 {
-    internal class SyncFieldgenerator
+    internal class SyncFieldGenerator
     {
         Dictionary<RuntimeTypeHandle, Func<object>> FieldConstructorLookup = new Dictionary<RuntimeTypeHandle, Func<object>>();
         Dictionary<RuntimeTypeHandle, Func<object>> HalfPrecisionFieldConstructorLookup = new Dictionary<RuntimeTypeHandle, Func<object>>();
 
-        internal SyncFieldgenerator()
+        internal SyncFieldGenerator()
         {
-            RegisterSynchronisableFieldType(typeof(SynchronisableEnum), typeof(System.Enum));
-            RegisterSynchronisableFieldType(typeof(SynchronisableByte), typeof(byte));
-            RegisterSynchronisableFieldType(typeof(SynchronisableShort), typeof(short));
-            RegisterSynchronisableFieldType(typeof(SynchronisableUShort), typeof(ushort));
-            RegisterSynchronisableFieldType(typeof(SynchronisableInt), typeof(int));
-            RegisterSynchronisableFieldType(typeof(SynchronisableUInt), typeof(uint));
-            RegisterSynchronisableFieldType(typeof(SynchronisableLong), typeof(long));
-            RegisterSynchronisableFieldType(typeof(SynchronisableULong), typeof(ulong));
-            RegisterSynchronisableFieldType(typeof(SynchronisableFloat), typeof(float));
-            RegisterSynchronisableFieldType(typeof(SynchronisableString), typeof(string));
-            RegisterSynchronisableFieldType(typeof(SynchronisableHalf), typeof(float), SyncFlags.HalfPrecisionFloats);
+            RegisterFieldType(typeof(SynchronisableEnum), typeof(System.Enum));
+            RegisterFieldType(typeof(SynchronisableByte), typeof(byte));
+            RegisterFieldType(typeof(SynchronisableShort), typeof(short));
+            RegisterFieldType(typeof(SynchronisableUShort), typeof(ushort));
+            RegisterFieldType(typeof(SynchronisableInt), typeof(int));
+            RegisterFieldType(typeof(SynchronisableUInt), typeof(uint));
+            RegisterFieldType(typeof(SynchronisableLong), typeof(long));
+            RegisterFieldType(typeof(SynchronisableULong), typeof(ulong));
+            RegisterFieldType(typeof(SynchronisableFloat), typeof(float));
+            RegisterFieldType(typeof(SynchronisableString), typeof(string));
+            RegisterFieldType(typeof(SynchronisableHalf), typeof(float), SyncFlags.HalfPrecisionFloats);
         }
 
         internal SyncFieldDescriptor GenerateFieldDescriptor(FieldInfo fieldInfo, SyncFlags syncFlags)
@@ -68,9 +68,9 @@ namespace NetCode.SyncField
                 );
         }
 
-        public void RegisterSynchronisableFieldType(Type syncFieldType, Type fieldType, SyncFlags flags = SyncFlags.None, bool overrideExistingFieldTypes = false)
+        public void RegisterFieldType(Type syncFieldType, Type fieldType, SyncFlags flags = SyncFlags.None, bool overrideExistingFieldTypes = false)
         {
-            if (!(syncFieldType.BaseType.Equals(typeof(SynchronisableField))))
+            if (syncFieldType.BaseType != typeof(SynchronisableField))
             {
                 throw new NotSupportedException(string.Format(" {0} base type must be SynchronisableField.", syncFieldType.Name));
             }

@@ -3,26 +3,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using NetCode.SyncEntity;
 
 namespace NetCode.SyncPool
 {
     public class SyncPool
     {
-        protected NetCodeManager netcode;
+        const int POOLID_HEADER_SIZE = sizeof(ushort);
 
-        public Dictionary<uint, SyncHandle> handles { get; private set; } = new Dictionary<uint, SyncHandle>();
+        public Dictionary<uint, SyncHandle> Handles { get; private set; } = new Dictionary<uint, SyncHandle>();
         public ushort PoolID { get; private set; }
 
-        
-        public SyncPool(NetCodeManager _netcode, ushort poolID)
+        internal SyncEntityGenerator entityGenerator;
+
+        internal SyncPool(SyncEntityGenerator generator, ushort poolID)
         {
-            netcode = _netcode;
+            entityGenerator = generator;
             PoolID = poolID;
         }
         
         protected int HeaderSize()
         {
-            return sizeof(ushort);
+            return POOLID_HEADER_SIZE;
         }
 
         internal static void ReadHeader(byte[] data, ref int index, out ushort poolID)
