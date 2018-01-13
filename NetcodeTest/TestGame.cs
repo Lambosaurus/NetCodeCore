@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 
 using NetCode;
+using NetCode.SyncPool;
 
 namespace NetcodeTest
 {
@@ -19,6 +20,7 @@ namespace NetcodeTest
 
         NetCodeManager netcode = new NetCodeManager();
         OutgoingSyncPool outgoingPool;
+        IncomingSyncPool incmomingPool;
 
         Entity entity;
         
@@ -44,8 +46,8 @@ namespace NetcodeTest
             netcode.RegisterField(typeof(SynchronisableHalfVector2), typeof(Vector2), SyncFlags.HalfPrecisionFloats);
 
             netcode.RegisterType(typeof(Entity));
-            outgoingPool = new OutgoingSyncPool(netcode);
-
+            outgoingPool = netcode.GenerateOutgoingPool(1);
+            incmomingPool = netcode.GenerateIncomingPool(1);
 
             outgoingPool.RegisterEntity(entity);
         }
@@ -91,8 +93,8 @@ namespace NetcodeTest
             {
                 tick = 0;
                 outgoingPool.UpdateFromLocal();
-                outgoingPool.GenerateDeltaPacket();
-
+                outgoingPool.GenerateDeltaPacket(1);
+                
                 // Send packet here //
             }
             

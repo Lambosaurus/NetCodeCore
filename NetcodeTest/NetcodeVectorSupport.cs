@@ -5,6 +5,7 @@ using System.Text;
 
 using Microsoft.Xna.Framework;
 using NetCode;
+using NetCode.SyncField;
 
 namespace NetcodeTest
 {
@@ -17,8 +18,8 @@ namespace NetcodeTest
         public override int WriteSize() { return sizeof(float) * 2; }
         protected override void Write(byte[] data, ref int index)
         {
-            PrimitiveSerialiser.Write(data, ref index, value.X);
-            PrimitiveSerialiser.Write(data, ref index, value.Y);
+            PrimitiveSerialiser.WriteFloat(data, ref index, value.X);
+            PrimitiveSerialiser.WriteFloat(data, ref index, value.Y);
         }
         protected override void Read(byte[] data, ref int index)
         {
@@ -46,8 +47,8 @@ namespace NetcodeTest
         public override int WriteSize() { return 4; }
         protected override void Write(byte[] data, ref int index)
         {
-            PrimitiveSerialiser.Write(data, ref index, x);
-            PrimitiveSerialiser.Write(data, ref index, y);
+            PrimitiveSerialiser.WriteHalf(data, ref index, x);
+            PrimitiveSerialiser.WriteHalf(data, ref index, y);
         }
         protected override void Read(byte[] data, ref int index)
         {

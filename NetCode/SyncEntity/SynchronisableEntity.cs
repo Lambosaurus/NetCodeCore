@@ -2,19 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
 using System.Reflection;
 
-namespace NetCode
-{
-    public class SyncHandle
-    {
-        internal SyncEntity sync;
-        public Object obj { get; internal set; }
-    }
+using NetCode.SyncField;
 
-    internal class SyncEntity
+namespace NetCode.SyncEntity
+{
+    internal class SynchronisableEntity
     {
-        const int UUID_HEADER_LENGTH = sizeof(uint);
+        const int UUID_HEADER_LENGTH = sizeof(ushort);
+        const int TYPE_HEADER_LENGTH = sizeof(ushort);
         const int FIELD_COUNT_HEADER_LENGTH = sizeof(byte);
         const int FIELD_ID_HEADER_LENGTH = sizeof(byte);
 
@@ -25,7 +23,7 @@ namespace NetCode
         public uint Uuid { get; private set; }
 
 
-        internal SyncEntity(SyncEntityDescriptor _descriptor, uint id)
+        internal SynchronisableEntity(SyncEntityDescriptor _descriptor, uint id)
         {
             descriptor = _descriptor;
             Uuid = id;
@@ -41,7 +39,7 @@ namespace NetCode
         {
             if (!Changed) { return 0; }
 
-            int size = UUID_HEADER_LENGTH + FIELD_COUNT_HEADER_LENGTH;
+            int size = UUID_HEADER_LENGTH + FIELD_COUNT_HEADER_LENGTH + TYPE_HEADER_LENGTH;
             foreach (SynchronisableField field in fields)
             {
                 if (field.Changed)
@@ -51,6 +49,14 @@ namespace NetCode
             }
             return size;
         }
+
+
+        public static void ReadHeader(byte[] data, ref int index, out uint Uuid, out ushort TypeID)
+        {
+            Uuid = PrimitiveSerialiser.ReadUShort(data, ref index);
+            TypeID = PrimitiveSerialiser.ReadUShort(data, ref index);
+        }
+
 
         /// <summary>
         /// Writes the packet to the given packet.
@@ -71,8 +77,9 @@ namespace NetCode
                 }
             }
 
-            PrimitiveSerialiser.Write(data, ref index, Uuid);
-            PrimitiveSerialiser.Write(data, ref index, changed_fields);
+            PrimitiveSerialiser.WriteUShort(data, ref index, (ushort)Uuid);
+            PrimitiveSerialiser.WriteUShort(data, ref index, descriptor.TypeID);
+            PrimitiveSerialiser.WriteByte(data, ref index, changed_fields);
 
             for (byte i = 0; i < descriptor.FieldCount; i++)
             {
@@ -80,7 +87,7 @@ namespace NetCode
                 if (field.Changed)
                 {
                     // This MUST be written as a byte.
-                    PrimitiveSerialiser.Write(data, ref index, (byte)i);
+                    PrimitiveSerialiser.WriteByte(data, ref index, (byte)i);
                     field.WriteToPacket(data, ref index, packet_id);
                 }
             }
@@ -97,61 +104,5 @@ namespace NetCode
                 if (fields[i].Changed) { Changed = true; }
             }
         }
-    }
-
-    internal class SyncEntityDescriptor
-    {
-        List<SyncFieldDescriptor> fieldDescriptors = new List<SyncFieldDescriptor>();
-        Func<object> constructor;
-
-        public int FieldCount { get; private set; }
-        
-
-        public SyncEntityDescriptor(SyncFieldgenerator fieldGenerator, Type entityType)
-        {
-            constructor = DelegateGenerator.GenerateConstructor(entityType);
-            
-            foreach (FieldInfo info in entityType.GetFields())
-            {
-                foreach (object attribute in info.GetCustomAttributes(true))
-                {
-                    if (attribute is SynchronisableAttribute)
-                    {
-                        SyncFlags flags = ((SynchronisableAttribute)attribute).flags;
-                        SyncFieldDescriptor descriptor = fieldGenerator.GenerateFieldDescriptor(info, flags);
-
-                        fieldDescriptors.Add(descriptor);
-                    }
-                }
-            }
-            FieldCount = fieldDescriptors.Count;
-        }
-
-        public SynchronisableField[] GenerateFields()
-        {
-            SynchronisableField[] fields = new SynchronisableField[fieldDescriptors.Count];
-            for (int i = 0; i < fieldDescriptors.Count; i++)
-            {
-                fields[i] = fieldDescriptors[i].GenerateField();
-            }
-            return fields;
-        }
-
-        
-        public void SetField(object obj, int index, object value)
-        {
-            fieldDescriptors[index].Setter(obj, value);
-        }
-
-        public object GetField(object obj, int index)
-        {
-            return fieldDescriptors[index].Getter(obj);
-        }
-        
-        public object ConstructObject()
-        {
-            return constructor.Invoke();
-        }
-
     }
 }

@@ -41,10 +41,18 @@
   <ItemGroup>
     <Compile Include="DelegateGenerator.cs" />
     <Compile Include="NetCode.cs" />
+    <Compile Include="Packet.cs" />
     <Compile Include="PrimitiveSerialiser.cs" />
-    <Compile Include="SynchronisableEntity.cs" />
-    <Compile Include="SynchronisableFields.cs" />
-    <Compile Include="SynchronisablePool.cs" />
+    <Compile Include="SyncEntity\SyncEntityDescriptor.cs" />
+    <Compile Include="SyncField\SyncFieldDescriptor.cs" />
+    <Compile Include="SyncEntity\SynchronisableEntity.cs" />
+    <Compile Include="SyncField\SyncFieldGenerator.cs" />
+    <Compile Include="SyncField\SyncFieldImplementations.cs" />
+    <Compile Include="SyncField\SynchronisableFields.cs" />
+    <Compile Include="SyncPool\SyncHandle.cs" />
+    <Compile Include="SyncPool\SynchronisablePool.cs" />
+    <Compile Include="SyncPool\IncomingSyncPool.cs" />
+    <Compile Include="SyncPool\OutgoingSyncPool.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="lib\System.Half.dll" />

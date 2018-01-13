@@ -10,6 +10,11 @@ namespace NetCode
 {
     internal static class DelegateGenerator
     {
+        /// <summary>
+        /// Generates a function that acts as a constructor for the specified Type.
+        /// </summary>
+        /// <param name="type">The Type which to generate a constructor for.</param>
+        /// <returns>This function returns new Type()</returns>
         public static Func<object> GenerateConstructor(Type type)
         {
             ConstructorInfo constructor = type.GetConstructor(new Type[0]);
@@ -36,6 +41,11 @@ namespace NetCode
             return (Func<object>)method.CreateDelegate(typeof(Func<object>));
         }
 
+        /// <summary>
+        /// Generates a function that acts as a getter for the specified Field.
+        /// </summary>
+        /// <param name="field">The Field which to generate a getter for</param>
+        /// <returns>This function returns obj1.Field</returns>
         public static Func<object, object> GenerateGetter(FieldInfo field)
         {
             DynamicMethod method = new DynamicMethod(
@@ -64,6 +74,11 @@ namespace NetCode
             return (Func<object, object>)(method.CreateDelegate(typeof(Func<object, object>)));
         }
 
+        /// <summary>
+        /// Generates an action that acts as a setter for the specified Field.
+        /// </summary>
+        /// <param name="field">The Field which to generate a setter for</param>
+        /// <returns>This action sets the obj1.Field the obj2</returns>
         public static Action<object, object> GenerateSetter(FieldInfo field)
         {
             DynamicMethod method = new DynamicMethod(
