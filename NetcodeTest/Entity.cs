@@ -12,8 +12,8 @@ namespace NetcodeTest
 {
     public class Entity
     {
-        public enum ColorNo { Red, Blue };
-        static Color[] colortable = new Color[] { Color.Red, Color.Blue };
+        public enum ColorNo { Red, Green, Blue };
+        static Color[] colortable = new Color[] { Color.Red, Color.Green, Color.Blue };
 
         [Synchronisable]
         public ColorNo color;

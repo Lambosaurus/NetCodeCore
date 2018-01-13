@@ -37,6 +37,7 @@ namespace NetcodeTest
             base.Initialize();
         }
 
+        KeyboardState lastKeys;
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
@@ -50,6 +51,8 @@ namespace NetcodeTest
             incomingPool = netcode.GenerateIncomingPool(1);
 
             outgoingPool.RegisterEntity(entity);
+
+            lastKeys = Keyboard.GetState();
         }
 
         protected override void UnloadContent()
@@ -57,6 +60,7 @@ namespace NetcodeTest
         }
 
         int tick = 0;
+        
 
         protected override void Update(GameTime gameTime)
         {
@@ -84,6 +88,14 @@ namespace NetcodeTest
             {
                 control.X -= 1;
             }
+            if (keys.IsKeyDown(Keys.Space) && !lastKeys.IsKeyDown(Keys.Space))
+            {
+                entity.color++;
+                if (entity.color > (Entity.ColorNo)2)
+                {
+                    entity.color = (Entity.ColorNo)0;
+                }
+            }
 
             entity.velocity = control;
 
@@ -101,8 +113,9 @@ namespace NetcodeTest
                 incomingPool.ReadDeltaPacket(packet, ref index, 1);
                 incomingPool.UpdateToLocal();
             }
-            
-            
+
+
+            lastKeys = keys;
             base.Update(gameTime);
         }
 

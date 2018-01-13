@@ -9,7 +9,7 @@ namespace NetCode.SyncField
     {
         internal byte value;
         protected override void SetValue(object new_value) { value = (byte)(int)new_value; }
-        public override object GetValue() { return value; }
+        public override object GetValue() { return (int)value; }
         protected override bool ValueEqual(object new_value) { return (byte)(int)new_value == value; }
         public override int WriteSize() { return sizeof(byte); }
         protected override void Write(byte[] data, ref int index) { PrimitiveSerialiser.WriteByte(data, ref index, value); }
