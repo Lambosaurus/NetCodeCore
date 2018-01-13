@@ -30,14 +30,18 @@ namespace NetCode.SyncPool
             Handles.Remove(entityID);
         }
 
-        public void ReadDeltaPacket(byte[] data, ref int index)
+        public void ReadDeltaPacket(byte[] data, ref int index, uint packetID)
         {
             while (index < data.Length)
             {
-                SynchronisableEntity.ReadHeader(data, ref index, out uint entityID, out ushort typeID);
+                uint entityID;
+                ushort typeID;
+                SynchronisableEntity.ReadHeader(data, ref index, out entityID, out typeID);
 
                 if ( Handles.ContainsKey(entityID) )
                 {
+                    // If entityID exists, but is incorrect type:
+                    // Assume old entity should have been deleted, and replace it
                     if ( Handles[entityID].sync.TypeID != typeID )
                     {
                         AbandonEntity(entityID);
@@ -46,12 +50,21 @@ namespace NetCode.SyncPool
                 }
                 else
                 {
+                    // Create new entity
                     SpawnEntity(entityID, typeID);
                 }
-
+                
                 SynchronisableEntity entity = Handles[entityID].sync;
 
-                //entity.ReadFromPacket();
+                entity.ReadFromPacket(data, ref index, packetID);
+            }
+        }
+
+        public void UpdateToLocal()
+        {
+            foreach (SyncHandle handle in Handles.Values)
+            {
+                handle.sync.UpdateToLocal(handle.Obj);
             }
         }
     }

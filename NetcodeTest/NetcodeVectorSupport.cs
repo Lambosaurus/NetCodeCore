@@ -13,7 +13,7 @@ namespace NetcodeTest
     {
         internal Vector2 value;
         protected override void SetValue(object new_value) { value = (Vector2)new_value; }
-        protected override object GetValue() { return value; }
+        public override object GetValue() { return value; }
         protected override bool ValueEqual(object new_value) { return (Vector2)new_value == value; }
         public override int WriteSize() { return sizeof(float) * 2; }
         protected override void Write(byte[] data, ref int index)
@@ -38,7 +38,7 @@ namespace NetcodeTest
             x = (Half)value.X;
             y = (Half)value.Y;
         }
-        protected override object GetValue() { return new Vector2(x, y); }
+        public override object GetValue() { return new Vector2(x, y); }
         protected override bool ValueEqual(object new_value)
         {
             Vector2 value = (Vector2)new_value;

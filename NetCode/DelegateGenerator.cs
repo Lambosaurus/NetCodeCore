@@ -26,7 +26,7 @@ namespace NetCode
             // Create the dynamic method
             DynamicMethod method =
                 new DynamicMethod(
-                    string.Format("{0}__{1}", constructor.DeclaringType.Name, Guid.NewGuid().ToString().Replace("-", "")),
+                    string.Format("Dynamic{0}Constructor", constructor.DeclaringType.Name),
                     constructor.DeclaringType,
                     new Type[0],
                     true
@@ -49,7 +49,7 @@ namespace NetCode
         public static Func<object, object> GenerateGetter(FieldInfo field)
         {
             DynamicMethod method = new DynamicMethod(
-                "Get" + field.Name,
+                string.Format("Dynamic{0}Get{1}", field.DeclaringType.Name, field.Name),
                 typeof(object),
                 new Type[] { typeof(object) },
                 field.DeclaringType,
@@ -82,7 +82,7 @@ namespace NetCode
         public static Action<object, object> GenerateSetter(FieldInfo field)
         {
             DynamicMethod method = new DynamicMethod(
-                "Set" + field.Name,
+                string.Format("Dynamic{0}Get{1}", field.DeclaringType.Name, field.Name),
                 null,
                 new Type[] { typeof(object), typeof(object) },
                 field.DeclaringType,

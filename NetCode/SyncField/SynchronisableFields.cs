@@ -15,7 +15,7 @@ namespace NetCode.SyncField
 
         internal void Update(object new_value)
         {
-            if (ValueEqual(new_value))
+            if (!ValueEqual(new_value))
             {
                 Changed = true;
                 SetValue(new_value);
@@ -29,6 +29,13 @@ namespace NetCode.SyncField
             LastPacketID = packetID;
         }
 
+        internal void ReadFromPacket(byte[] data, ref int index, uint packetID)
+        {
+            Read(data, ref index);
+            Changed = true;
+            LastPacketID = packetID;
+        }
+
 
         /// <summary>
         /// Gets the internal value of the field
@@ -39,7 +46,7 @@ namespace NetCode.SyncField
         /// <summary>
         /// Sets the internal value of the field
         /// </summary>
-        protected abstract object GetValue();
+        public abstract object GetValue();
 
         /// <summary>a
         /// Returns true if the new value does not match the stored value.

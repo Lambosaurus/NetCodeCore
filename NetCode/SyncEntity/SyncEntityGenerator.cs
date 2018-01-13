@@ -27,7 +27,7 @@ namespace NetCode.SyncEntity
             {
                 throw new NetcodeOverloadedException(string.Format("There may not be more than {0} unique types registered.", ushort.MaxValue));
             }
-            return (ushort)(entityDescriptors.Count + 1);
+            return (ushort)(entityDescriptors.Count);
         }
 
         public void RegisterEntityType(Type entityType)

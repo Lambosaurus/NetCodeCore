@@ -20,7 +20,7 @@ namespace NetcodeTest
 
         NetCodeManager netcode = new NetCodeManager();
         OutgoingSyncPool outgoingPool;
-        IncomingSyncPool incmomingPool;
+        IncomingSyncPool incomingPool;
 
         Entity entity;
         
@@ -47,7 +47,7 @@ namespace NetcodeTest
 
             netcode.RegisterType(typeof(Entity));
             outgoingPool = netcode.GenerateOutgoingPool(1);
-            incmomingPool = netcode.GenerateIncomingPool(1);
+            incomingPool = netcode.GenerateIncomingPool(1);
 
             outgoingPool.RegisterEntity(entity);
         }
@@ -89,14 +89,19 @@ namespace NetcodeTest
 
             entity.Update();
 
-            if (++tick >= 3)
+            if (++tick >= 60)
             {
                 tick = 0;
                 outgoingPool.UpdateFromLocal();
-                outgoingPool.GenerateDeltaPacket(1);
-                
-                // Send packet here //
+                byte[] packet = outgoingPool.GenerateDeltaPacket(1);
+
+                int index = 2; // Index = 2, because the poolID should already be parsed at this point
+                // This will be handled by the NetCodeManager, not the user in future.
+                // Packet headers are still TBD
+                incomingPool.ReadDeltaPacket(packet, ref index, 1);
+                incomingPool.UpdateToLocal();
             }
+            
             
             base.Update(gameTime);
         }
@@ -106,8 +111,14 @@ namespace NetcodeTest
             GraphicsDevice.Clear(Color.Black);
 
             spriteBatch.Begin();
-
+            
             entity.Draw(spriteBatch);
+
+            foreach (SyncHandle handle in incomingPool.Handles.Values)
+            {
+                Entity entity = (Entity)(handle.Obj);
+                entity.Draw(spriteBatch);
+            }
 
             spriteBatch.End();
 

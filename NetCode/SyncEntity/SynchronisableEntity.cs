@@ -80,6 +80,7 @@ namespace NetCode.SyncEntity
 
             PrimitiveSerialiser.WriteUShort(data, ref index, (ushort)EntityID);
             PrimitiveSerialiser.WriteUShort(data, ref index, descriptor.TypeID);
+
             PrimitiveSerialiser.WriteByte(data, ref index, changed_fields);
 
             for (byte i = 0; i < descriptor.FieldCount; i++)
@@ -96,6 +97,17 @@ namespace NetCode.SyncEntity
             Changed = false;
         }
 
+        public void ReadFromPacket(byte[] data, ref int index, uint packetID)
+        {
+            byte fieldCount = PrimitiveSerialiser.ReadByte(data, ref index);
+
+            for (int i = 0; i < fieldCount; i++)
+            {
+                byte fieldID = PrimitiveSerialiser.ReadByte(data, ref index);
+                fields[fieldID].ReadFromPacket(data, ref index, packetID);
+            }
+        }
+
         public void UpdateFromLocal(object obj)
         {
             for (int i = 0; i < descriptor.FieldCount; i++)
@@ -103,6 +115,18 @@ namespace NetCode.SyncEntity
                 object value = descriptor.GetField(obj, i);
                 fields[i].Update(value);
                 if (fields[i].Changed) { Changed = true; }
+            }
+        }
+
+        public void UpdateToLocal(object obj)
+        {
+            for (int i = 0; i < descriptor.FieldCount; i++)
+            {
+                if (fields[i].Changed)
+                {
+                    object value = fields[i].GetValue();
+                    descriptor.SetField(obj, i, value);
+                }
             }
         }
     }
