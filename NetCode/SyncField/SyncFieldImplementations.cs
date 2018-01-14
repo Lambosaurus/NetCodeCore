@@ -104,6 +104,17 @@ namespace NetCode.SyncField
         protected override void Read(byte[] data, ref int index) { value = PrimitiveSerialiser.ReadFloat(data, ref index); }
     }
 
+    public class SynchronisableDouble : SynchronisableField
+    {
+        internal double value;
+        protected override void SetValue(object new_value) { value = (double)new_value; }
+        public override object GetValue() { return value; }
+        protected override bool ValueEqual(object new_value) { return (double)new_value == value; }
+        public override int WriteSize() { return sizeof(double); }
+        protected override void Write(byte[] data, ref int index) { PrimitiveSerialiser.WriteDouble(data, ref index, value); }
+        protected override void Read(byte[] data, ref int index) { value = PrimitiveSerialiser.ReadDouble(data, ref index); }
+    }
+
     public class SynchronisableString : SynchronisableField
     {
         internal string value;

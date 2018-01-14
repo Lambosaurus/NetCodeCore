@@ -23,6 +23,7 @@ namespace NetCode.SyncField
             RegisterFieldType(typeof(SynchronisableLong), typeof(long));
             RegisterFieldType(typeof(SynchronisableULong), typeof(ulong));
             RegisterFieldType(typeof(SynchronisableFloat), typeof(float));
+            RegisterFieldType(typeof(SynchronisableDouble), typeof(double));
             RegisterFieldType(typeof(SynchronisableString), typeof(string));
             RegisterFieldType(typeof(SynchronisableHalf), typeof(float), SyncFlags.HalfPrecisionFloats);
         }
