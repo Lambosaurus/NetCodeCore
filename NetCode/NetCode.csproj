@@ -41,7 +41,8 @@
   <ItemGroup>
     <Compile Include="DelegateGenerator.cs" />
     <Compile Include="NetCode.cs" />
-    <Compile Include="Packet.cs" />
+    <Compile Include="Packets\NetPacket.cs" />
+    <Compile Include="Packets\Payload.cs" />
     <Compile Include="PrimitiveSerialiser.cs" />
     <Compile Include="SyncEntity\SyncEntityDescriptor.cs" />
     <Compile Include="SyncEntity\SyncEntityGenerator.cs" />
