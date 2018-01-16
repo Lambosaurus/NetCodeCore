@@ -40,8 +40,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DelegateGenerator.cs" />
+    <Compile Include="Packets\IPacketable.cs" />
     <Compile Include="NetCode.cs" />
-    <Compile Include="Packets\NetPacket.cs" />
+    <Compile Include="Packets\Packet.cs" />
     <Compile Include="Packets\Payload.cs" />
     <Compile Include="PrimitiveSerialiser.cs" />
     <Compile Include="SyncEntity\SyncEntityDescriptor.cs" />
@@ -61,6 +62,7 @@
     <Content Include="lib\System.Half.pdb" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="System" />
     <Reference Include="System.Half, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>lib\System.Half.dll</HintPath>

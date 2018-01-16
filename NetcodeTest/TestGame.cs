@@ -104,7 +104,7 @@ namespace NetcodeTest
             {
                 tick = 0;
                 outgoingPool.UpdateFromLocal();
-                byte[] packet = outgoingPool.GenerateDeltaPacket(1);
+                byte[] packet = outgoingPool.GenerateDeltaPayload(1);
 
                 int index = 2; // Index = 2, because the poolID should already be parsed at this point
                 // This will be handled by the NetCodeManager, not the user in future.

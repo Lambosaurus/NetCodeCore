@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 
 using NetCode.SyncField;
+using NetCode.Packets;
 
 namespace NetCode.SyncEntity
 {
-    internal class SynchronisableEntity
+    internal class SynchronisableEntity : IPacketReadable, IPacketWritable
     {
         const int ID_HEADER_LENGTH = sizeof(ushort);
         const int TYPEID_HEADER_LENGTH = sizeof(ushort);

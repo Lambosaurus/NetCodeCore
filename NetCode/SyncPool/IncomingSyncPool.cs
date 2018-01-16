@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 
 using NetCode.SyncEntity;
+using NetCode.Packets;
 
 namespace NetCode.SyncPool
 {
-    public class IncomingSyncPool : SyncPool
+    public class IncomingSyncPool : SyncPool, IPacketReadable
     {
         internal IncomingSyncPool(SyncEntityGenerator generator, ushort poolID) : base(generator, poolID)
         {
@@ -66,6 +67,11 @@ namespace NetCode.SyncPool
             {
                 handle.sync.UpdateToLocal(handle.Obj);
             }
+        }
+
+        public void ReadFromPacket(byte[] data, ref int index, uint packetID)
+        {
+            throw new NotImplementedException();
         }
     }
 }

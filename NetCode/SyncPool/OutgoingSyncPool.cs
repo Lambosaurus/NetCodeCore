@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 
 using NetCode.SyncEntity;
+using NetCode.Packets;
 
 namespace NetCode.SyncPool
 {
-    public class OutgoingSyncPool : SyncPool
+    public class OutgoingSyncPool : SyncPool, IPacketWritable
     {
         const uint MAX_PACKET_LENGTH = ushort.MaxValue;
 
@@ -68,25 +69,24 @@ namespace NetCode.SyncPool
             }
         }
 
-        public byte[] GenerateDeltaPacket(uint packet_id)
+        public int WriteSize()
         {
-            int packetsize = HeaderSize();
+            int size = HeaderSize();
             foreach (SyncHandle handle in Handles.Values)
             {
-                packetsize += handle.sync.WriteSize();
+                size += handle.sync.WriteSize();
             }
+            return size;
+        }
 
-            int index = 0;
-            byte[] data = new byte[packetsize];
-
+        public void WriteToPacket(byte[] data, ref int index, uint packetID)
+        {
             WriteHeader(data, ref index);
 
             foreach (SyncHandle handle in Handles.Values)
             {
-                handle.sync.WriteToPacket(data, ref index, packet_id);
+                handle.sync.WriteToPacket(data, ref index, packetID);
             }
-
-            return data;
         }
     }
 }

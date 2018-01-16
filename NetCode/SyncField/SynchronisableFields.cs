@@ -5,10 +5,11 @@ using System.Text;
 
 using System.Reflection;
 
+using NetCode.Packets;
 
 namespace NetCode.SyncField
 {
-    public abstract class SynchronisableField
+    public abstract class SynchronisableField : IPacketReadable, IPacketWritable
     {
         public bool Changed { get; private set; } = true; // Defaults to true so value is changed when created
         public uint LastPacketID { get; private set; } = 0; // Indicates the UUID of the last packet this field was updated in
@@ -22,14 +23,14 @@ namespace NetCode.SyncField
             }
         }
 
-        internal void WriteToPacket(byte[] data, ref int index, uint packetID)
+        public void WriteToPacket(byte[] data, ref int index, uint packetID)
         {
             Write(data, ref index);
             Changed = false;
             LastPacketID = packetID;
         }
 
-        internal void ReadFromPacket(byte[] data, ref int index, uint packetID)
+        public void ReadFromPacket(byte[] data, ref int index, uint packetID)
         {
             Read(data, ref index);
             Changed = true;
