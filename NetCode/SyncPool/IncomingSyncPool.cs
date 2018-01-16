@@ -8,7 +8,7 @@ using NetCode.Packets;
 
 namespace NetCode.SyncPool
 {
-    public class IncomingSyncPool : SyncPool, IPacketReadable
+    public class IncomingSyncPool : SyncPool
     {
         internal IncomingSyncPool(SyncEntityGenerator generator, ushort poolID) : base(generator, poolID)
         {
@@ -31,7 +31,7 @@ namespace NetCode.SyncPool
             Handles.Remove(entityID);
         }
 
-        public void ReadDeltaPacket(byte[] data, ref int index, uint packetID)
+        public void ReadFromPacket(byte[] data, ref int index, uint packetID)
         {
             while (index < data.Length)
             {
@@ -67,11 +67,6 @@ namespace NetCode.SyncPool
             {
                 handle.sync.UpdateToLocal(handle.Obj);
             }
-        }
-
-        public void ReadFromPacket(byte[] data, ref int index, uint packetID)
-        {
-            throw new NotImplementedException();
         }
     }
 }

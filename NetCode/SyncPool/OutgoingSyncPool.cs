@@ -88,5 +88,14 @@ namespace NetCode.SyncPool
                 handle.sync.WriteToPacket(data, ref index, packetID);
             }
         }
+
+        public Payload GeneratePayload(uint packetID)
+        {
+            Payload payload = new Payload(Payload.PayloadType.PoolUpdate, packetID);
+            payload.Data = new byte[WriteSize()];
+            int index = 0;
+            WriteToPacket(payload.Data, ref index, packetID);
+            return payload;
+        }
     }
 }

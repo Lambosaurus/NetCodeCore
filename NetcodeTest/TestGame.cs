@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework.Media;
 
 using NetCode;
 using NetCode.SyncPool;
+using NetCode.Packets;
 
 namespace NetcodeTest
 {
@@ -104,12 +105,12 @@ namespace NetcodeTest
             {
                 tick = 0;
                 outgoingPool.UpdateFromLocal();
-                byte[] packet = outgoingPool.GenerateDeltaPayload(1);
+                Payload payload = outgoingPool.GeneratePayload(1);
 
                 int index = 2; // Index = 2, because the poolID should already be parsed at this point
                 // This will be handled by the NetCodeManager, not the user in future.
                 // Packet headers are still TBD
-                incomingPool.ReadDeltaPacket(packet, ref index, 1);
+                incomingPool.ReadFromPacket(payload.Data, ref index, payload.PacketID);
                 incomingPool.UpdateToLocal();
             }
 

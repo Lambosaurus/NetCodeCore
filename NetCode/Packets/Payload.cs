@@ -5,7 +5,7 @@ using System.Text;
 
 namespace NetCode.Packets
 {
-    internal class Payload
+    public class Payload
     {
         public enum PayloadType { None, PoolUpdate };
 
