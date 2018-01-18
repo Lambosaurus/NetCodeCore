@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 
 using NetCode.SyncField;
-using NetCode.Packets;
 
 namespace NetCode.SyncEntity
 {
-    internal class SynchronisableEntity : IPacketReadable, IPacketWritable
+    internal class SynchronisableEntity : IBufferable
     {
         const int ID_HEADER_LENGTH = sizeof(ushort);
         const int TYPEID_HEADER_LENGTH = sizeof(ushort);
@@ -64,7 +63,7 @@ namespace NetCode.SyncEntity
         /// </summary>
         /// <param name="data">The packet to write to</param>
         /// <param name="index">The index to begin writing to</param>
-        public void WriteToPacket(byte[] data, ref int index, uint packet_id)
+        public void WriteToBuffer(byte[] data, ref int index, uint packet_id)
         {
             if (!Changed) { return; }
 
@@ -89,21 +88,21 @@ namespace NetCode.SyncEntity
                 {
                     // This MUST be written as a byte.
                     PrimitiveSerialiser.WriteByte(data, ref index, (byte)i);
-                    field.WriteToPacket(data, ref index, packet_id);
+                    field.WriteToBuffer(data, ref index, packet_id);
                 }
             }
 
             Changed = false;
         }
 
-        public void ReadFromPacket(byte[] data, ref int index, uint packetID)
+        public void ReadFromBuffer(byte[] data, ref int index, uint packetID)
         {
             byte fieldCount = PrimitiveSerialiser.ReadByte(data, ref index);
 
             for (int i = 0; i < fieldCount; i++)
             {
                 byte fieldID = PrimitiveSerialiser.ReadByte(data, ref index);
-                fields[fieldID].ReadFromPacket(data, ref index, packetID);
+                fields[fieldID].ReadFromBuffer(data, ref index, packetID);
             }
         }
 

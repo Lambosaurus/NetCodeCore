@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 
 using NetCode.SyncEntity;
-using NetCode.Packets;
 
 namespace NetCode.SyncPool
 {
-    public class OutgoingSyncPool : SyncPool, IPacketWritable
+    public class OutgoingSyncPool : SyncPool, IBufferable
     {
         const uint MAX_PACKET_LENGTH = ushort.MaxValue;
 
@@ -69,7 +68,7 @@ namespace NetCode.SyncPool
             }
         }
 
-        public int WriteSize()
+        public override int WriteSize()
         {
             int size = HeaderSize();
             foreach (SyncHandle handle in Handles.Values)
@@ -79,23 +78,19 @@ namespace NetCode.SyncPool
             return size;
         }
 
-        public void WriteToPacket(byte[] data, ref int index, uint packetID)
+        public override void WriteToBuffer(byte[] data, ref int index, uint packetID)
         {
             WriteHeader(data, ref index);
 
             foreach (SyncHandle handle in Handles.Values)
             {
-                handle.sync.WriteToPacket(data, ref index, packetID);
+                handle.sync.WriteToBuffer(data, ref index, packetID);
             }
         }
 
-        public Payload GeneratePayload(uint packetID)
+        public override void ReadFromBuffer(byte[] data, ref int index, uint packetID)
         {
-            Payload payload = new Payload(Payload.PayloadType.PoolUpdate, packetID);
-            payload.Data = new byte[WriteSize()];
-            int index = 0;
-            WriteToPacket(payload.Data, ref index, packetID);
-            return payload;
+            throw new NotImplementedException("OutgoingSyncPools may not read");
         }
     }
 }

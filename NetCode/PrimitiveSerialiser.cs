@@ -61,6 +61,12 @@ namespace NetCode
             byte[] bytes = Half.GetBytes(value);
             foreach (byte b in bytes) { data[index++] = b; }
         }
+        public static void WriteByteArray(byte[] data, ref int index, byte[] value)
+        {
+            data[index++] = (byte)value.Length;
+            foreach (byte b in value) { data[index++] = b; }
+        }
+
         public static byte ReadByte(byte[] data, ref int index)
         {
             return data[index++];
@@ -127,6 +133,13 @@ namespace NetCode
         {
             Half value = Half.ToHalf(data, index);
             index += 2; //sizeof(Half);
+            return value;
+        }
+        public static byte[] ReadByteArray(byte[] data, ref int index)
+        {
+            byte length = data[index++];
+            byte[] value = new byte[length];
+            for (int i = 0; i < length; i++) { value[index] = data[index++]; }
             return value;
         }
     }

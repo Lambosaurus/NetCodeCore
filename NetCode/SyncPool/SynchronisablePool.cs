@@ -7,7 +7,7 @@ using NetCode.SyncEntity;
 
 namespace NetCode.SyncPool
 {
-    public class SyncPool
+    public abstract class SyncPool : IBufferable
     {
         const int POOLID_HEADER_SIZE = sizeof(ushort);
 
@@ -36,5 +36,10 @@ namespace NetCode.SyncPool
         {
             PrimitiveSerialiser.WriteUShort(data, ref index, PoolID);
         }
+
+
+        public abstract void WriteToBuffer(byte[] data, ref int index, uint packetID);
+        public abstract int WriteSize();
+        public abstract void ReadFromBuffer(byte[] data, ref int index, uint packetID);
     }
 }

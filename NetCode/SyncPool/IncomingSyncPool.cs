@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 
 using NetCode.SyncEntity;
-using NetCode.Packets;
 
 namespace NetCode.SyncPool
 {
@@ -31,7 +30,7 @@ namespace NetCode.SyncPool
             Handles.Remove(entityID);
         }
 
-        public void ReadFromPacket(byte[] data, ref int index, uint packetID)
+        public override void ReadFromBuffer(byte[] data, ref int index, uint packetID)
         {
             while (index < data.Length)
             {
@@ -57,7 +56,7 @@ namespace NetCode.SyncPool
                 
                 SynchronisableEntity entity = Handles[entityID].sync;
 
-                entity.ReadFromPacket(data, ref index, packetID);
+                entity.ReadFromBuffer(data, ref index, packetID);
             }
         }
 
@@ -67,6 +66,17 @@ namespace NetCode.SyncPool
             {
                 handle.sync.UpdateToLocal(handle.Obj);
             }
+        }
+
+
+        public override void WriteToBuffer(byte[] data, ref int index, uint packetID)
+        {
+            throw new NotImplementedException("IncomingSyncPools may not write");
+        }
+
+        public override int WriteSize()
+        {
+            throw new NotImplementedException("IncomingSyncPools may not write");
         }
     }
 }

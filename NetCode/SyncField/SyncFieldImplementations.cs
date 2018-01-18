@@ -136,4 +136,15 @@ namespace NetCode.SyncField
         protected override void Write(byte[] data, ref int index) { PrimitiveSerialiser.WriteHalf(data, ref index, value); }
         protected override void Read(byte[] data, ref int index) { value = PrimitiveSerialiser.ReadHalf(data, ref index); }
     }
+
+    public class SynchronisableByteArray : SynchronisableField
+    {
+        internal byte[] value;
+        protected override void SetValue(object new_value) { value = (byte[])((byte[])new_value).Clone(); }
+        public override object GetValue() { return value.Clone(); }
+        protected override bool ValueEqual(object new_value) {  return value.SequenceEqual((byte[])new_value); }
+        public override int WriteSize() { return value.Length+1; }
+        protected override void Write(byte[] data, ref int index) { PrimitiveSerialiser.WriteByteArray(data, ref index, value); }
+        protected override void Read(byte[] data, ref int index) { value = PrimitiveSerialiser.ReadByteArray(data, ref index); }
+    }
 }
