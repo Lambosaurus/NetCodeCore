@@ -27,7 +27,7 @@ namespace NetCode.SyncPool
             return POOLID_HEADER_SIZE;
         }
 
-        internal static void ReadHeader(byte[] data, ref int index, out ushort poolID)
+        public static void ReadHeader(byte[] data, ref int index, out ushort poolID)
         {
             poolID = PrimitiveSerialiser.ReadUShort(data, ref index);
         }

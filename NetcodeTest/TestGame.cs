@@ -108,9 +108,9 @@ namespace NetcodeTest
                 int index = 0;
                 outgoingPool.WriteToBuffer( data, ref index, 1 );
 
-                index = 2; // Index = 2, because the poolID should already be parsed at this point
-                // This will be handled by the NetCodeManager, not the user in future.
-                // Packet headers are still TBD
+                index = 0;
+                ushort pool_id;
+                SyncPool.ReadHeader(data, ref index, out pool_id);
                 incomingPool.ReadFromBuffer(data, ref index, 1);
                 incomingPool.UpdateToLocal();
             }
