@@ -16,6 +16,9 @@ namespace NetCode.SyncEntity
 
         SyncFieldGenerator fieldGenerator;
 
+
+        //TODO: We need a way of fingerprinting this class to verify that the other endpoints have
+        //      the same encoding/decoding formatting.
         public SyncEntityGenerator(SyncFieldGenerator _fieldGenerator)
         {
             fieldGenerator = _fieldGenerator;

@@ -5,10 +5,10 @@ using System.Text;
 
 namespace NetCode.SyncField
 {
-    public abstract class SynchronisableField : IBufferable
+    public abstract class SynchronisableField : IVersionable
     {
         public bool Changed { get; private set; } = true; // Defaults to true so value is changed when created
-        public uint LastPacketID { get; private set; } = 0; // Indicates the UUID of the last packet this field was updated in
+        public uint Revision { get; private set; } = 0;
 
         internal void Update(object new_value)
         {
@@ -19,18 +19,18 @@ namespace NetCode.SyncField
             }
         }
 
-        public void WriteToBuffer(byte[] data, ref int index, uint packetID)
+        public void PushToBuffer(byte[] data, ref int index, uint revision)
         {
             Write(data, ref index);
             Changed = false;
-            LastPacketID = packetID;
+            Revision = revision;
         }
 
-        public void ReadFromBuffer(byte[] data, ref int index, uint packetID)
+        public void PullFromBuffer(byte[] data, ref int index, uint revision)
         {
             Read(data, ref index);
             Changed = true;
-            LastPacketID = packetID;
+            Revision = revision;
         }
 
 
@@ -54,20 +54,20 @@ namespace NetCode.SyncField
         /// <summary>
         /// Returns the number of bytes required by Write()
         /// </summary>
-        public abstract int WriteSize();
+        public abstract int PushToBufferSize();
 
         /// <summary>
         /// Writes the Synchronisable value into the packet.
         /// </summary>
         /// <param name="data"> The packet to write to </param>
-        /// <param name="index"> The index to begin writing at. The index will be incremented by the number of bytes written </param>
+        /// <param name="index"> The index to begin writing at. The index shall be incremented by the number of bytes written </param>
         protected abstract void Write(byte[] data, ref int index);
 
         /// <summary>
         /// Reads the Synchronisable value from the packet.
         /// </summary>
         /// <param name="data"> The packet to read from </param>
-        /// <param name="index"> The index to begin reading at. The index will be incremented by the number of bytes written </param>
+        /// <param name="index"> The index to begin reading at. The index shall be incremented by the number of bytes written </param>
         protected abstract void Read(byte[] data, ref int index);
     }
 }

@@ -17,10 +17,10 @@ namespace NetCode
 
     public class SynchronisableAttribute : System.Attribute
     {
-        public SyncFlags flags { get; private set; }
-        public SynchronisableAttribute(SyncFlags _flags = SyncFlags.None)
+        public SyncFlags Flags { get; private set; }
+        public SynchronisableAttribute(SyncFlags flags = SyncFlags.None)
         {
-            flags = _flags;
+            Flags = flags;
         }
     }
 
@@ -40,6 +40,14 @@ namespace NetCode
         {
             fieldGenerator = new SyncFieldGenerator();
             entityGenerator = new SyncEntityGenerator(fieldGenerator);
+        }
+
+
+        uint packetID = 0;
+        internal uint GetNextPacketID()
+        {
+            packetID += 1;
+            return packetID;
         }
 
         

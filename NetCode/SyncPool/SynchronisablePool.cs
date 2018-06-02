@@ -7,19 +7,23 @@ using NetCode.SyncEntity;
 
 namespace NetCode.SyncPool
 {
-    public abstract class SyncPool : IBufferable
+    public abstract class SynchronisablePool : IVersionable
     {
         const int POOLID_HEADER_SIZE = sizeof(ushort);
-
-        public Dictionary<uint, SyncHandle> Handles { get; private set; } = new Dictionary<uint, SyncHandle>();
+        
+        public IEnumerable<SyncHandle> Handles  { get {  return SyncHandles.Values; } }
         public ushort PoolID { get; private set; }
+        public bool Changed { get; protected set; }
+
+        protected Dictionary<uint, SyncHandle> SyncHandles { get; private set; } = new Dictionary<uint, SyncHandle>();
 
         internal SyncEntityGenerator entityGenerator;
 
-        internal SyncPool(SyncEntityGenerator generator, ushort poolID)
+        internal SynchronisablePool(SyncEntityGenerator generator, ushort poolID)
         {
             entityGenerator = generator;
             PoolID = poolID;
+            Changed = false;
         }
         
         protected int HeaderSize()
@@ -38,8 +42,8 @@ namespace NetCode.SyncPool
         }
 
 
-        public abstract void WriteToBuffer(byte[] data, ref int index, uint packetID);
-        public abstract int WriteSize();
-        public abstract void ReadFromBuffer(byte[] data, ref int index, uint packetID);
+        public abstract void PushToBuffer(byte[] data, ref int index, uint revision);
+        public abstract int PushToBufferSize();
+        public abstract void PullFromBuffer(byte[] data, ref int index, uint revisiona);
     }
 }

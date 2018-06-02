@@ -103,16 +103,20 @@ namespace NetcodeTest
             if (++tick >= 60)
             {
                 tick = 0;
-                outgoingPool.UpdateFromLocal();
-                byte[] data = new byte[outgoingPool.WriteSize()];
-                int index = 0;
-                outgoingPool.WriteToBuffer( data, ref index, 1 );
+                outgoingPool.Synchronise();
 
-                index = 0;
-                ushort pool_id;
-                SyncPool.ReadHeader(data, ref index, out pool_id);
-                incomingPool.ReadFromBuffer(data, ref index, 1);
-                incomingPool.UpdateToLocal();
+                if (outgoingPool.Changed)
+                {
+                    byte[] data = new byte[outgoingPool.PushToBufferSize()];
+                    int index = 0;
+                    outgoingPool.PushToBuffer(data, ref index, 1);
+
+                    index = 0;
+                    ushort pool_id;
+                    SynchronisablePool.ReadHeader(data, ref index, out pool_id);
+                    incomingPool.PullFromBuffer(data, ref index, 1);
+                    incomingPool.Synchronise();
+                }
             }
 
 
@@ -128,7 +132,7 @@ namespace NetcodeTest
             
             entity.Draw(spriteBatch);
 
-            foreach (SyncHandle handle in incomingPool.Handles.Values)
+            foreach (SyncHandle handle in incomingPool.Handles)
             {
                 Entity entity = (Entity)(handle.Obj);
                 entity.Draw(spriteBatch);

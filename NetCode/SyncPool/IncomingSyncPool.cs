@@ -7,7 +7,7 @@ using NetCode.SyncEntity;
 
 namespace NetCode.SyncPool
 {
-    public class IncomingSyncPool : SyncPool
+    public class IncomingSyncPool : SynchronisablePool
     {
         internal IncomingSyncPool(SyncEntityGenerator generator, ushort poolID) : base(generator, poolID)
         {
@@ -18,7 +18,7 @@ namespace NetCode.SyncPool
         {
             SyncEntityDescriptor descriptor = entityGenerator.GetEntityDescriptor(typeID);
 
-            Handles[entityID] = new SyncHandle(
+            SyncHandles[entityID] = new SyncHandle(
                 new SynchronisableEntity(descriptor, entityID),
                 descriptor.ConstructObject()
                 );
@@ -26,11 +26,11 @@ namespace NetCode.SyncPool
 
         public void AbandonEntity(uint entityID)
         {
-            Handles[entityID].state = SyncHandle.SyncState.Deleted;
-            Handles.Remove(entityID);
+            SyncHandles[entityID].state = SyncHandle.SyncState.Deleted;
+            SyncHandles.Remove(entityID);
         }
 
-        public override void ReadFromBuffer(byte[] data, ref int index, uint packetID)
+        public override void PullFromBuffer(byte[] data, ref int index, uint revision)
         {
             while (index < data.Length)
             {
@@ -38,11 +38,11 @@ namespace NetCode.SyncPool
                 ushort typeID;
                 SynchronisableEntity.ReadHeader(data, ref index, out entityID, out typeID);
 
-                if ( Handles.ContainsKey(entityID) )
+                if ( SyncHandles.ContainsKey(entityID) )
                 {
                     // If entityID exists, but is incorrect type:
                     // Assume old entity should have been deleted, and replace it
-                    if ( Handles[entityID].sync.TypeID != typeID )
+                    if ( SyncHandles[entityID].sync.TypeID != typeID )
                     {
                         AbandonEntity(entityID);
                         SpawnEntity(entityID, typeID);
@@ -54,27 +54,27 @@ namespace NetCode.SyncPool
                     SpawnEntity(entityID, typeID);
                 }
                 
-                SynchronisableEntity entity = Handles[entityID].sync;
+                SynchronisableEntity entity = SyncHandles[entityID].sync;
 
-                entity.ReadFromBuffer(data, ref index, packetID);
+                entity.PullFromBuffer(data, ref index, revision);
             }
         }
 
-        public void UpdateToLocal()
+        public void Synchronise()
         {
-            foreach (SyncHandle handle in Handles.Values)
+            foreach (SyncHandle handle in SyncHandles.Values)
             {
-                handle.sync.UpdateToLocal(handle.Obj);
+                handle.sync.PushToLocal(handle.Obj);
             }
         }
 
 
-        public override void WriteToBuffer(byte[] data, ref int index, uint packetID)
+        public override void PushToBuffer(byte[] data, ref int index, uint revision)
         {
             throw new NotImplementedException("IncomingSyncPools may not write");
         }
 
-        public override int WriteSize()
+        public override int PushToBufferSize()
         {
             throw new NotImplementedException("IncomingSyncPools may not write");
         }

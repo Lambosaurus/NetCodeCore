@@ -14,6 +14,11 @@ namespace NetCode.SyncField
 
         internal SyncFieldGenerator()
         {
+            RegisterDefaultFieldTypes();
+        }
+
+        private void RegisterDefaultFieldTypes()
+        {
             RegisterFieldType(typeof(SynchronisableEnum), typeof(System.Enum));
             RegisterFieldType(typeof(SynchronisableByte), typeof(byte));
             RegisterFieldType(typeof(SynchronisableShort), typeof(short));

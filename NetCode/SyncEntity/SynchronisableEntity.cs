@@ -7,7 +7,7 @@ using NetCode.SyncField;
 
 namespace NetCode.SyncEntity
 {
-    internal class SynchronisableEntity : IBufferable
+    internal class SynchronisableEntity : IVersionable
     {
         const int ID_HEADER_LENGTH = sizeof(ushort);
         const int TYPEID_HEADER_LENGTH = sizeof(ushort);
@@ -34,7 +34,7 @@ namespace NetCode.SyncEntity
         /// Returns the number of bytes required to write this object into the packet.
         /// This returns 0 if no fields have changed.
         /// </summary>
-        public int WriteSize()
+        public int PushToBufferSize()
         {
             if (!Changed) { return 0; }
 
@@ -43,7 +43,7 @@ namespace NetCode.SyncEntity
             {
                 if (field.Changed)
                 {
-                    size += FIELDID_HEADER_LENGTH + field.WriteSize();
+                    size += FIELDID_HEADER_LENGTH + field.PushToBufferSize();
                 }
             }
             return size;
@@ -55,15 +55,8 @@ namespace NetCode.SyncEntity
             entityID = PrimitiveSerialiser.ReadUShort(data, ref index);
             typeID = PrimitiveSerialiser.ReadUShort(data, ref index);
         }
-
-
-        /// <summary>
-        /// Writes the packet to the given packet.
-        /// This also clears the changed flag.
-        /// </summary>
-        /// <param name="data">The packet to write to</param>
-        /// <param name="index">The index to begin writing to</param>
-        public void WriteToBuffer(byte[] data, ref int index, uint packet_id)
+        
+        public void PushToBuffer(byte[] data, ref int index, uint revision)
         {
             if (!Changed) { return; }
 
@@ -88,25 +81,27 @@ namespace NetCode.SyncEntity
                 {
                     // This MUST be written as a byte.
                     PrimitiveSerialiser.WriteByte(data, ref index, (byte)i);
-                    field.WriteToBuffer(data, ref index, packet_id);
+                    field.PushToBuffer(data, ref index, revision);
                 }
             }
 
             Changed = false;
         }
 
-        public void ReadFromBuffer(byte[] data, ref int index, uint packetID)
+        public void PullFromBuffer(byte[] data, ref int index, uint revision)
         {
             byte fieldCount = PrimitiveSerialiser.ReadByte(data, ref index);
 
             for (int i = 0; i < fieldCount; i++)
             {
+                //TODO: This is unsafe. The field ID may be out or range, and there
+                //      may be insufficient data remaining to call .PullFromBuffer with
                 byte fieldID = PrimitiveSerialiser.ReadByte(data, ref index);
-                fields[fieldID].ReadFromBuffer(data, ref index, packetID);
+                fields[fieldID].PullFromBuffer(data, ref index, revision);
             }
         }
 
-        public void UpdateFromLocal(object obj)
+        public void PullFromLocal(object obj)
         {
             for (int i = 0; i < descriptor.FieldCount; i++)
             {
@@ -116,7 +111,7 @@ namespace NetCode.SyncEntity
             }
         }
 
-        public void UpdateToLocal(object obj)
+        public void PushToLocal(object obj)
         {
             for (int i = 0; i < descriptor.FieldCount; i++)
             {

@@ -28,7 +28,7 @@ namespace NetCode.SyncEntity
                 {
                     if (attribute is SynchronisableAttribute)
                     {
-                        SyncFlags flags = ((SynchronisableAttribute)attribute).flags;
+                        SyncFlags flags = ((SynchronisableAttribute)attribute).Flags;
                         SyncFieldDescriptor descriptor = fieldGenerator.GenerateFieldDescriptor(info, flags);
 
                         fieldDescriptors.Add(descriptor);

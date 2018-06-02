@@ -39,10 +39,13 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Connection\NetworkConnection.cs" />
+    <Compile Include="Connection\UDPConnection.cs" />
+    <Compile Include="Connection\VirtualConnection.cs" />
     <Compile Include="DelegateGenerator.cs" />
-    <Compile Include="IBufferable.cs" />
+    <Compile Include="IVersionable.cs" />
     <Compile Include="NetCode.cs" />
-    <Compile Include="Payload\Packet.cs" />
+    <Compile Include="Packet\Packet.cs" />
     <Compile Include="PrimitiveSerialiser.cs" />
     <Compile Include="SyncEntity\SyncEntityDescriptor.cs" />
     <Compile Include="SyncEntity\SyncEntityGenerator.cs" />

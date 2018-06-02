@@ -11,7 +11,7 @@ namespace NetCode.SyncField
         protected override void SetValue(object new_value) { value = (byte)(int)new_value; }
         public override object GetValue() { return (int)value; }
         protected override bool ValueEqual(object new_value) { return (byte)(int)new_value == value; }
-        public override int WriteSize() { return sizeof(byte); }
+        public override int PushToBufferSize() { return sizeof(byte); }
         protected override void Write(byte[] data, ref int index) { PrimitiveSerialiser.WriteByte(data, ref index, value); }
         protected override void Read(byte[] data, ref int index) { value = PrimitiveSerialiser.ReadByte(data, ref index); }
     }
@@ -22,7 +22,7 @@ namespace NetCode.SyncField
         protected override void SetValue(object new_value) { value = (byte)new_value; }
         public override object GetValue() { return value; }
         protected override bool ValueEqual(object new_value) { return (byte)new_value == value; }
-        public override int WriteSize() { return sizeof(byte); }
+        public override int PushToBufferSize() { return sizeof(byte); }
         protected override void Write(byte[] data, ref int index) { PrimitiveSerialiser.WriteByte(data, ref index, value); }
         protected override void Read(byte[] data, ref int index) { value = PrimitiveSerialiser.ReadByte(data, ref index); }
     }
@@ -33,7 +33,7 @@ namespace NetCode.SyncField
         protected override void SetValue(object new_value) { value = (short)new_value; }
         public override object GetValue() { return value; }
         protected override bool ValueEqual(object new_value) { return (short)new_value == value; }
-        public override int WriteSize() { return sizeof(short); }
+        public override int PushToBufferSize() { return sizeof(short); }
         protected override void Write(byte[] data, ref int index) { PrimitiveSerialiser.WriteShort(data, ref index, value); }
         protected override void Read(byte[] data, ref int index) { value = PrimitiveSerialiser.ReadShort(data, ref index); }
     }
@@ -44,7 +44,7 @@ namespace NetCode.SyncField
         protected override void SetValue(object new_value) { value = (ushort)new_value; }
         public override object GetValue() { return value; }
         protected override bool ValueEqual(object new_value) { return (ushort)new_value == value; }
-        public override int WriteSize() { return sizeof(ushort); }
+        public override int PushToBufferSize() { return sizeof(ushort); }
         protected override void Write(byte[] data, ref int index) { PrimitiveSerialiser.WriteUShort(data, ref index, value); }
         protected override void Read(byte[] data, ref int index) { value = PrimitiveSerialiser.ReadUShort(data, ref index); }
     }
@@ -55,7 +55,7 @@ namespace NetCode.SyncField
         protected override void SetValue(object new_value) { value = (int)new_value; }
         public override object GetValue() { return value; }
         protected override bool ValueEqual(object new_value) { return (int)new_value == value; }
-        public override int WriteSize() { return sizeof(int); }
+        public override int PushToBufferSize() { return sizeof(int); }
         protected override void Write(byte[] data, ref int index) { PrimitiveSerialiser.WriteInt(data, ref index, value); }
         protected override void Read(byte[] data, ref int index) { value = PrimitiveSerialiser.ReadInt(data, ref index); }
     }
@@ -66,7 +66,7 @@ namespace NetCode.SyncField
         protected override void SetValue(object new_value) { value = (uint)new_value; }
         public override object GetValue() { return value; }
         protected override bool ValueEqual(object new_value) { return (uint)new_value == value; }
-        public override int WriteSize() { return sizeof(uint); }
+        public override int PushToBufferSize() { return sizeof(uint); }
         protected override void Write(byte[] data, ref int index) { PrimitiveSerialiser.WriteUInt(data, ref index, value); }
         protected override void Read(byte[] data, ref int index) { value = PrimitiveSerialiser.ReadUInt(data, ref index); }
     }
@@ -77,7 +77,7 @@ namespace NetCode.SyncField
         protected override void SetValue(object new_value) { value = (long)new_value; }
         public override object GetValue() { return value; }
         protected override bool ValueEqual(object new_value) { return (long)new_value == value; }
-        public override int WriteSize() { return sizeof(long); }
+        public override int PushToBufferSize() { return sizeof(long); }
         protected override void Write(byte[] data, ref int index) { PrimitiveSerialiser.WriteLong(data, ref index, value); }
         protected override void Read(byte[] data, ref int index) { value = PrimitiveSerialiser.ReadLong(data, ref index); }
     }
@@ -88,7 +88,7 @@ namespace NetCode.SyncField
         protected override void SetValue(object new_value) { value = (ulong)new_value; }
         public override object GetValue() { return value; }
         protected override bool ValueEqual(object new_value) { return (ulong)new_value == value; }
-        public override int WriteSize() { return sizeof(ulong); }
+        public override int PushToBufferSize() { return sizeof(ulong); }
         protected override void Write(byte[] data, ref int index) { PrimitiveSerialiser.WriteULong(data, ref index, value); }
         protected override void Read(byte[] data, ref int index) { value = PrimitiveSerialiser.ReadULong(data, ref index); }
     }
@@ -99,7 +99,7 @@ namespace NetCode.SyncField
         protected override void SetValue(object new_value) { value = (float)new_value; }
         public override object GetValue() { return value; }
         protected override bool ValueEqual(object new_value) { return (float)new_value == value; }
-        public override int WriteSize() { return sizeof(float); }
+        public override int PushToBufferSize() { return sizeof(float); }
         protected override void Write(byte[] data, ref int index) { PrimitiveSerialiser.WriteFloat(data, ref index, value); }
         protected override void Read(byte[] data, ref int index) { value = PrimitiveSerialiser.ReadFloat(data, ref index); }
     }
@@ -110,7 +110,7 @@ namespace NetCode.SyncField
         protected override void SetValue(object new_value) { value = (double)new_value; }
         public override object GetValue() { return value; }
         protected override bool ValueEqual(object new_value) { return (double)new_value == value; }
-        public override int WriteSize() { return sizeof(double); }
+        public override int PushToBufferSize() { return sizeof(double); }
         protected override void Write(byte[] data, ref int index) { PrimitiveSerialiser.WriteDouble(data, ref index, value); }
         protected override void Read(byte[] data, ref int index) { value = PrimitiveSerialiser.ReadDouble(data, ref index); }
     }
@@ -121,7 +121,7 @@ namespace NetCode.SyncField
         protected override void SetValue(object new_value) { value = (string)new_value; }
         public override object GetValue() { return value; }
         protected override bool ValueEqual(object new_value) { return (string)new_value == value; }
-        public override int WriteSize() { return value.Length + 1; }
+        public override int PushToBufferSize() { return value.Length + 1; }
         protected override void Write(byte[] data, ref int index) { PrimitiveSerialiser.WriteString(data, ref index, value); }
         protected override void Read(byte[] data, ref int index) { value = PrimitiveSerialiser.ReadString(data, ref index); }
     }
@@ -132,7 +132,7 @@ namespace NetCode.SyncField
         protected override void SetValue(object new_value) { value = (Half)((float)new_value); }
         public override object GetValue() { return value; }
         protected override bool ValueEqual(object new_value) { return (Half)((float)new_value) == value; }
-        public override int WriteSize() { return 2; }
+        public override int PushToBufferSize() { return 2; }
         protected override void Write(byte[] data, ref int index) { PrimitiveSerialiser.WriteHalf(data, ref index, value); }
         protected override void Read(byte[] data, ref int index) { value = PrimitiveSerialiser.ReadHalf(data, ref index); }
     }
@@ -143,7 +143,7 @@ namespace NetCode.SyncField
         protected override void SetValue(object new_value) { value = (byte[])((byte[])new_value).Clone(); }
         public override object GetValue() { return value.Clone(); }
         protected override bool ValueEqual(object new_value) {  return value.SequenceEqual((byte[])new_value); }
-        public override int WriteSize() { return value.Length+1; }
+        public override int PushToBufferSize() { return value.Length+1; }
         protected override void Write(byte[] data, ref int index) { PrimitiveSerialiser.WriteByteArray(data, ref index, value); }
         protected override void Read(byte[] data, ref int index) { value = PrimitiveSerialiser.ReadByteArray(data, ref index); }
     }
