@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework.Media;
 
 using NetCode;
 using NetCode.SyncPool;
+using NetCode.Packet;
 
 namespace NetcodeTest
 {
@@ -107,14 +108,15 @@ namespace NetcodeTest
 
                 if (outgoingPool.Changed)
                 {
-                    byte[] data = new byte[outgoingPool.PushToBufferSize()];
-                    int index = 0;
-                    outgoingPool.PushToBuffer(data, ref index, 1);
+                    Packet packet = new Packet();
+                    PoolRevisionDatagram datagram = outgoingPool.GenerateRevisionDatagram();
+                    packet.Datagrams.Add(datagram);
+                    byte[] data = packet.Encode();
 
-                    index = 0;
-                    ushort pool_id;
-                    SynchronisablePool.ReadHeader(data, ref index, out pool_id);
-                    incomingPool.PullFromBuffer(data, ref index, 1);
+
+                    packet = Packet.Decode(data);
+                    datagram = (PoolRevisionDatagram)packet.Datagrams[0];
+                    incomingPool.UnpackRevisionDatagram(datagram);
                     incomingPool.Synchronise();
                 }
             }

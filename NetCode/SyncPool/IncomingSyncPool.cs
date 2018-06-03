@@ -30,13 +30,14 @@ namespace NetCode.SyncPool
             SyncHandles.Remove(entityID);
         }
 
-        public override void PullFromBuffer(byte[] data, ref int index, uint revision)
+        public void UnpackRevisionDatagram(PoolRevisionDatagram datagram)
         {
-            while (index < data.Length)
+            int end = datagram.Start + datagram.Size;
+            while (datagram.Index < end)
             {
                 uint entityID;
                 ushort typeID;
-                SynchronisableEntity.ReadHeader(data, ref index, out entityID, out typeID);
+                SynchronisableEntity.ReadHeader(datagram.Data, ref datagram.Index, out entityID, out typeID);
 
                 if ( SyncHandles.ContainsKey(entityID) )
                 {
@@ -56,7 +57,7 @@ namespace NetCode.SyncPool
                 
                 SynchronisableEntity entity = SyncHandles[entityID].sync;
 
-                entity.PullFromBuffer(data, ref index, revision);
+                entity.PullFromBuffer(datagram.Data, ref datagram.Index, datagram.Revision);
             }
         }
 
@@ -66,17 +67,6 @@ namespace NetCode.SyncPool
             {
                 handle.sync.PushToLocal(handle.Obj);
             }
-        }
-
-
-        public override void PushToBuffer(byte[] data, ref int index, uint revision)
-        {
-            throw new NotImplementedException("IncomingSyncPools may not write");
-        }
-
-        public override int PushToBufferSize()
-        {
-            throw new NotImplementedException("IncomingSyncPools may not write");
         }
     }
 }

@@ -52,8 +52,8 @@ namespace NetCode.SyncEntity
 
         public static void ReadHeader(byte[] data, ref int index, out uint entityID, out ushort typeID)
         {
-            entityID = PrimitiveSerialiser.ReadUShort(data, ref index);
-            typeID = PrimitiveSerialiser.ReadUShort(data, ref index);
+            entityID = Primitives.ReadUShort(data, ref index);
+            typeID = Primitives.ReadUShort(data, ref index);
         }
         
         public void PushToBuffer(byte[] data, ref int index, uint revision)
@@ -69,10 +69,10 @@ namespace NetCode.SyncEntity
                 }
             }
 
-            PrimitiveSerialiser.WriteUShort(data, ref index, (ushort)EntityID);
-            PrimitiveSerialiser.WriteUShort(data, ref index, descriptor.TypeID);
+            Primitives.WriteUShort(data, ref index, (ushort)EntityID);
+            Primitives.WriteUShort(data, ref index, descriptor.TypeID);
 
-            PrimitiveSerialiser.WriteByte(data, ref index, changed_fields);
+            Primitives.WriteByte(data, ref index, changed_fields);
 
             for (byte i = 0; i < descriptor.FieldCount; i++)
             {
@@ -80,7 +80,7 @@ namespace NetCode.SyncEntity
                 if (field.Changed)
                 {
                     // This MUST be written as a byte.
-                    PrimitiveSerialiser.WriteByte(data, ref index, (byte)i);
+                    Primitives.WriteByte(data, ref index, (byte)i);
                     field.PushToBuffer(data, ref index, revision);
                 }
             }
@@ -90,13 +90,13 @@ namespace NetCode.SyncEntity
 
         public void PullFromBuffer(byte[] data, ref int index, uint revision)
         {
-            byte fieldCount = PrimitiveSerialiser.ReadByte(data, ref index);
+            byte fieldCount = Primitives.ReadByte(data, ref index);
 
             for (int i = 0; i < fieldCount; i++)
             {
                 //TODO: This is unsafe. The field ID may be out or range, and there
                 //      may be insufficient data remaining to call .PullFromBuffer with
-                byte fieldID = PrimitiveSerialiser.ReadByte(data, ref index);
+                byte fieldID = Primitives.ReadByte(data, ref index);
                 fields[fieldID].PullFromBuffer(data, ref index, revision);
             }
         }

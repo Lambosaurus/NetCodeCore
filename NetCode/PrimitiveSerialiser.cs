@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace NetCode
 {
-    public static class PrimitiveSerialiser
+    public static class Primitives
     {
         public static void WriteByte(byte[] data, ref int index, byte value)
         {

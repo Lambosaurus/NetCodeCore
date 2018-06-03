@@ -8,7 +8,7 @@ using NetCode.Packet;
 
 namespace NetCode.SyncPool
 {
-    public class OutgoingSyncPool : SynchronisablePool, IVersionable
+    public class OutgoingSyncPool : SynchronisablePool
     {
         const uint MAX_POOL_OBJECTS = ushort.MaxValue;
 
@@ -80,47 +80,25 @@ namespace NetCode.SyncPool
 
         public PoolRevisionDatagram GenerateRevisionDatagram()
         {
-            //TODO: Finish this.
             uint revision = GetNewRevision();
-            PoolRevisionDatagram datagram = new PoolRevisionDatagram(PoolID, revision);
 
-            byte[] data = new byte[PushToBufferSize()];
-            int index = 0;
-            PushToBuffer(data, ref index, revision);
-
-            datagram.data = data;
-
-            return datagram;
-        }
-
-        public override int PushToBufferSize()
-        {
-            //TODO: can possibly return a constant value here which is updated by Synchronise
-            //      However, that possibly relies on Synchronisation and calls to PushToBuffer
-            //      being in step.
-            int size = HeaderSize();
+            int size = 0;
             foreach (SyncHandle handle in SyncHandles.Values)
             {
                 size += handle.sync.PushToBufferSize();
             }
-            return size;
-        }
 
-        public override void PushToBuffer(byte[] data, ref int index, uint revision)
-        {
-            WriteHeader(data, ref index);
+            PoolRevisionDatagram datagram = new PoolRevisionDatagram(PoolID, revision);
+            datagram.AllocateContent(size);
 
             foreach (SyncHandle handle in SyncHandles.Values)
             {
-                handle.sync.PushToBuffer(data, ref index, revision);
+                handle.sync.PushToBuffer(datagram.Data, ref datagram.Index, revision);
             }
 
             Changed = false;
-        }
-        
-        public override void PullFromBuffer(byte[] data, ref int index, uint revision)
-        {
-            throw new NotImplementedException("OutgoingSyncPools may not read");
+            
+            return datagram;
         }
     }
 }
