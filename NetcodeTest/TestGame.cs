@@ -10,7 +10,7 @@ using Microsoft.Xna.Framework.Media;
 
 using NetCode;
 using NetCode.SyncPool;
-using NetCode.Payloads;
+using NetCode.Packing;
 
 namespace NetcodeTest
 {

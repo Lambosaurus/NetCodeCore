@@ -28,13 +28,13 @@ namespace NetcodeTest
         public override int PushToBufferSize() { return sizeof(float) * 2; }
         protected override void Write(byte[] data, ref int index)
         {
-            Primitives.WriteFloat(data, ref index, value.X);
-            Primitives.WriteFloat(data, ref index, value.Y);
+            Primitive.WriteFloat(data, ref index, value.X);
+            Primitive.WriteFloat(data, ref index, value.Y);
         }
         protected override void Read(byte[] data, ref int index)
         {
-            value.X = Primitives.ReadFloat(data, ref index);
-            value.Y = Primitives.ReadFloat(data, ref index);
+            value.X = Primitive.ReadFloat(data, ref index);
+            value.Y = Primitive.ReadFloat(data, ref index);
         }
     }
 
@@ -57,13 +57,13 @@ namespace NetcodeTest
         public override int PushToBufferSize() { return 4; }
         protected override void Write(byte[] data, ref int index)
         {
-            Primitives.WriteHalf(data, ref index, x);
-            Primitives.WriteHalf(data, ref index, y);
+            Primitive.WriteHalf(data, ref index, x);
+            Primitive.WriteHalf(data, ref index, y);
         }
         protected override void Read(byte[] data, ref int index)
         {
-            x = Primitives.ReadHalf(data, ref index);
-            y = Primitives.ReadHalf(data, ref index);
+            x = Primitive.ReadHalf(data, ref index);
+            y = Primitive.ReadHalf(data, ref index);
         }
     }
 }

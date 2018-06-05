@@ -12,6 +12,7 @@ namespace NetCode
     
     public class NetcodeOverloadedException : Exception
     {
+        //TODO: Once I start nailing down the interface, I should make some real exceptions.
         public NetcodeOverloadedException(string message) : base(message) { }
     }
 

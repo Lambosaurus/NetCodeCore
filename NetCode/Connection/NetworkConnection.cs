@@ -5,7 +5,7 @@ using System.Text;
 
 using System.Diagnostics;
 
-using NetCode.Payloads;
+using NetCode.Packing;
 
 namespace NetCode.Connection
 {

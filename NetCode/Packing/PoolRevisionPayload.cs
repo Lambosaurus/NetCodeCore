@@ -5,7 +5,7 @@ using System.Text;
 
 using NetCode.SyncPool;
 
-namespace NetCode.Payloads
+namespace NetCode.Packing
 {
     public class PoolRevisionPayload : Payload
     {
@@ -24,20 +24,25 @@ namespace NetCode.Payloads
         
         public override void WriteContentHeader()
         {
-            Primitives.WriteUShort(Data, ref Index, PoolID);
-            Primitives.WriteUInt(Data, ref Index, Revision);
+            Primitive.WriteUShort(Data, ref Index, PoolID);
+            Primitive.WriteUInt(Data, ref Index, Revision);
         }
 
         public override void ReadContentHeader()
         {
-            PoolID = Primitives.ReadUShort(Data, ref Index);
-            Revision = Primitives.ReadUInt(Data, ref Index);
+            PoolID = Primitive.ReadUShort(Data, ref Index);
+            Revision = Primitive.ReadUInt(Data, ref Index);
         }
 
         public override int ContentHeaderSize()
         {
             return sizeof(ushort) + sizeof(uint);
         }
-        
+
+        public override bool AcknowledgementRequired()
+        {
+            return true;
+        }
+
     }
 }

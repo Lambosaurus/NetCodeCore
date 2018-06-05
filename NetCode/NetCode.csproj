@@ -45,8 +45,9 @@
     <Compile Include="DelegateGenerator.cs" />
     <Compile Include="IVersionable.cs" />
     <Compile Include="NetCode.cs" />
-    <Compile Include="Payload\Datagram.cs" />
-    <Compile Include="Payload\Packet.cs" />
+    <Compile Include="Packing\Payload.cs" />
+    <Compile Include="Packing\Packet.cs" />
+    <Compile Include="Packing\PacketAckPayload.cs" />
     <Compile Include="Primitives.cs" />
     <Compile Include="SyncEntity\SyncEntityDescriptor.cs" />
     <Compile Include="SyncEntity\SyncEntityGenerator.cs" />
@@ -56,7 +57,7 @@
     <Compile Include="SyncField\SyncFieldImplementations.cs" />
     <Compile Include="SynchronisableAttribute.cs" />
     <Compile Include="SyncField\SynchronisableField.cs" />
-    <Compile Include="Payload\PoolRevisionPayload.cs" />
+    <Compile Include="Packing\PoolRevisionPayload.cs" />
     <Compile Include="SyncPool\SyncHandle.cs" />
     <Compile Include="SyncPool\SynchronisablePool.cs" />
     <Compile Include="SyncPool\IncomingSyncPool.cs" />

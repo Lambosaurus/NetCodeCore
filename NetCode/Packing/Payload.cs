@@ -3,40 +3,42 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NetCode.Payloads
+namespace NetCode.Packing
 {
     public abstract class Payload
     {
-        public enum PayloadType { None, PoolRevision }
-        public PayloadType Type;
+        public enum PayloadType { None, PacketAck, PoolRevision }
+        internal PayloadType Type;
 
         internal byte[] Data;
         internal int Size;
         internal int Start;
         internal int Index;
 
+        public const int PAYLOAD_HEADER_SIZE = sizeof(ushort) + sizeof(byte);
+
+        public abstract void WriteContentHeader();
+        public abstract void ReadContentHeader();
+        public abstract int ContentHeaderSize();
+        public abstract bool AcknowledgementRequired();
+
+
         public Payload(PayloadType type)
         {
             Type = type;
         }
         
-        public const int PAYLOAD_HEADER_SIZE = sizeof(ushort) + sizeof(byte);
-    
         public void WritePayloadHeader()
         {
-            Primitives.WriteByte(Data, ref Index, (byte)Type);
-            Primitives.WriteUShort(Data, ref Index, (ushort)Size);
+            Primitive.WriteByte(Data, ref Index, (byte)Type);
+            Primitive.WriteUShort(Data, ref Index, (ushort)Size);
         }
         
         private static void ReadPayloadHeader( byte[] data, ref int index, out PayloadType payloadType, out int size )
         {
-            payloadType = (PayloadType)Primitives.ReadByte(data, ref index);
-            size = Primitives.ReadUShort(data, ref index);
+            payloadType = (PayloadType)Primitive.ReadByte(data, ref index);
+            size = Primitive.ReadUShort(data, ref index);
         }
-
-        public abstract void WriteContentHeader();
-        public abstract void ReadContentHeader();
-        public abstract int ContentHeaderSize();
         
         public void AllocateContent(int contentSize)
         {

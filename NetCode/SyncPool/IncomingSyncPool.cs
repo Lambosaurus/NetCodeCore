@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 
 using NetCode.SyncEntity;
-using NetCode.Payloads;
+using NetCode.Packing;
 
 namespace NetCode.SyncPool
 {

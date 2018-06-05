@@ -29,5 +29,15 @@ namespace NetCode
         /// <param name="index">The index to begin reading from. This value will be incremented by the number of bytes read</param>
         /// <param name="revision">The revision number describing the change.</param>
         void PullFromBuffer(byte[] data, ref int index, uint revision);
+
+        /// <summary>
+        /// Indicates whether the variable has been changed.
+        /// </summary>
+        bool Changed { get; }
+
+        /// <summary>
+        /// The current revision number this variable was last updated at.
+        /// </summary>
+        uint Revision { get; }
     }
 }

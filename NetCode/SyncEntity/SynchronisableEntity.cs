@@ -18,10 +18,10 @@ namespace NetCode.SyncEntity
         private SynchronisableField[] fields;
 
         public bool Changed { get; private set; } = true;
+        public uint Revision { get; private set; } = 0;
         public uint EntityID { get; private set; }
         public ushort TypeID { get { return descriptor.TypeID; } }
-
-
+        
         internal SynchronisableEntity(SyncEntityDescriptor _descriptor, uint entityID)
         {
             descriptor = _descriptor;
@@ -52,8 +52,8 @@ namespace NetCode.SyncEntity
 
         public static void ReadHeader(byte[] data, ref int index, out uint entityID, out ushort typeID)
         {
-            entityID = Primitives.ReadUShort(data, ref index);
-            typeID = Primitives.ReadUShort(data, ref index);
+            entityID = Primitive.ReadUShort(data, ref index);
+            typeID = Primitive.ReadUShort(data, ref index);
         }
         
         public void PushToBuffer(byte[] data, ref int index, uint revision)
@@ -69,10 +69,10 @@ namespace NetCode.SyncEntity
                 }
             }
 
-            Primitives.WriteUShort(data, ref index, (ushort)EntityID);
-            Primitives.WriteUShort(data, ref index, descriptor.TypeID);
+            Primitive.WriteUShort(data, ref index, (ushort)EntityID);
+            Primitive.WriteUShort(data, ref index, descriptor.TypeID);
 
-            Primitives.WriteByte(data, ref index, changed_fields);
+            Primitive.WriteByte(data, ref index, changed_fields);
 
             for (byte i = 0; i < descriptor.FieldCount; i++)
             {
@@ -80,25 +80,28 @@ namespace NetCode.SyncEntity
                 if (field.Changed)
                 {
                     // This MUST be written as a byte.
-                    Primitives.WriteByte(data, ref index, (byte)i);
+                    Primitive.WriteByte(data, ref index, (byte)i);
                     field.PushToBuffer(data, ref index, revision);
                 }
             }
 
+            Revision = revision;
             Changed = false;
         }
 
         public void PullFromBuffer(byte[] data, ref int index, uint revision)
         {
-            byte fieldCount = Primitives.ReadByte(data, ref index);
+            byte fieldCount = Primitive.ReadByte(data, ref index);
 
             for (int i = 0; i < fieldCount; i++)
             {
                 //TODO: This is unsafe. The field ID may be out or range, and there
                 //      may be insufficient data remaining to call .PullFromBuffer with
-                byte fieldID = Primitives.ReadByte(data, ref index);
+                byte fieldID = Primitive.ReadByte(data, ref index);
                 fields[fieldID].PullFromBuffer(data, ref index, revision);
             }
+
+            Revision = revision;
         }
 
         public void PullFromLocal(object obj)

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 
 using NetCode.SyncEntity;
-using NetCode.Payloads;
+using NetCode.Packing;
 
 namespace NetCode.SyncPool
 {
@@ -58,8 +58,9 @@ namespace NetCode.SyncPool
         {
             Changed = true;
 
+            SyncEntityDescriptor descriptor = entityGenerator.GetEntityDescriptor(instance.GetType().TypeHandle);
             SyncHandle handle = new SyncHandle(
-                new SynchronisableEntity(entityGenerator.GetEntityDescriptor(instance.GetType().TypeHandle), GetNewObjectId()),
+                new SynchronisableEntity(descriptor, GetNewObjectId()),
                 instance
                 );
 
@@ -80,6 +81,8 @@ namespace NetCode.SyncPool
 
         public PoolRevisionPayload GenerateRevisionDatagram()
         {
+            if (!Changed) { return null; }
+
             uint revision = GetNewRevision();
 
             int size = 0;

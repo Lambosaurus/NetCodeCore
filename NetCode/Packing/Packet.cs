@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NetCode.Payloads
+namespace NetCode.Packing
 {
     public class Packet
     {
@@ -22,12 +22,12 @@ namespace NetCode.Payloads
 
         private void WritePacketHeader(byte[] data, ref int index)
         {
-            Primitives.WriteUInt(data, ref index, PacketID);
+            Primitive.WriteUInt(data, ref index, PacketID);
         }
 
         private static void ReadPacketHeader(byte[] data, ref int index, out uint packetID)
         {
-            packetID = Primitives.ReadUInt(data, ref index);
+            packetID = Primitive.ReadUInt(data, ref index);
         }
         
         public byte[] Encode()
