@@ -22,7 +22,7 @@ namespace NetCode.SyncEntity
             TypeID = typeID;
             Constructor = DelegateGenerator.GenerateConstructor(entityType);
 
-            foreach (FieldInfo info in entityType.GetFields())
+            foreach (FieldInfo info in entityType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
             {
                 foreach (object attribute in info.GetCustomAttributes(true))
                 {

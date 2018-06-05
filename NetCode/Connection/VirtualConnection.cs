@@ -20,5 +20,6 @@ namespace NetCode.Connection
         {
             endpoint.recievebuffer.Add(data);
         }
+
     }
 }

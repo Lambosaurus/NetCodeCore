@@ -18,7 +18,7 @@ namespace NetcodeTest
         [Synchronisable]
         public ColorNo color;
         [Synchronisable]
-        public Vector2 position;
+        private Vector2 position;
         
         public Vector2 velocity;
         
