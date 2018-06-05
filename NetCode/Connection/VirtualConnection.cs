@@ -15,5 +15,10 @@ namespace NetCode.Connection
             endpoint = otherEndpoint;
             otherEndpoint.endpoint = this;
         }
+        
+        protected override void Send(byte[] data)
+        {
+            endpoint.recievebuffer.Add(data);
+        }
     }
 }

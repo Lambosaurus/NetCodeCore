@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 
 using NetCode.SyncEntity;
-using NetCode.Packet;
+using NetCode.Payloads;
 
 namespace NetCode.SyncPool
 {
@@ -78,7 +78,7 @@ namespace NetCode.SyncPool
         }
         
 
-        public PoolRevisionDatagram GenerateRevisionDatagram()
+        public PoolRevisionPayload GenerateRevisionDatagram()
         {
             uint revision = GetNewRevision();
 
@@ -88,17 +88,17 @@ namespace NetCode.SyncPool
                 size += handle.sync.PushToBufferSize();
             }
 
-            PoolRevisionDatagram datagram = new PoolRevisionDatagram(PoolID, revision);
-            datagram.AllocateContent(size);
+            PoolRevisionPayload payload = new PoolRevisionPayload(PoolID, revision);
+            payload.AllocateContent(size);
 
             foreach (SyncHandle handle in SyncHandles.Values)
             {
-                handle.sync.PushToBuffer(datagram.Data, ref datagram.Index, revision);
+                handle.sync.PushToBuffer(payload.Data, ref payload.Index, revision);
             }
 
             Changed = false;
             
-            return datagram;
+            return payload;
         }
     }
 }

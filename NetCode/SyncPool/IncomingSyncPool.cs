@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using NetCode.SyncEntity;
+using NetCode.Payloads;
 
 namespace NetCode.SyncPool
 {
@@ -30,14 +31,14 @@ namespace NetCode.SyncPool
             SyncHandles.Remove(entityID);
         }
 
-        public void UnpackRevisionDatagram(PoolRevisionDatagram datagram)
+        public void UnpackRevisionDatagram(PoolRevisionPayload payload)
         {
-            int end = datagram.Start + datagram.Size;
-            while (datagram.Index < end)
+            int end = payload.Start + payload.Size;
+            while (payload.Index < end)
             {
                 uint entityID;
                 ushort typeID;
-                SynchronisableEntity.ReadHeader(datagram.Data, ref datagram.Index, out entityID, out typeID);
+                SynchronisableEntity.ReadHeader(payload.Data, ref payload.Index, out entityID, out typeID);
 
                 if ( SyncHandles.ContainsKey(entityID) )
                 {
@@ -57,7 +58,7 @@ namespace NetCode.SyncPool
                 
                 SynchronisableEntity entity = SyncHandles[entityID].sync;
 
-                entity.PullFromBuffer(datagram.Data, ref datagram.Index, datagram.Revision);
+                entity.PullFromBuffer(payload.Data, ref payload.Index, payload.Revision);
             }
         }
 

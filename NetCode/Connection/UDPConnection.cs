@@ -7,5 +7,8 @@ namespace NetCode.Connection
 {
     public class UDPConnection : NetworkConnection
     {
+        protected override void Send(byte[] data)
+        {
+        }
     }
 }

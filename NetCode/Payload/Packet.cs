@@ -1,0 +1,82 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace NetCode.Payloads
+{
+    public class Packet
+    {
+        public List<Payload> Payloads { get; private set; }
+
+        public bool DecodingError { get; private set; } = false;
+        public uint PacketID { get; private set; }
+
+        const int PACKET_HEADER_SIZE = sizeof(uint);
+
+        public Packet(uint packetID)
+        {
+            PacketID = packetID;
+            Payloads = new List<Payload>();
+        }
+
+        private void WritePacketHeader(byte[] data, ref int index)
+        {
+            Primitives.WriteUInt(data, ref index, PacketID);
+        }
+
+        private static void ReadPacketHeader(byte[] data, ref int index, out uint packetID)
+        {
+            packetID = Primitives.ReadUInt(data, ref index);
+        }
+        
+        public byte[] Encode()
+        {
+            int size = PACKET_HEADER_SIZE;
+            foreach (Payload payload in Payloads)
+            {
+                size += payload.Size;
+            }
+
+            int index = 0;
+            byte[] data = new byte[size];
+
+            WritePacketHeader(data, ref index);
+
+            foreach (Payload payload in Payloads)
+            {
+                payload.CopyContent(data, ref index);
+                payload.ClearContent();
+            }
+
+            return data;
+        }
+        
+        
+        public static Packet Decode(byte[] data)
+        {
+            int index = 0;
+            int length = data.Length;
+
+            ReadPacketHeader(data, ref index, out uint packetID);
+            Packet packet = new Packet(packetID);
+            
+            while (index + Payload.PAYLOAD_HEADER_SIZE < length)
+            {
+                Payload payload = Payload.Decode(data, ref index);
+                if (payload == null)
+                {
+                    break;
+                }
+                packet.Payloads.Add(payload);
+            }
+
+            if (index != length)
+            {
+                packet.DecodingError = true;
+            }
+
+            return packet;
+        }
+    }
+}

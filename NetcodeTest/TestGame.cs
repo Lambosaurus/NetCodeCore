@@ -10,7 +10,7 @@ using Microsoft.Xna.Framework.Media;
 
 using NetCode;
 using NetCode.SyncPool;
-using NetCode.Packet;
+using NetCode.Payloads;
 
 namespace NetcodeTest
 {
@@ -104,24 +104,23 @@ namespace NetcodeTest
             if (++tick >= 60)
             {
                 tick = 0;
-                outgoingPool.Synchronise();
 
+                outgoingPool.Synchronise();
                 if (outgoingPool.Changed)
                 {
-                    Packet packet = new Packet();
-                    PoolRevisionDatagram datagram = outgoingPool.GenerateRevisionDatagram();
-                    packet.Datagrams.Add(datagram);
+                    Packet packet = new Packet(0);
+                    PoolRevisionPayload payload = outgoingPool.GenerateRevisionDatagram();
+                    packet.Payloads.Add(payload);
                     byte[] data = packet.Encode();
 
 
                     packet = Packet.Decode(data);
-                    datagram = (PoolRevisionDatagram)packet.Datagrams[0];
-                    incomingPool.UnpackRevisionDatagram(datagram);
+                    payload = (PoolRevisionPayload)packet.Payloads[0];
+                    incomingPool.UnpackRevisionDatagram(payload);
                     incomingPool.Synchronise();
                 }
             }
-
-
+            
             lastKeys = keys;
             base.Update(gameTime);
         }

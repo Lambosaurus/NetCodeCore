@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using NetCode.Packet;
+using NetCode.SyncPool;
 
-namespace NetCode.SyncPool
+namespace NetCode.Payloads
 {
-    public class PoolRevisionDatagram : Datagram
+    public class PoolRevisionPayload : Payload
     {
         public ushort PoolID { get; protected set; }
         public uint Revision { get; protected set; }
 
-        public PoolRevisionDatagram() : base(Datatype.PoolRevision)
+        public PoolRevisionPayload() : base(PayloadType.PoolRevision)
         {
         }
 
-        public PoolRevisionDatagram(ushort poolID, uint revision) : base(Datatype.PoolRevision)
+        public PoolRevisionPayload(ushort poolID, uint revision) : base(PayloadType.PoolRevision)
         {
             PoolID = poolID;
             Revision = revision;
