@@ -33,12 +33,12 @@ namespace NetCode.SyncPool
 
         public void UnpackRevisionDatagram(PoolRevisionPayload payload)
         {
-            int end = payload.Start + payload.Size;
-            while (payload.Index < end)
+            int end = payload.DataStart + payload.Size;
+            while (payload.DataIndex < end)
             {
                 uint entityID;
                 ushort typeID;
-                SynchronisableEntity.ReadHeader(payload.Data, ref payload.Index, out entityID, out typeID);
+                SynchronisableEntity.ReadHeader(payload.Data, ref payload.DataIndex, out entityID, out typeID);
 
                 if ( SyncHandles.ContainsKey(entityID) )
                 {
@@ -58,7 +58,7 @@ namespace NetCode.SyncPool
                 
                 SynchronisableEntity entity = SyncHandles[entityID].sync;
 
-                entity.PullFromBuffer(payload.Data, ref payload.Index, payload.Revision);
+                entity.ReadFromBuffer(payload.Data, ref payload.DataIndex, payload.Revision);
             }
         }
 

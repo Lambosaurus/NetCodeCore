@@ -52,6 +52,17 @@ namespace NetCode.Packing
             return data;
         }
         
+        public bool RequiresAcknowledgement()
+        {
+            foreach (Payload payload in Payloads)
+            {
+                if (payload.AcknowledgementRequired())
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
         
         public static Packet Decode(byte[] data)
         {

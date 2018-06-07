@@ -12,11 +12,13 @@ namespace NetCode.Packing
         public ushort PoolID { get; protected set; }
         public uint Revision { get; protected set; }
 
-        public PoolRevisionPayload() : base(PayloadType.PoolRevision)
+        public override PayloadType Type { get { return PayloadType.PoolRevision; } }
+
+        public PoolRevisionPayload()
         {
         }
 
-        public PoolRevisionPayload(ushort poolID, uint revision) : base(PayloadType.PoolRevision)
+        public PoolRevisionPayload(ushort poolID, uint revision)
         {
             PoolID = poolID;
             Revision = revision;
@@ -24,14 +26,14 @@ namespace NetCode.Packing
         
         public override void WriteContentHeader()
         {
-            Primitive.WriteUShort(Data, ref Index, PoolID);
-            Primitive.WriteUInt(Data, ref Index, Revision);
+            Primitive.WriteUShort(Data, ref DataIndex, PoolID);
+            Primitive.WriteUInt(Data, ref DataIndex, Revision);
         }
 
         public override void ReadContentHeader()
         {
-            PoolID = Primitive.ReadUShort(Data, ref Index);
-            Revision = Primitive.ReadUInt(Data, ref Index);
+            PoolID = Primitive.ReadUShort(Data, ref DataIndex);
+            Revision = Primitive.ReadUInt(Data, ref DataIndex);
         }
 
         public override int ContentHeaderSize()

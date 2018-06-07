@@ -34,7 +34,7 @@ namespace NetCode.SyncEntity
         /// Returns the number of bytes required to write this object into the packet.
         /// This returns 0 if no fields have changed.
         /// </summary>
-        public int PushToBufferSize()
+        public int WriteToBufferSize()
         {
             if (!Changed) { return 0; }
 
@@ -43,7 +43,7 @@ namespace NetCode.SyncEntity
             {
                 if (field.Changed)
                 {
-                    size += FIELDID_HEADER_LENGTH + field.PushToBufferSize();
+                    size += FIELDID_HEADER_LENGTH + field.WriteToBufferSize();
                 }
             }
             return size;
@@ -56,7 +56,7 @@ namespace NetCode.SyncEntity
             typeID = Primitive.ReadUShort(data, ref index);
         }
         
-        public void PushToBuffer(byte[] data, ref int index, uint revision)
+        public void WriteToBuffer(byte[] data, ref int index, uint revision)
         {
             if (!Changed) { return; }
 
@@ -81,7 +81,7 @@ namespace NetCode.SyncEntity
                 {
                     // This MUST be written as a byte.
                     Primitive.WriteByte(data, ref index, (byte)i);
-                    field.PushToBuffer(data, ref index, revision);
+                    field.WriteToBuffer(data, ref index, revision);
                 }
             }
 
@@ -89,7 +89,7 @@ namespace NetCode.SyncEntity
             Changed = false;
         }
 
-        public void PullFromBuffer(byte[] data, ref int index, uint revision)
+        public void ReadFromBuffer(byte[] data, ref int index, uint revision)
         {
             byte fieldCount = Primitive.ReadByte(data, ref index);
 
@@ -98,7 +98,7 @@ namespace NetCode.SyncEntity
                 //TODO: This is unsafe. The field ID may be out or range, and there
                 //      may be insufficient data remaining to call .PullFromBuffer with
                 byte fieldID = Primitive.ReadByte(data, ref index);
-                fields[fieldID].PullFromBuffer(data, ref index, revision);
+                fields[fieldID].ReadFromBuffer(data, ref index, revision);
             }
 
             Revision = revision;

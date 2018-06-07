@@ -33,16 +33,13 @@ namespace NetCode.SyncField
             RegisterFieldType(typeof(SynchronisableHalf), typeof(float), SyncFlags.HalfPrecisionFloats);
         }
 
-        internal SyncFieldDescriptor GenerateFieldDescriptor(FieldInfo fieldInfo, SyncFlags syncFlags)
+        internal Func<object> LookupConstructorForSyncField(Type type, SyncFlags syncFlags)
         {
-            Type type = fieldInfo.FieldType;
-
             if (type.BaseType == typeof(System.Enum))
             {
                 type = typeof(System.Enum);
             }
             RuntimeTypeHandle typeHandle = type.TypeHandle;
-
 
             Func<object> constructor = null;
 
@@ -66,10 +63,27 @@ namespace NetCode.SyncField
                 }
             }
 
-            return new SyncFieldDescriptor(
-                constructor,
+            return constructor;
+
+        }
+
+        internal SyncFieldDescriptor GenerateFieldDescriptor(FieldInfo fieldInfo, SyncFlags syncFlags)
+        {
+            return new SyncFieldDescriptor( 
+                LookupConstructorForSyncField(fieldInfo.FieldType, syncFlags),
                 DelegateGenerator.GenerateGetter(fieldInfo),
                 DelegateGenerator.GenerateSetter(fieldInfo),
+                syncFlags
+                );
+        }
+
+
+        internal SyncFieldDescriptor GenerateFieldDescriptor(PropertyInfo propertyInfo, SyncFlags syncFlags)
+        {
+            return new SyncFieldDescriptor(
+                LookupConstructorForSyncField(propertyInfo.PropertyType, syncFlags),
+                DelegateGenerator.GenerateGetter(propertyInfo),
+                DelegateGenerator.GenerateSetter(propertyInfo),
                 syncFlags
                 );
         }

@@ -19,14 +19,14 @@ namespace NetCode.SyncField
             }
         }
 
-        public void PushToBuffer(byte[] data, ref int index, uint revision)
+        public void WriteToBuffer(byte[] data, ref int index, uint revision)
         {
             Write(data, ref index);
             Changed = false;
             Revision = revision;
         }
 
-        public void PullFromBuffer(byte[] data, ref int index, uint revision)
+        public void ReadFromBuffer(byte[] data, ref int index, uint revision)
         {
             Read(data, ref index);
             Changed = true;
@@ -54,7 +54,7 @@ namespace NetCode.SyncField
         /// <summary>
         /// Returns the number of bytes required by Write()
         /// </summary>
-        public abstract int PushToBufferSize();
+        public abstract int WriteToBufferSize();
 
         /// <summary>
         /// Writes the Synchronisable value into the packet.

@@ -88,7 +88,7 @@ namespace NetCode.SyncPool
             int size = 0;
             foreach (SyncHandle handle in SyncHandles.Values)
             {
-                size += handle.sync.PushToBufferSize();
+                size += handle.sync.WriteToBufferSize();
             }
 
             PoolRevisionPayload payload = new PoolRevisionPayload(PoolID, revision);
@@ -96,7 +96,7 @@ namespace NetCode.SyncPool
 
             foreach (SyncHandle handle in SyncHandles.Values)
             {
-                handle.sync.PushToBuffer(payload.Data, ref payload.Index, revision);
+                handle.sync.WriteToBuffer(payload.Data, ref payload.DataIndex, revision);
             }
 
             Changed = false;

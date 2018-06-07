@@ -17,24 +17,33 @@ namespace NetCode.SyncEntity
         public int FieldCount { get; private set; }
         public ushort TypeID { get; private set; }
 
+        private const BindingFlags FIELD_SEARCH_FLAGS = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+
         public SyncEntityDescriptor(SyncFieldGenerator fieldGenerator, Type entityType, ushort typeID)
         {
             TypeID = typeID;
             Constructor = DelegateGenerator.GenerateConstructor(entityType);
 
-            foreach (FieldInfo info in entityType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+            foreach (FieldInfo fieldInfo in entityType.GetFields(FIELD_SEARCH_FLAGS))
             {
-                foreach (object attribute in info.GetCustomAttributes(true))
+                foreach (object attribute in fieldInfo.GetCustomAttributes(true).Where( attr => attr is SynchronisableAttribute ))
                 {
-                    if (attribute is SynchronisableAttribute)
-                    {
-                        SyncFlags flags = ((SynchronisableAttribute)attribute).Flags;
-                        SyncFieldDescriptor descriptor = fieldGenerator.GenerateFieldDescriptor(info, flags);
-
-                        fieldDescriptors.Add(descriptor);
-                    }
+                    SyncFlags flags = ((SynchronisableAttribute)attribute).Flags;
+                    SyncFieldDescriptor descriptor = fieldGenerator.GenerateFieldDescriptor(fieldInfo, flags);
+                    fieldDescriptors.Add(descriptor);
                 }
             }
+
+            foreach (PropertyInfo propertyInfo in entityType.GetProperties(FIELD_SEARCH_FLAGS))
+            {
+                foreach (object attribute in propertyInfo.GetCustomAttributes(true).Where(attr => attr is SynchronisableAttribute))
+                {
+                    SyncFlags flags = ((SynchronisableAttribute)attribute).Flags;
+                    SyncFieldDescriptor descriptor = fieldGenerator.GenerateFieldDescriptor(propertyInfo, flags);
+                    fieldDescriptors.Add(descriptor);
+                }
+            }
+
             FieldCount = fieldDescriptors.Count;
             if (FieldCount >= byte.MaxValue) { throw new NetcodeOverloadedException(string.Format("There may not be more than {0} synchronisable fields per type.", byte.MaxValue)); }
         }

@@ -25,7 +25,7 @@ namespace NetcodeTest
         protected override void SetValue(object new_value) { value = (Vector2)new_value; }
         public override object GetValue() { return value; }
         protected override bool ValueEqual(object new_value) { return (Vector2)new_value == value; }
-        public override int PushToBufferSize() { return sizeof(float) * 2; }
+        public override int WriteToBufferSize() { return sizeof(float) * 2; }
         protected override void Write(byte[] data, ref int index)
         {
             Primitive.WriteFloat(data, ref index, value.X);
@@ -54,7 +54,7 @@ namespace NetcodeTest
             Vector2 value = (Vector2)new_value;
             return x == (Half)value.X && y == (Half)value.Y;
         }
-        public override int PushToBufferSize() { return 4; }
+        public override int WriteToBufferSize() { return 4; }
         protected override void Write(byte[] data, ref int index)
         {
             Primitive.WriteHalf(data, ref index, x);

@@ -3,17 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using System.Reflection;
+
 namespace NetCode.Packing
 {
     public abstract class Payload
     {
-        public enum PayloadType { None, PacketAck, PoolRevision }
-        internal PayloadType Type;
+        public enum PayloadType { None, Acknowledgement, PoolRevision }
+        public abstract PayloadType Type { get; }
 
         internal byte[] Data;
         internal int Size;
-        internal int Start;
-        internal int Index;
+        internal int DataStart;
+        internal int DataIndex;
 
         public const int PAYLOAD_HEADER_SIZE = sizeof(ushort) + sizeof(byte);
 
@@ -23,15 +25,14 @@ namespace NetCode.Packing
         public abstract bool AcknowledgementRequired();
 
 
-        public Payload(PayloadType type)
+        public Payload()
         {
-            Type = type;
         }
         
-        public void WritePayloadHeader()
+        private void WritePayloadHeader()
         {
-            Primitive.WriteByte(Data, ref Index, (byte)Type);
-            Primitive.WriteUShort(Data, ref Index, (ushort)Size);
+            Primitive.WriteByte(Data, ref DataIndex, (byte)Type);
+            Primitive.WriteUShort(Data, ref DataIndex, (ushort)Size);
         }
         
         private static void ReadPayloadHeader( byte[] data, ref int index, out PayloadType payloadType, out int size )
@@ -44,8 +45,8 @@ namespace NetCode.Packing
         {
             Size = contentSize + ContentHeaderSize() + PAYLOAD_HEADER_SIZE;
             Data = new byte[Size];
-            Start = 0;
-            Index = Start;
+            DataStart = 0;
+            DataIndex = DataStart;
 
             WritePayloadHeader();
             WriteContentHeader();
@@ -55,8 +56,8 @@ namespace NetCode.Packing
         {
             Size = size;
             Data = data;
-            Start = start;
-            Index = Start + PAYLOAD_HEADER_SIZE; // Skip datagram header.
+            DataStart = start;
+            DataIndex = DataStart + PAYLOAD_HEADER_SIZE; // Skip datagram header.
 
             ReadContentHeader();
         }
@@ -81,7 +82,7 @@ namespace NetCode.Packing
 
         public void CopyContent(byte[] data, ref int index)
         {
-            Buffer.BlockCopy(Data, Start, data, index, Size);
+            Buffer.BlockCopy(Data, DataStart, data, index, Size);
             index += Size;
         }
 
@@ -90,12 +91,16 @@ namespace NetCode.Packing
             Data = null;
         }
 
+        
+        
         public static Payload GetPayloadByType(PayloadType payloadType)
         {
             switch (payloadType)
             {
                 case (PayloadType.PoolRevision):
                     return new PoolRevisionPayload();
+                case (PayloadType.Acknowledgement):
+                    return new AcknowledgementPayload();
                 default:
                     return null;
             }

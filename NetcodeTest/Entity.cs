@@ -16,7 +16,7 @@ namespace NetcodeTest
         static Color[] colortable = new Color[] { Color.Red, Color.Green, Color.Blue };
 
         [Synchronisable]
-        public ColorNo color;
+        public ColorNo color { get; set; }
         [Synchronisable]
         private Vector2 position;
         
@@ -26,7 +26,7 @@ namespace NetcodeTest
         {
             color = ColorNo.Red;
         }
-
+        
         public Entity(Vector2 starting_location, ColorNo arg_color)
         {
             position = starting_location;
