@@ -111,10 +111,10 @@ namespace NetcodeTest
                     Packet packet = new Packet(0);
                     PoolRevisionPayload payload = outgoingPool.GenerateRevisionDatagram();
                     packet.Payloads.Add(payload);
-                    byte[] data = packet.Encode();
+                    byte[] data = packet.Encode(0);
 
 
-                    packet = Packet.Decode(data);
+                    packet = Packet.Decode(data,0);
                     payload = (PoolRevisionPayload)packet.Payloads[0];
                     incomingPool.UnpackRevisionDatagram(payload);
                     incomingPool.Synchronise();

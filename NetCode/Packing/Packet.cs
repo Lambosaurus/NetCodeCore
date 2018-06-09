@@ -14,6 +14,8 @@ namespace NetCode.Packing
 
         const int PACKET_HEADER_SIZE = sizeof(uint);
 
+        public long Timestamp { get; private set; }
+
         public Packet(uint packetID)
         {
             PacketID = packetID;
@@ -30,8 +32,10 @@ namespace NetCode.Packing
             packetID = Primitive.ReadUInt(data, ref index);
         }
         
-        public byte[] Encode()
+        public byte[] Encode(long timestamp)
         {
+            Timestamp = timestamp;
+
             int size = PACKET_HEADER_SIZE;
             foreach (Payload payload in Payloads)
             {
@@ -64,13 +68,14 @@ namespace NetCode.Packing
             return false;
         }
         
-        public static Packet Decode(byte[] data)
+        public static Packet Decode(byte[] data, long timestamp)
         {
             int index = 0;
             int length = data.Length;
 
             ReadPacketHeader(data, ref index, out uint packetID);
             Packet packet = new Packet(packetID);
+            packet.Timestamp = timestamp;
             
             while (index + Payload.PAYLOAD_HEADER_SIZE < length)
             {

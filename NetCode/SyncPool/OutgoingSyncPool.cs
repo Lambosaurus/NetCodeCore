@@ -20,7 +20,7 @@ namespace NetCode.SyncPool
         /// <summary>
         /// Gets the next free object ID
         /// </summary>
-        uint lastObjectID = 0;
+        private uint lastObjectID = 0;
         private uint GetNewObjectId()
         {
             uint potentialObjectID = lastObjectID + 1;
@@ -51,7 +51,7 @@ namespace NetCode.SyncPool
         uint lastRevision = 0;
         private uint GetNewRevision()
         {
-            return lastRevision++;
+            return ++lastRevision;
         }
         
         public SyncHandle RegisterEntity(object instance)

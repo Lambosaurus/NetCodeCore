@@ -90,8 +90,6 @@ namespace NetCode.Packing
         {
             Data = null;
         }
-
-        
         
         public static Payload GetPayloadByType(PayloadType payloadType)
         {

@@ -39,6 +39,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Connection\ConnectionStats.cs" />
     <Compile Include="Connection\NetworkConnection.cs" />
     <Compile Include="Connection\UDPConnection.cs" />
     <Compile Include="Connection\VirtualConnection.cs" />
