@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
+
 using NetCode;
 
 namespace NetcodeTest
@@ -13,7 +14,7 @@ namespace NetcodeTest
     public class Entity
     {
         public enum ColorNo { Red, Green, Blue };
-        static Color[] colortable = new Color[] { Color.Red, Color.Green, Color.Blue };
+        static Color[] colortable = new Color[] { new Color(255,0,0), new Color(0, 255, 0), new Color(0, 0, 255) };
 
         [Synchronisable]
         public ColorNo color { get; set; }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using System.Reflection;
+using NetCode.Util;
 
 namespace NetCode.SyncField
 {

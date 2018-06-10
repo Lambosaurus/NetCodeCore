@@ -4,8 +4,10 @@ using System.Linq;
 using System.Text;
 
 using Microsoft.Xna.Framework;
+
 using NetCode;
 using NetCode.SyncField;
+using NetCode.Util;
 
 namespace NetcodeTest
 {

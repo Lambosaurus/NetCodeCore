@@ -6,6 +6,7 @@ using System.Text;
 using System.Reflection;
 
 using NetCode.SyncField;
+using NetCode.Util;
 
 namespace NetCode.SyncEntity
 {
@@ -45,7 +46,7 @@ namespace NetCode.SyncEntity
             }
 
             FieldCount = fieldDescriptors.Count;
-            if (FieldCount >= byte.MaxValue) { throw new NetcodeOverloadedException(string.Format("There may not be more than {0} synchronisable fields per type.", byte.MaxValue)); }
+            if (FieldCount >= byte.MaxValue) { throw new NetcodeOverloadedException(string.Format("Type {0} contains more than {1} synchronisable fields.", entityType.Name, byte.MaxValue)); }
         }
 
         public SynchronisableField[] GenerateFields()

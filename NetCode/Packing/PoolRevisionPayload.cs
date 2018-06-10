@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using NetCode.SyncPool;
+using NetCode.Util;
 
 namespace NetCode.Packing
 {

@@ -43,13 +43,13 @@
     <Compile Include="Connection\NetworkConnection.cs" />
     <Compile Include="Connection\UDPConnection.cs" />
     <Compile Include="Connection\VirtualConnection.cs" />
-    <Compile Include="DelegateGenerator.cs" />
+    <Compile Include="Util\DelegateGenerator.cs" />
     <Compile Include="IVersionable.cs" />
     <Compile Include="NetCode.cs" />
     <Compile Include="Packing\Payload.cs" />
     <Compile Include="Packing\Packet.cs" />
     <Compile Include="Packing\PacketAckPayload.cs" />
-    <Compile Include="Primitives.cs" />
+    <Compile Include="Util\Primitives.cs" />
     <Compile Include="SyncEntity\SyncEntityDescriptor.cs" />
     <Compile Include="SyncEntity\SyncEntityGenerator.cs" />
     <Compile Include="SyncField\SyncFieldDescriptor.cs" />
