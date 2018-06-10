@@ -9,14 +9,13 @@ using NetCode.SyncPool;
 
 namespace NetCode
 {
-    
+    [Serializable]
     public class NetcodeOverloadedException : Exception
     {
         //TODO: Once I start nailing down the interface, I should make some real exceptions.
         public NetcodeOverloadedException(string message) : base(message) { }
     }
-
-
+    
     public class NetCodeManager
     {
 
@@ -28,15 +27,13 @@ namespace NetCode
             fieldGenerator = new SyncFieldGenerator();
             entityGenerator = new SyncEntityGenerator(fieldGenerator);
         }
-
-
+        
         uint packetID = 0;
         internal uint GetNextPacketID()
         {
             packetID += 1;
             return packetID;
         }
-
         
         /// <summary>
         /// Registers a new type of synchronisable entity to the manager.
