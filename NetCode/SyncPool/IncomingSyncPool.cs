@@ -4,12 +4,15 @@ using System.Linq;
 using System.Text;
 
 using NetCode.SyncEntity;
+using NetCode.Connection;
 using NetCode.Packing;
 
 namespace NetCode.SyncPool
 {
     public class IncomingSyncPool : SynchronisablePool
     {
+        NetworkConnection SourceConnection;
+
         internal IncomingSyncPool(SyncEntityGenerator generator, ushort poolID) : base(generator, poolID)
         {
 
@@ -25,7 +28,17 @@ namespace NetCode.SyncPool
                 );
         }
 
-        public void AbandonEntity(uint entityID)
+        public void SetSource(NetworkConnection connection)
+        {
+            if (SourceConnection != null)
+            {
+                SourceConnection.DetachSyncPool(this);
+            }
+            SourceConnection = connection;
+            SourceConnection.AttachSyncPool(this);
+        }
+
+        private void AbandonEntity(uint entityID)
         {
             SyncHandles[entityID].state = SyncHandle.SyncState.Deleted;
             SyncHandles.Remove(entityID);
@@ -66,7 +79,10 @@ namespace NetCode.SyncPool
         {
             foreach (SyncHandle handle in SyncHandles.Values)
             {
-                handle.sync.PushToLocal(handle.Obj);
+                if (handle.sync.Changed)
+                {
+                    handle.sync.PushToLocal(handle.Obj);
+                }
             }
         }
     }

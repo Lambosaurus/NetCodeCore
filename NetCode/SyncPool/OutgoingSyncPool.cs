@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using NetCode.Connection;
 using NetCode.SyncEntity;
 using NetCode.Packing;
 
@@ -15,6 +16,13 @@ namespace NetCode.SyncPool
         internal OutgoingSyncPool(SyncEntityGenerator generator, ushort poolID) : base(generator, poolID)
         {
 
+        }
+
+        private List<NetworkConnection> Destinations = new List<NetworkConnection>();
+
+        public void AddDestination(NetworkConnection connection)
+        {
+            Destinations.Add(connection);
         }
 
         /// <summary>
@@ -76,13 +84,19 @@ namespace NetCode.SyncPool
                 handle.sync.PullFromLocal(handle.Obj);
                 if (handle.sync.Changed) { Changed = true; }
             }
+
+            if (Changed)
+            {
+                Payload payload = GenerateRevisionPayload();
+                foreach( NetworkConnection destination in Destinations )
+                {
+                    destination.Enqueue(payload);
+                }
+            }
         }
         
-
-        public PoolRevisionPayload GenerateRevisionDatagram()
+        private Payload GenerateRevisionPayload()
         {
-            if (!Changed) { return null; }
-
             uint revision = GetNewRevision();
 
             int size = 0;
@@ -91,7 +105,7 @@ namespace NetCode.SyncPool
                 size += handle.sync.WriteToBufferSize();
             }
 
-            PoolRevisionPayload payload = new PoolRevisionPayload(PoolID, revision);
+            PoolRevisionPayload payload = new PoolRevisionPayload(this, revision);
             payload.AllocateContent(size);
 
             foreach (SyncHandle handle in SyncHandles.Values)
@@ -102,6 +116,11 @@ namespace NetCode.SyncPool
             Changed = false;
             
             return payload;
+        }
+
+        public Payload GenerateRecoveryPayload(uint revision)
+        {
+            return null;
         }
     }
 }

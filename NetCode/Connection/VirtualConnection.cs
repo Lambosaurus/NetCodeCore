@@ -10,6 +10,17 @@ namespace NetCode.Connection
         private List<byte[]> recievebuffer = new List<byte[]>();
         private VirtualConnection endpoint = null;
 
+        public VirtualConnection()
+        {
+        }
+
+        public VirtualConnection CreateEndpoint()
+        {
+            VirtualConnection connection = new VirtualConnection();
+            Connect(connection);
+            return connection;
+        }
+
         public void Connect(VirtualConnection otherEndpoint)
         {
             endpoint = otherEndpoint;

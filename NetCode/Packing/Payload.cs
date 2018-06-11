@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using NetCode.Util;
+using NetCode.Connection;
 
 namespace NetCode.Packing
 {
@@ -22,7 +23,15 @@ namespace NetCode.Packing
         public abstract void WriteContentHeader();
         public abstract void ReadContentHeader();
         public abstract int ContentHeaderSize();
-        public abstract bool AcknowledgementRequired();
+
+        public abstract bool AcknowledgementRequired { get; }
+
+        public virtual Payload OnTimeout()
+        {
+            return null;
+        }
+
+        public abstract void OnReception(NetworkConnection connection);
 
 
         public Payload()
@@ -85,7 +94,7 @@ namespace NetCode.Packing
             Buffer.BlockCopy(Data, DataStart, data, index, Size);
             index += Size;
         }
-
+        
         public void ClearContent()
         {
             Data = null;

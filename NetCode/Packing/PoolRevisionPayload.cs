@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 
 using NetCode.Util;
+using NetCode.SyncPool;
+using NetCode.Connection;
 
 namespace NetCode.Packing
 {
@@ -13,15 +15,19 @@ namespace NetCode.Packing
         public uint Revision { get; protected set; }
 
         public override PayloadType Type { get { return PayloadType.PoolRevision; } }
+        public override bool AcknowledgementRequired { get { return true; } }
+
+        private OutgoingSyncPool SyncPool;
 
         public PoolRevisionPayload()
         {
         }
 
-        public PoolRevisionPayload(ushort poolID, uint revision)
+        public PoolRevisionPayload(OutgoingSyncPool syncPool, uint revision)
         {
-            PoolID = poolID;
+            PoolID = syncPool.PoolID;
             Revision = revision;
+            SyncPool = syncPool;
         }
         
         public override void WriteContentHeader()
@@ -41,10 +47,15 @@ namespace NetCode.Packing
             return sizeof(ushort) + sizeof(uint);
         }
 
-        public override bool AcknowledgementRequired()
+        public override Payload OnTimeout()
         {
-            return true;
+            return SyncPool.GenerateRecoveryPayload(Revision);
         }
 
+        public override void OnReception(NetworkConnection connection)
+        {
+            IncomingSyncPool destination = connection.GetSyncPool(PoolID);
+            destination.UnpackRevisionDatagram(this);
+        }
     }
 }

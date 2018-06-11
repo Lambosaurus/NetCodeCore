@@ -101,7 +101,7 @@ namespace NetCode.SyncEntity
                 byte fieldID = Primitive.ReadByte(data, ref index);
                 fields[fieldID].ReadFromBuffer(data, ref index, revision);
             }
-
+            Changed = true;
             Revision = revision;
         }
 
@@ -125,6 +125,7 @@ namespace NetCode.SyncEntity
                     descriptor.SetField(obj, i, value);
                 }
             }
+            Changed = false;
         }
     }
 }

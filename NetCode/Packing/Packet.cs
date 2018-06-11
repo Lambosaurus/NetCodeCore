@@ -62,13 +62,14 @@ namespace NetCode.Packing
         {
             foreach (Payload payload in Payloads)
             {
-                if (payload.AcknowledgementRequired())
+                if (payload.AcknowledgementRequired)
                 {
                     return true;
                 }
             }
             return false;
         }
+        
         
         public static Packet Decode(byte[] data, long timestamp)
         {

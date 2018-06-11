@@ -10,7 +10,7 @@ using Microsoft.Xna.Framework.Media;
 
 using NetCode;
 using NetCode.SyncPool;
-using NetCode.Packing;
+using NetCode.Connection;
 
 namespace NetcodeTest
 {
@@ -22,8 +22,12 @@ namespace NetcodeTest
         NetCodeManager netcode = new NetCodeManager();
         OutgoingSyncPool outgoingPool;
         IncomingSyncPool incomingPool;
+        VirtualConnection outgoingConnection;
+        VirtualConnection incomingConnection;
 
         Entity entity;
+
+        SpriteFont font;
         
         public TestGame()
         {
@@ -44,12 +48,21 @@ namespace NetcodeTest
             spriteBatch = new SpriteBatch(GraphicsDevice);
             Entity.Load(Content);
 
+            font = Content.Load<SpriteFont>("MenuFont");
+
             NetcodeFieldSupport.RegisterCustomFields(netcode);
 
             netcode.RegisterType(typeof(Entity));
-            outgoingPool = netcode.GenerateOutgoingPool(1);
-            incomingPool = netcode.GenerateIncomingPool(1);
 
+            outgoingPool = netcode.GenerateOutgoingPool(1);
+            outgoingConnection = new VirtualConnection();
+
+            incomingPool = netcode.GenerateIncomingPool(1);
+            incomingConnection = outgoingConnection.CreateEndpoint();
+
+            outgoingPool.AddDestination(outgoingConnection);
+            incomingPool.SetSource(incomingConnection);
+            
             outgoingPool.RegisterEntity(entity);
 
             lastKeys = Keyboard.GetState();
@@ -101,28 +114,35 @@ namespace NetcodeTest
 
             entity.Update();
 
-            if (++tick >= 60)
+            if (++tick >= 10)
             {
                 tick = 0;
 
                 outgoingPool.Synchronise();
-                if (outgoingPool.Changed)
-                {
-                    Packet packet = new Packet(0);
-                    PoolRevisionPayload payload = outgoingPool.GenerateRevisionDatagram();
-                    packet.Payloads.Add(payload);
-                    byte[] data = packet.Encode(0);
 
+                outgoingConnection.Update();
+                incomingConnection.Update();
 
-                    packet = Packet.Decode(data,0);
-                    payload = (PoolRevisionPayload)packet.Payloads[0];
-                    incomingPool.UnpackRevisionDatagram(payload);
-                    incomingPool.Synchronise();
-                }
+                incomingPool.Synchronise();
             }
             
             lastKeys = keys;
             base.Update(gameTime);
+        }
+
+
+        private void DrawNetDiagnostics()
+        {
+            ConnectionStats stats = outgoingConnection.Stats;
+            string text = string.Format(
+                "up: {0}B/s\ndown: {1}B/s\nping: {2}ms\nloss: {3}%",
+                stats.SentBytesPerSecond,
+                stats.RecievedBytesPerSecond,
+                stats.Latency,
+                (int)(stats.PacketLoss * 100)
+                );
+            spriteBatch.DrawString(font, text, new Vector2(0, 0), Color.White);
+
         }
 
         protected override void Draw(GameTime gameTime)
@@ -138,6 +158,8 @@ namespace NetcodeTest
                 Entity entity = (Entity)(handle.Obj);
                 entity.Draw(spriteBatch);
             }
+
+            DrawNetDiagnostics();
 
             spriteBatch.End();
 

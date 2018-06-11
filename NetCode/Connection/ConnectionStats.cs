@@ -12,7 +12,7 @@ namespace NetCode.Connection
         public double PacketLoss { get; private set; } = 0.0;
         public int SentBytesPerSecond { get { return (sentBytesOverPeriod * 1000) / AveragingPeriodMilliseconds; } }
         public int RecievedBytesPerSecond { get { return (recievedBytesOverPeriod * 1000) / AveragingPeriodMilliseconds; } }
-        public double SendPacketsPerSecond { get { return (sentPacketSizes.Count * 1000.0) / AveragingPeriodMilliseconds; } }
+        public double SentPacketsPerSecond { get { return (sentPacketSizes.Count * 1000.0) / AveragingPeriodMilliseconds; } }
         public double RecievedPacketsPerSecond { get { return (recievedPacketSizes.Count * 1000.0) / AveragingPeriodMilliseconds; } }
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace NetCode.Connection
         public int TotalDamagedPackets { get; private set; } = 0;
 
 
-        private const int LATENCY_UNACKNOWLEDGED = -1;
+        private const int LATENCY_TIMEOUT = -1;
         private struct PacketRecord
         {
             public long Timestamp;
@@ -52,8 +52,8 @@ namespace NetCode.Connection
 
             recievedPacketSizes.Add(
                 new PacketRecord {
-                Timestamp = timestamp,
-                Value = size
+                    Timestamp = timestamp,
+                    Value = size
             });
 
             if (damaged)
@@ -68,11 +68,10 @@ namespace NetCode.Connection
             sentBytesOverPeriod += size;
 
             sentPacketSizes.Add(
-                new PacketRecord
-                {
+                new PacketRecord {
                     Timestamp = timestamp,
                     Value = size
-                });
+            });
         }
 
         internal void RecordAcknowledgement(int latency, long timestamp)
@@ -90,13 +89,13 @@ namespace NetCode.Connection
             
         }
 
-        internal void RecordUnacknowledgement(long timestamp)
+        internal void RecordTimeout(long timestamp)
         {
             packetAcknowledgement.Add(
                 new PacketRecord
                 {
                     Timestamp = timestamp,
-                    Value = LATENCY_UNACKNOWLEDGED
+                    Value = LATENCY_TIMEOUT
                 });
         }
 
@@ -116,21 +115,19 @@ namespace NetCode.Connection
                     break;
                 }
             }
-            sentPacketSizes.RemoveRange(0, culledRecords);
+            packetAcknowledgement.RemoveRange(0, culledRecords);
 
             int latencySum = 0;
             int acknowledged = 0;
             int total = packetAcknowledgement.Count;
             foreach ( PacketRecord record in packetAcknowledgement)
             {
-                if (record.Value != LATENCY_UNACKNOWLEDGED)
+                if (record.Value != LATENCY_TIMEOUT)
                 {
                     latencySum += record.Value;
                     acknowledged++;
                 }
             }
-            sentPacketSizes.RemoveRange(0, culledRecords);
-
             Latency = (acknowledged > 0) ? (latencySum / acknowledged) : 0;
             PacketLoss = (total > 0) ? (1.0 - (acknowledged / total)) : 0.0;
         }
@@ -155,7 +152,7 @@ namespace NetCode.Connection
             }
             if (culledRecords > 0)
             {
-                sentPacketSizes.RemoveRange(0, culledRecords);
+                records.RemoveRange(0, culledRecords);
             }
             return culledBytes;
         }

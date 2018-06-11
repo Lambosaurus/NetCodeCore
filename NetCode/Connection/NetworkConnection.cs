@@ -13,16 +13,45 @@ namespace NetCode.Connection
     public abstract class NetworkConnection
     {
         public ConnectionStats Stats { get; private set; }
+        public uint PacketTimeout { get; set; } = 2000;
 
         private Stopwatch timer;
         private List<Packet> pendingPackets = new List<Packet>();
+        private List<Payload> payloadQueue = new List<Payload>();
 
+        private Dictionary<ushort, IncomingSyncPool> recievingPools = new Dictionary<ushort, IncomingSyncPool>();
+
+        private List<uint> packetAcknowledgementQueue = new List<uint>();
+        
         public NetworkConnection()
         {
             Stats = new ConnectionStats();
 
             timer = new Stopwatch();
             timer.Start();
+        }
+
+        internal void AttachSyncPool(IncomingSyncPool syncPool)
+        {
+            if (recievingPools.ContainsKey(syncPool.PoolID))
+            {
+                throw new NetcodeOverloadedException(string.Format("An IncomingSyncPool with PoolID of {0} has already been attached to this NetworkConnection", syncPool.PoolID));
+            }
+            recievingPools[syncPool.PoolID] = syncPool;
+        }
+
+        internal void DetachSyncPool(IncomingSyncPool syncPool)
+        {
+            recievingPools.Remove(syncPool.PoolID);
+        }
+        
+        internal IncomingSyncPool GetSyncPool(ushort poolID)
+        {
+            if (recievingPools.ContainsKey(poolID))
+            {
+                return recievingPools[poolID];
+            }
+            return null;
         }
 
         private uint lastPacketID = 0;
@@ -41,6 +70,16 @@ namespace NetCode.Connection
                 RecievePacket(data);
             }
 
+            UpdatePacketTimeouts(timestamp);
+
+            GenerateAcknowledgementPayloads();
+
+            while (payloadQueue.Count > 0)
+            {
+                Packet packet = ConstructPacket();
+                Transmit(packet);
+            }
+
             Stats.Update(timestamp);
         }
 
@@ -49,7 +88,37 @@ namespace NetCode.Connection
             return timer.ElapsedMilliseconds;
         }
 
-        public void Transmit(Packet packet)
+        public void Enqueue(Payload payload)
+        {
+            payloadQueue.Add(payload);
+        }
+
+        public void EnqueueAcknowledgement(uint packetID)
+        {
+            packetAcknowledgementQueue.Add(packetID);
+        }
+
+        private void GenerateAcknowledgementPayloads()
+        {
+            if ( packetAcknowledgementQueue.Count > 0 )
+            {
+                Enqueue(new AcknowledgementPayload(packetAcknowledgementQueue));
+                packetAcknowledgementQueue.Clear();
+            }
+        }
+
+        private Packet ConstructPacket()
+        {
+            uint packetID = GetNewPacketID();
+            Packet packet = new Packet(packetID);
+
+            packet.Payloads.AddRange(payloadQueue);
+            payloadQueue.Clear();
+
+            return packet;
+        }
+        
+        private void Transmit(Packet packet)
         {
             if (packet.RequiresAcknowledgement())
             {
@@ -69,32 +138,48 @@ namespace NetCode.Connection
 
             foreach( Payload payload in packet.Payloads )
             {
-                HandlePayload(payload);
+                payload.OnReception(this);
             }
-        }
 
-        private void HandlePayload(Payload payload)
-        {
-            if (payload.Type == Payload.PayloadType.Acknowledgement)
+            if (packet.RequiresAcknowledgement())
             {
-                AcknowledgementPayload ackPayload = (AcknowledgementPayload)payload;
-                ackPayload.ReadContent();
-                foreach ( uint packetID in ackPayload.PacketIDs )
-                {
-                    AcknowledgePacket(packetID);
-                }
+                EnqueueAcknowledgement(packet.PacketID);
             }
         }
         
-        private void AcknowledgePacket(uint packetID)
+        internal void AcknowledgePacket(uint packetID)
         {
             Packet packet = pendingPackets.Find(p => p.PacketID == packetID);
             if (packet != null)
             {
                 pendingPackets.Remove(packet);
-                int latency = (int)(Timestamp() - packet.Timestamp);
-                
+                long timestamp = Timestamp();
+                int latency = (int)(timestamp - packet.Timestamp);
+                Stats.RecordAcknowledgement(latency, timestamp);
             }
+        }
+
+        private void UpdatePacketTimeouts(long timestamp)
+        {
+            // Assuming packets are ordered by timestamp.
+            int culledPackets = 0;
+            foreach( Packet packet in pendingPackets )
+            {
+                if ( timestamp - packet.Timestamp < PacketTimeout )
+                {
+                    culledPackets++;
+                    Stats.RecordTimeout(timestamp);
+                    foreach(Payload payload in packet.Payloads)
+                    {
+                        payload.OnTimeout();
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+            pendingPackets.RemoveRange(0, culledPackets);
         }
 
         protected abstract bool Connected();
