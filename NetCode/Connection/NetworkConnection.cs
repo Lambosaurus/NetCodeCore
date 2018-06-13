@@ -65,9 +65,12 @@ namespace NetCode.Connection
             long timestamp = Timestamp();
 
             List<byte[]> incomingData = Recieve();
-            foreach (byte[] data in incomingData)
+            if (incomingData != null)
             {
-                RecievePacket(data);
+                foreach (byte[] data in incomingData)
+                {
+                    RecievePacket(data);
+                }
             }
 
             UpdatePacketTimeouts(timestamp);
@@ -165,7 +168,7 @@ namespace NetCode.Connection
             int culledPackets = 0;
             foreach( Packet packet in pendingPackets )
             {
-                if ( timestamp - packet.Timestamp < PacketTimeout )
+                if ( timestamp - packet.Timestamp > PacketTimeout )
                 {
                     culledPackets++;
                     Stats.RecordTimeout(timestamp);

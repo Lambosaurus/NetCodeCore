@@ -14,12 +14,13 @@ namespace NetCode.Connection
         public int RecievedBytesPerSecond { get { return (recievedBytesOverPeriod * 1000) / AveragingPeriodMilliseconds; } }
         public double SentPacketsPerSecond { get { return (sentPacketSizes.Count * 1000.0) / AveragingPeriodMilliseconds; } }
         public double RecievedPacketsPerSecond { get { return (recievedPacketSizes.Count * 1000.0) / AveragingPeriodMilliseconds; } }
-
+        
+        
         /// <summary>
         /// The number of milliseconds that averages are taken over for the PerSecond stats, and the Latency and PacketLoss stats.
         /// This is not immediately applied.
         /// </summary>
-        public int AveragingPeriodMilliseconds { get; set; } = 5000;
+        public int AveragingPeriodMilliseconds { get; set; } = 3000;
         /// <summary>
         /// The minimum number of packets to consider over for Latency and PacketLoss calculations.
         /// This is not immediately applied.
@@ -37,7 +38,6 @@ namespace NetCode.Connection
             public long Timestamp;
             public int Value;
         }
-
 
         private int sentBytesOverPeriod = 0;
         private int recievedBytesOverPeriod = 0;
@@ -122,6 +122,7 @@ namespace NetCode.Connection
             int total = packetAcknowledgement.Count;
             foreach ( PacketRecord record in packetAcknowledgement)
             {
+                // Average values for the remaining packets.
                 if (record.Value != LATENCY_TIMEOUT)
                 {
                     latencySum += record.Value;
@@ -129,7 +130,7 @@ namespace NetCode.Connection
                 }
             }
             Latency = (acknowledged > 0) ? (latencySum / acknowledged) : 0;
-            PacketLoss = (total > 0) ? (1.0 - (acknowledged / total)) : 0.0;
+            PacketLoss = (total > 0) ? (1.0 - ((float)acknowledged / total)) : 0.0;
         }
         
         private int RemoveOldRecords(List<PacketRecord> records, long timestamp)

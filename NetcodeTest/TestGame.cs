@@ -53,13 +53,17 @@ namespace NetcodeTest
             NetcodeFieldSupport.RegisterCustomFields(netcode);
 
             netcode.RegisterType(typeof(Entity));
+            
+            outgoingConnection = new VirtualConnection();
+            incomingConnection = new VirtualConnection();
+            outgoingConnection.Connect(incomingConnection);
+
+            outgoingConnection.Settings.PacketLoss = 0.2;
+            outgoingConnection.Settings.LatencyMin = 100;
+            outgoingConnection.Settings.LatencyMax = 150;
 
             outgoingPool = netcode.GenerateOutgoingPool(1);
-            outgoingConnection = new VirtualConnection();
-
             incomingPool = netcode.GenerateIncomingPool(1);
-            incomingConnection = outgoingConnection.CreateEndpoint();
-
             outgoingPool.AddDestination(outgoingConnection);
             incomingPool.SetSource(incomingConnection);
             
@@ -117,23 +121,20 @@ namespace NetcodeTest
             if (++tick >= 10)
             {
                 tick = 0;
-
                 outgoingPool.Synchronise();
-
-                outgoingConnection.Update();
-                incomingConnection.Update();
-
-                incomingPool.Synchronise();
             }
-            
+
+            outgoingConnection.Update();
+            incomingConnection.Update();
+            incomingPool.Synchronise();
+
             lastKeys = keys;
             base.Update(gameTime);
         }
 
 
-        private void DrawNetDiagnostics()
+        private string GetConnectionStatsString(ConnectionStats stats)
         {
-            ConnectionStats stats = outgoingConnection.Stats;
             string text = string.Format(
                 "up: {0}B/s\ndown: {1}B/s\nping: {2}ms\nloss: {3}%",
                 stats.SentBytesPerSecond,
@@ -141,8 +142,7 @@ namespace NetcodeTest
                 stats.Latency,
                 (int)(stats.PacketLoss * 100)
                 );
-            spriteBatch.DrawString(font, text, new Vector2(0, 0), Color.White);
-
+            return text;
         }
 
         protected override void Draw(GameTime gameTime)
@@ -159,7 +159,7 @@ namespace NetcodeTest
                 entity.Draw(spriteBatch);
             }
 
-            DrawNetDiagnostics();
+            spriteBatch.DrawString(font, GetConnectionStatsString(outgoingConnection.Stats), new Vector2(0, 0), Color.White);
 
             spriteBatch.End();
 
