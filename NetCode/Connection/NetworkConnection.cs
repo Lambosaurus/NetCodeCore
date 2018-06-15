@@ -13,7 +13,7 @@ namespace NetCode.Connection
     public abstract class NetworkConnection
     {
         public ConnectionStats Stats { get; private set; }
-        public uint PacketTimeout { get; set; } = 2000;
+        public uint PacketTimeout { get; set; } = 1000;
 
         private Stopwatch timer;
         private List<Packet> pendingPackets = new List<Packet>();
@@ -174,7 +174,7 @@ namespace NetCode.Connection
                     Stats.RecordTimeout(timestamp);
                     foreach(Payload payload in packet.Payloads)
                     {
-                        payload.OnTimeout();
+                        payload.OnTimeout(this);
                     }
                 }
                 else

@@ -23,7 +23,7 @@ namespace NetcodeTest
 
     public class SynchronisableVector2 : SynchronisableField
     {
-        internal Vector2 value;
+        private Vector2 value;
         protected override void SetValue(object new_value) { value = (Vector2)new_value; }
         public override object GetValue() { return value; }
         protected override bool ValueEqual(object new_value) { return (Vector2)new_value == value; }
@@ -38,12 +38,13 @@ namespace NetcodeTest
             value.X = Primitive.ReadFloat(data, ref index);
             value.Y = Primitive.ReadFloat(data, ref index);
         }
+        protected override void Skip(byte[] data, ref int index) { index += sizeof(float) * 2; }
     }
 
     public class SynchronisableHalfVector2 : SynchronisableField
     {
-        internal Half x;
-        internal Half y;
+        private Half x;
+        private Half y;
         protected override void SetValue(object new_value)
         {
             Vector2 value = (Vector2)new_value;
@@ -56,7 +57,7 @@ namespace NetcodeTest
             Vector2 value = (Vector2)new_value;
             return x == (Half)value.X && y == (Half)value.Y;
         }
-        public override int WriteToBufferSize() { return 4; }
+        public override int WriteToBufferSize() { return Primitive.SizeofHalf * 2; }
         protected override void Write(byte[] data, ref int index)
         {
             Primitive.WriteHalf(data, ref index, x);
@@ -67,5 +68,6 @@ namespace NetcodeTest
             x = Primitive.ReadHalf(data, ref index);
             y = Primitive.ReadHalf(data, ref index);
         }
+        protected override void Skip(byte[] data, ref int index) { index += Primitive.SizeofHalf * 2; }
     }
 }

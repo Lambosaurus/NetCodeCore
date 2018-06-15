@@ -33,7 +33,7 @@ namespace NetCode
         /// <summary>
         /// Indicates whether the variable has been changed.
         /// </summary>
-        bool Changed { get; }
+        bool Changed { get; } // TODO: OPTIMISE THIS OUT COMPLETELY
 
         /// <summary>
         /// The current revision number this variable was last updated at.

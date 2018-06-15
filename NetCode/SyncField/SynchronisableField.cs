@@ -28,9 +28,16 @@ namespace NetCode.SyncField
 
         public void ReadFromBuffer(byte[] data, ref int index, uint revision)
         {
-            Read(data, ref index);
-            Changed = true;
-            Revision = revision;
+            if (revision > Revision)
+            {
+                Read(data, ref index);
+                Changed = true;
+                Revision = revision;
+            }
+            else
+            {
+                Skip(data, ref index);
+            }
         }
 
 
@@ -67,7 +74,16 @@ namespace NetCode.SyncField
         /// Reads the Synchronisable value from the packet.
         /// </summary>
         /// <param name="data"> The packet to read from </param>
-        /// <param name="index"> The index to begin reading at. The index shall be incremented by the number of bytes written </param>
+        /// <param name="index"> The index to begin reading at. The index shall be incremented by the number of bytes read </param>
         protected abstract void Read(byte[] data, ref int index);
+
+
+        /// <summary>
+        /// Must increment the index by the number of bytes that would be read,
+        /// without updating the internal state.
+        /// </summary>
+        /// <param name="data"> The packet to read from </param>
+        /// <param name="index"> The index to begin reading at. The index shall be incremented by the number of bytes read </param>
+        protected abstract void Skip(byte[] data, ref int index);
     }
 }

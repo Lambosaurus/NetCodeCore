@@ -102,7 +102,10 @@ namespace NetCode.SyncPool
             int size = 0;
             foreach (SyncHandle handle in SyncHandles.Values)
             {
-                size += handle.sync.WriteToBufferSize();
+                if (handle.sync.Changed)
+                {
+                    size += handle.sync.WriteToBufferSize();
+                }
             }
 
             PoolRevisionPayload payload = new PoolRevisionPayload(this, revision);
@@ -110,7 +113,10 @@ namespace NetCode.SyncPool
 
             foreach (SyncHandle handle in SyncHandles.Values)
             {
-                handle.sync.WriteToBuffer(payload.Data, ref payload.DataIndex, revision);
+                if (handle.sync.Changed)
+                {
+                    handle.sync.WriteToBuffer(payload.Data, ref payload.DataIndex, revision);
+                }
             }
 
             Changed = false;
@@ -120,7 +126,32 @@ namespace NetCode.SyncPool
 
         public Payload GenerateRecoveryPayload(uint revision)
         {
-            return null;
+            // TODO: PLEASE OPTIMISE OUT THIS CODE
+
+            int size = 0;
+            foreach ( SyncHandle handle in SyncHandles.Values )
+            {
+                if (handle.sync.ContainsRevision(revision))
+                {
+                    size += handle.sync.WriteRevisionToBufferSize(revision);
+                }
+            }
+
+            if (size == 0) { return null; }
+
+            PoolRevisionPayload payload = new PoolRevisionPayload(this, revision);
+            payload.AllocateContent(size);
+
+            foreach (SyncHandle handle in SyncHandles.Values)
+            {
+                // TODO: THIS CONTAINS REVISION CHECK NEEDS TO BE CULLED
+                if (handle.sync.ContainsRevision(revision))
+                {
+                    handle.sync.WriteRevisionToBuffer(payload.Data, ref payload.DataIndex, revision);
+                }
+            }
+
+            return payload;
         }
     }
 }

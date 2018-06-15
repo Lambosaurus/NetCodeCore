@@ -37,8 +37,6 @@ namespace NetCode.SyncEntity
         /// </summary>
         public int WriteToBufferSize()
         {
-            if (!Changed) { return 0; }
-
             int size = ID_HEADER_LENGTH + FIELD_COUNT_HEADER_LENGTH + TYPEID_HEADER_LENGTH;
             foreach (SynchronisableField field in fields)
             {
@@ -49,8 +47,7 @@ namespace NetCode.SyncEntity
             }
             return size;
         }
-
-
+        
         public static void ReadHeader(byte[] data, ref int index, out uint entityID, out ushort typeID)
         {
             entityID = Primitive.ReadUShort(data, ref index);
@@ -59,23 +56,21 @@ namespace NetCode.SyncEntity
         
         public void WriteToBuffer(byte[] data, ref int index, uint revision)
         {
-            if (!Changed) { return; }
-
-            byte changed_fields = 0;
+            byte updatedFields = 0;
             foreach (SynchronisableField field in fields)
             {
                 if (field.Changed)
                 {
-                    changed_fields++;
+                    updatedFields++;
                 }
             }
 
             Primitive.WriteUShort(data, ref index, (ushort)EntityID);
             Primitive.WriteUShort(data, ref index, descriptor.TypeID);
 
-            Primitive.WriteByte(data, ref index, changed_fields);
+            Primitive.WriteByte(data, ref index, updatedFields);
 
-            for (byte i = 0; i < descriptor.FieldCount; i++)
+            for (int i = 0; i < descriptor.FieldCount; i++)
             {
                 SynchronisableField field = fields[i];
                 if (field.Changed)
@@ -90,6 +85,68 @@ namespace NetCode.SyncEntity
             Changed = false;
         }
 
+
+        public bool ContainsRevision(uint revision)
+        {
+            if (Revision < revision)
+            {
+                // Can return immediately, because this we cannot have any newer content
+                return false;
+            }
+
+            foreach (SynchronisableField field in fields)
+            {
+                if (field.Revision == revision)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public int WriteRevisionToBufferSize(uint revision)
+        {
+            int size = ID_HEADER_LENGTH + FIELD_COUNT_HEADER_LENGTH + TYPEID_HEADER_LENGTH;
+            foreach (SynchronisableField field in fields)
+            {
+                if (field.Revision == revision)
+                {
+                    size += FIELDID_HEADER_LENGTH + field.WriteToBufferSize();
+                }
+            }
+            return size;
+        }
+
+
+        public void WriteRevisionToBuffer(byte[] data, ref int index, uint revision)
+        {
+            // This is duplicated code.
+            byte updatedFields = 0;
+            foreach (SynchronisableField field in fields)
+            {
+                if (field.Revision == revision)
+                {
+                    updatedFields++;
+                }
+            }
+
+            Primitive.WriteUShort(data, ref index, (ushort)EntityID);
+            Primitive.WriteUShort(data, ref index, descriptor.TypeID);
+
+            Primitive.WriteByte(data, ref index, updatedFields);
+
+            for (int i = 0; i < descriptor.FieldCount; i++)
+            {
+                SynchronisableField field = fields[i];
+                if (field.Revision == revision)
+                {
+                    // This MUST be written as a byte.
+                    Primitive.WriteByte(data, ref index, (byte)i);
+                    field.WriteToBuffer(data, ref index, revision);
+                }
+            }
+        }
+        
         public void ReadFromBuffer(byte[] data, ref int index, uint revision)
         {
             byte fieldCount = Primitive.ReadByte(data, ref index);
@@ -102,7 +159,11 @@ namespace NetCode.SyncEntity
                 fields[fieldID].ReadFromBuffer(data, ref index, revision);
             }
             Changed = true;
-            Revision = revision;
+
+            if (revision > Revision)
+            {
+                Revision = revision;
+            }
         }
 
         public void PullFromLocal(object obj)

@@ -7,6 +7,8 @@ namespace NetCode.Util
 {
     public static class Primitive
     {
+        public const int SizeofHalf = 2;
+
         public static void WriteByte(byte[] data, ref int index, byte value)
         {
             data[index++] = value;

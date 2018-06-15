@@ -47,9 +47,13 @@ namespace NetCode.Packing
             return sizeof(ushort) + sizeof(uint);
         }
 
-        public override Payload OnTimeout()
+        public override void OnTimeout(NetworkConnection connection)
         {
-            return SyncPool.GenerateRecoveryPayload(Revision);
+            Payload payload = SyncPool.GenerateRecoveryPayload(Revision);
+            if (payload != null)
+            {
+                connection.Enqueue(payload);
+            }
         }
 
         public override void OnReception(NetworkConnection connection)

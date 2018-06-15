@@ -26,9 +26,8 @@ namespace NetCode.Packing
 
         public abstract bool AcknowledgementRequired { get; }
 
-        public virtual Payload OnTimeout()
+        public virtual void OnTimeout(NetworkConnection connection)
         {
-            return null;
         }
 
         public abstract void OnReception(NetworkConnection connection);

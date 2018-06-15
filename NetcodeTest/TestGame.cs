@@ -58,9 +58,9 @@ namespace NetcodeTest
             incomingConnection = new VirtualConnection();
             outgoingConnection.Connect(incomingConnection);
 
-            outgoingConnection.Settings.PacketLoss = 0.2;
-            outgoingConnection.Settings.LatencyMin = 100;
-            outgoingConnection.Settings.LatencyMax = 150;
+            outgoingConnection.Settings.PacketLoss = 0.5;
+            outgoingConnection.Settings.LatencyMin = 50;
+            outgoingConnection.Settings.LatencyMax = 100;
 
             outgoingPool = netcode.GenerateOutgoingPool(1);
             incomingPool = netcode.GenerateIncomingPool(1);

@@ -16,7 +16,6 @@ namespace NetCode.SyncEntity
 
         SyncFieldGenerator fieldGenerator;
 
-
         //TODO: We need a way of fingerprinting this class to verify that the other endpoints have
         //      the same encoding/decoding formatting.
         public SyncEntityGenerator(SyncFieldGenerator _fieldGenerator)
@@ -48,6 +47,11 @@ namespace NetCode.SyncEntity
         public SyncEntityDescriptor GetEntityDescriptor(RuntimeTypeHandle typeHandle)
         {
             return entityDescriptorsByType[typeHandle];
+        }
+        
+        public bool TypeExists(ushort typeID)
+        {
+            return entityDescriptorsByType.Count > typeID;
         }
     }
 }
