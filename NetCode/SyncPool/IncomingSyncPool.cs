@@ -71,7 +71,7 @@ namespace NetCode.SyncPool
                 
                 SynchronisableEntity entity = SyncHandles[entityID].sync;
 
-                entity.ReadFromBuffer(payload.Data, ref payload.DataIndex, payload.Revision);
+                entity.ReadRevisionFromBuffer(payload.Data, ref payload.DataIndex, payload.Revision);
             }
         }
 
@@ -79,9 +79,9 @@ namespace NetCode.SyncPool
         {
             foreach (SyncHandle handle in SyncHandles.Values)
             {
-                if (handle.sync.Changed)
+                if (!handle.sync.Synchronised)
                 {
-                    handle.sync.PushToLocal(handle.Obj);
+                    handle.sync.PushChanges(handle.Obj);
                 }
             }
         }

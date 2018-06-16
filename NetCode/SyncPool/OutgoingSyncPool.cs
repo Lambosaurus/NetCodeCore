@@ -55,20 +55,12 @@ namespace NetCode.SyncPool
             lastObjectID = potentialObjectID;
             return potentialObjectID;
         }
-
-        uint lastRevision = 0;
-        private uint GetNewRevision()
-        {
-            return ++lastRevision;
-        }
         
         public SyncHandle RegisterEntity(object instance)
         {
-            Changed = true;
-
             SyncEntityDescriptor descriptor = entityGenerator.GetEntityDescriptor(instance.GetType().TypeHandle);
             SyncHandle handle = new SyncHandle(
-                new SynchronisableEntity(descriptor, GetNewObjectId()),
+                new SynchronisableEntity(descriptor, (ushort)GetNewObjectId()),
                 instance
                 );
 
@@ -79,79 +71,65 @@ namespace NetCode.SyncPool
 
         public void Synchronise()
         {
-            foreach (SyncHandle handle in SyncHandles.Values)
-            {
-                handle.sync.PullFromLocal(handle.Obj);
-                if (handle.sync.Changed) { Changed = true; }
-            }
+            uint candidateRevision = Revision + 1;
+            bool changesFound = TrackChanges(candidateRevision);
 
-            if (Changed)
+            if (changesFound)
             {
-                Payload payload = GenerateRevisionPayload();
-                foreach( NetworkConnection destination in Destinations )
+                Revision = candidateRevision;
+                Payload payload = GenerateRevisionPayload(Revision);
+
+                foreach (NetworkConnection destination in Destinations)
                 {
                     destination.Enqueue(payload);
                 }
             }
         }
         
-        private Payload GenerateRevisionPayload()
+        public bool TrackChanges(uint revision)
         {
-            uint revision = GetNewRevision();
-
-            int size = 0;
-            foreach (SyncHandle handle in SyncHandles.Values)
-            {
-                if (handle.sync.Changed)
-                {
-                    size += handle.sync.WriteToBufferSize();
-                }
-            }
-
-            PoolRevisionPayload payload = new PoolRevisionPayload(this, revision);
-            payload.AllocateContent(size);
+            bool changesFound = false;
 
             foreach (SyncHandle handle in SyncHandles.Values)
             {
-                if (handle.sync.Changed)
+                bool entityChanged = handle.sync.TrackChanges(handle.Obj, revision);
+                if (entityChanged)
                 {
-                    handle.sync.WriteToBuffer(payload.Data, ref payload.DataIndex, revision);
+                    changesFound = true;
                 }
             }
 
-            Changed = false;
-            
-            return payload;
+            return changesFound;
         }
-
-        public Payload GenerateRecoveryPayload(uint revision)
+        
+        public Payload GenerateRevisionPayload(uint revision)
         {
-            // TODO: PLEASE OPTIMISE OUT THIS CODE
-
+            List<uint> updatedEntities = new List<uint>();
+            
             int size = 0;
             foreach ( SyncHandle handle in SyncHandles.Values )
             {
                 if (handle.sync.ContainsRevision(revision))
                 {
                     size += handle.sync.WriteRevisionToBufferSize(revision);
+                    updatedEntities.Add(handle.sync.EntityID);
                 }
             }
 
-            if (size == 0) { return null; }
-
-            PoolRevisionPayload payload = new PoolRevisionPayload(this, revision);
-            payload.AllocateContent(size);
-
-            foreach (SyncHandle handle in SyncHandles.Values)
+            if (updatedEntities.Count > 0)
             {
-                // TODO: THIS CONTAINS REVISION CHECK NEEDS TO BE CULLED
-                if (handle.sync.ContainsRevision(revision))
+                PoolRevisionPayload payload = new PoolRevisionPayload(this, revision);
+                payload.AllocateContent(size);
+
+                foreach (ushort entityID in updatedEntities)
                 {
+                    SyncHandle handle = SyncHandles[entityID];
                     handle.sync.WriteRevisionToBuffer(payload.Data, ref payload.DataIndex, revision);
                 }
+                
+                return payload;
             }
-
-            return payload;
+            return null;
         }
     }
 }

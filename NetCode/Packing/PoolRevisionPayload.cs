@@ -49,7 +49,7 @@ namespace NetCode.Packing
 
         public override void OnTimeout(NetworkConnection connection)
         {
-            Payload payload = SyncPool.GenerateRecoveryPayload(Revision);
+            Payload payload = SyncPool.GenerateRevisionPayload(Revision);
             if (payload != null)
             {
                 connection.Enqueue(payload);

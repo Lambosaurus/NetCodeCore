@@ -8,7 +8,7 @@ using NetCode.Util;
 
 namespace NetCode.SyncEntity
 {
-    internal class SynchronisableEntity : IVersionable
+    internal class SynchronisableEntity
     {
         const int ID_HEADER_LENGTH = sizeof(ushort);
         const int TYPEID_HEADER_LENGTH = sizeof(ushort);
@@ -17,11 +17,11 @@ namespace NetCode.SyncEntity
 
         private SyncEntityDescriptor descriptor;
         private SynchronisableField[] fields;
-
-        public bool Changed { get; private set; } = true;
+        
         public uint Revision { get; private set; } = 0;
         public uint EntityID { get; private set; }
         public ushort TypeID { get { return descriptor.TypeID; } }
+        public bool Synchronised { get; protected set; } = false;
         
         internal SynchronisableEntity(SyncEntityDescriptor _descriptor, uint entityID)
         {
@@ -31,60 +31,11 @@ namespace NetCode.SyncEntity
             fields = descriptor.GenerateFields();
         }
 
-        /// <summary>
-        /// Returns the number of bytes required to write this object into the packet.
-        /// This returns 0 if no fields have changed.
-        /// </summary>
-        public int WriteToBufferSize()
-        {
-            int size = ID_HEADER_LENGTH + FIELD_COUNT_HEADER_LENGTH + TYPEID_HEADER_LENGTH;
-            foreach (SynchronisableField field in fields)
-            {
-                if (field.Changed)
-                {
-                    size += FIELDID_HEADER_LENGTH + field.WriteToBufferSize();
-                }
-            }
-            return size;
-        }
-        
         public static void ReadHeader(byte[] data, ref int index, out uint entityID, out ushort typeID)
         {
             entityID = Primitive.ReadUShort(data, ref index);
             typeID = Primitive.ReadUShort(data, ref index);
         }
-        
-        public void WriteToBuffer(byte[] data, ref int index, uint revision)
-        {
-            byte updatedFields = 0;
-            foreach (SynchronisableField field in fields)
-            {
-                if (field.Changed)
-                {
-                    updatedFields++;
-                }
-            }
-
-            Primitive.WriteUShort(data, ref index, (ushort)EntityID);
-            Primitive.WriteUShort(data, ref index, descriptor.TypeID);
-
-            Primitive.WriteByte(data, ref index, updatedFields);
-
-            for (int i = 0; i < descriptor.FieldCount; i++)
-            {
-                SynchronisableField field = fields[i];
-                if (field.Changed)
-                {
-                    // This MUST be written as a byte.
-                    Primitive.WriteByte(data, ref index, (byte)i);
-                    field.WriteToBuffer(data, ref index, revision);
-                }
-            }
-
-            Revision = revision;
-            Changed = false;
-        }
-
 
         public bool ContainsRevision(uint revision)
         {
@@ -92,6 +43,10 @@ namespace NetCode.SyncEntity
             {
                 // Can return immediately, because this we cannot have any newer content
                 return false;
+            }
+            else if (Revision == revision)
+            {
+                return true;
             }
 
             foreach (SynchronisableField field in fields)
@@ -116,38 +71,33 @@ namespace NetCode.SyncEntity
             }
             return size;
         }
-
-
+        
         public void WriteRevisionToBuffer(byte[] data, ref int index, uint revision)
         {
-            // This is duplicated code.
-            byte updatedFields = 0;
-            foreach (SynchronisableField field in fields)
+            List<byte> updatedFieldIDs = new List<byte>();
+
+            for (byte i = 0; i < fields.Length; i++)
             {
-                if (field.Revision == revision)
+                if (fields[i].Revision == revision)
                 {
-                    updatedFields++;
+                    updatedFieldIDs.Add(i);
                 }
             }
 
             Primitive.WriteUShort(data, ref index, (ushort)EntityID);
             Primitive.WriteUShort(data, ref index, descriptor.TypeID);
 
-            Primitive.WriteByte(data, ref index, updatedFields);
+            Primitive.WriteByte(data, ref index, (byte)updatedFieldIDs.Count);
 
-            for (int i = 0; i < descriptor.FieldCount; i++)
+            foreach (byte fieldID in updatedFieldIDs)
             {
-                SynchronisableField field = fields[i];
-                if (field.Revision == revision)
-                {
-                    // This MUST be written as a byte.
-                    Primitive.WriteByte(data, ref index, (byte)i);
-                    field.WriteToBuffer(data, ref index, revision);
-                }
+                SynchronisableField field = fields[fieldID];
+                Primitive.WriteByte(data, ref index, fieldID);
+                field.Write(data, ref index);
             }
         }
         
-        public void ReadFromBuffer(byte[] data, ref int index, uint revision)
+        public void ReadRevisionFromBuffer(byte[] data, ref int index, uint revision)
         {
             byte fieldCount = Primitive.ReadByte(data, ref index);
 
@@ -156,9 +106,11 @@ namespace NetCode.SyncEntity
                 //TODO: This is unsafe. The field ID may be out or range, and there
                 //      may be insufficient data remaining to call .PullFromBuffer with
                 byte fieldID = Primitive.ReadByte(data, ref index);
-                fields[fieldID].ReadFromBuffer(data, ref index, revision);
+                SynchronisableField field = fields[fieldID];
+                field.ReadChanges(data, ref index, revision);
+
+                if (!field.Synchronised) { Synchronised = false; }
             }
-            Changed = true;
 
             if (revision > Revision)
             {
@@ -166,27 +118,37 @@ namespace NetCode.SyncEntity
             }
         }
 
-        public void PullFromLocal(object obj)
+        public bool TrackChanges(object obj, uint revision)
         {
+            bool changesFound = false;
             for (int i = 0; i < descriptor.FieldCount; i++)
             {
                 object value = descriptor.GetField(obj, i);
-                fields[i].Update(value);
-                if (fields[i].Changed) { Changed = true; }
+                if (fields[i].TrackChanges(value, revision))
+                {
+                    changesFound = true;
+                }
             }
+            if (changesFound)
+            {
+                Revision = revision;
+            }
+            return changesFound;
         }
 
-        public void PushToLocal(object obj)
+        public void PushChanges(object obj)
         {
             for (int i = 0; i < descriptor.FieldCount; i++)
             {
-                if (fields[i].Changed)
+                SynchronisableField field = fields[i];
+                if (!field.Synchronised)
                 {
-                    object value = fields[i].GetValue();
+                    object value = field.GetValue();
                     descriptor.SetField(obj, i, value);
+                    field.Synchronised = true;
                 }
             }
-            Changed = false;
+            Synchronised = true;
         }
     }
 }

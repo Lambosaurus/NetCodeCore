@@ -11,7 +11,7 @@ namespace NetCode.SyncPool
     {
         public IEnumerable<SyncHandle> Handles  { get {  return SyncHandles.Values; } }
         public ushort PoolID { get; private set; }
-        public bool Changed { get; protected set; }
+        public uint Revision { get; protected set; }
 
         protected Dictionary<uint, SyncHandle> SyncHandles { get; private set; } = new Dictionary<uint, SyncHandle>();
 
@@ -21,7 +21,6 @@ namespace NetCode.SyncPool
         {
             entityGenerator = generator;
             PoolID = poolID;
-            Changed = false;
         }
     }
 }

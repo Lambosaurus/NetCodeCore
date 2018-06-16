@@ -45,7 +45,6 @@
     <Compile Include="Connection\UDPConnection.cs" />
     <Compile Include="Connection\VirtualConnection.cs" />
     <Compile Include="Util\DelegateGenerator.cs" />
-    <Compile Include="IVersionable.cs" />
     <Compile Include="NetCode.cs" />
     <Compile Include="Packing\Payload.cs" />
     <Compile Include="Packing\Packet.cs" />
