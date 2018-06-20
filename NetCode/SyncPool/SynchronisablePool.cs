@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 using NetCode.SyncEntity;
 
@@ -13,7 +12,7 @@ namespace NetCode.SyncPool
         public ushort PoolID { get; private set; }
         public uint Revision { get; protected set; }
 
-        protected Dictionary<uint, SyncHandle> SyncHandles { get; private set; } = new Dictionary<uint, SyncHandle>();
+        protected Dictionary<ushort, SyncHandle> SyncHandles { get; private set; } = new Dictionary<ushort, SyncHandle>();
 
         internal SyncEntityGenerator entityGenerator;
 
@@ -21,6 +20,32 @@ namespace NetCode.SyncPool
         {
             entityGenerator = generator;
             PoolID = poolID;
+        }
+
+        public SyncHandle GetHandleByObject(object obj)
+        {
+            foreach ( SyncHandle handle in SyncHandles.Values )
+            {
+                if (handle.Obj == obj)
+                {
+                    return handle;
+                }
+            }
+            return null;
+        }
+
+        public SyncHandle GetHandle(ushort entityID)
+        {
+            if (SyncHandles.ContainsKey(entityID))
+            {
+                return SyncHandles[entityID];
+            }
+            return null;
+        }
+
+        public bool HandleExists(ushort entityID)
+        {
+            return SyncHandles.ContainsKey(entityID);
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 using NetCode.Connection;
 using NetCode.Util;
@@ -10,18 +9,16 @@ namespace NetCode.Packing
 {
     public class AcknowledgementPayload : Payload
     {
+        public override PayloadType Type { get { return PayloadType.Acknowledgement; } }
+        public override bool AcknowledgementRequired { get { return false; } }
+
         public const int MAX_PACKET_IDS = byte.MaxValue;
         
         public uint[] PacketIDs { get; private set; }
         
-        private byte PacketCount;
         
-        public override PayloadType Type { get { return PayloadType.Acknowledgement; } }
-        public override bool AcknowledgementRequired { get { return false; } }
-
         public AcknowledgementPayload()
         {
-            
         }
 
         public AcknowledgementPayload(IEnumerable<uint> packetIDs)
@@ -31,54 +28,31 @@ namespace NetCode.Packing
             {
                 throw new NetcodeOverloadedException(string.Format("May not acknowledge more than {0} packets in one payload", MAX_PACKET_IDS));
             }
-
             PacketIDs = packetIDs.ToArray();
-            PacketCount = (byte)PacketIDs.Length;
-
-            WriteContent();
+            AllocateAndWrite();
         }
 
         public override void OnReception(NetworkConnection connection)
         {
-            ReadContent();
             foreach (uint packetID in PacketIDs)
             {
                 connection.AcknowledgePacket(packetID);
             }
         }
         
-        public override void WriteContentHeader()
+        public override void WriteContent()
         {
-            Primitive.WriteByte(Data, ref DataIndex, PacketCount);
+            Primitive.WriteUIntArray(Data, ref DataIndex, PacketIDs);
         }
 
-        public override void ReadContentHeader()
+        public override void ReadContent()
         {
-            PacketCount = Primitive.ReadByte(Data, ref DataIndex);
+            PacketIDs = Primitive.ReadUIntArray(Data, ref DataIndex);
         }
 
-        public override int ContentHeaderSize()
+        public override int ContentSize()
         {
-            return sizeof(byte);
-        }
-
-        private void ReadContent()
-        {
-            PacketIDs = new uint[PacketCount];
-            for (int i = 0; i < PacketCount; i++)
-            {
-                uint packetID = Primitive.ReadUInt(Data, ref DataIndex);
-                PacketIDs[i] = packetID;
-            }
-        }
-
-        private void WriteContent()
-        {
-            AllocateContent(PacketCount * sizeof(uint));
-            foreach (uint packetID in PacketIDs)
-            {
-                Primitive.WriteUInt(Data, ref DataIndex, packetID);
-            }
+            return Primitive.ArraySize(PacketIDs.Length, sizeof(uint));
         }
     }
 }

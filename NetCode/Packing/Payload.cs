@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 using NetCode.Util;
 using NetCode.Connection;
@@ -10,26 +9,33 @@ namespace NetCode.Packing
 {
     public abstract class Payload
     {
-        public enum PayloadType { None, Acknowledgement, PoolRevision }
+        public enum PayloadType { None, Acknowledgement, PoolRevision, PoolDeletion }
         public abstract PayloadType Type { get; }
 
-        internal byte[] Data;
-        internal int Size;
-        internal int DataStart;
-        internal int DataIndex;
+        public int Size { get; protected set; }
+
+        protected byte[] Data;
+        protected int DataStart;
+        protected int DataIndex;
 
         public const int PAYLOAD_HEADER_SIZE = sizeof(ushort) + sizeof(byte);
 
-        public abstract void WriteContentHeader();
-        public abstract void ReadContentHeader();
-        public abstract int ContentHeaderSize();
+        public abstract void WriteContent();
+        public abstract void ReadContent();
+        public abstract int ContentSize();
 
         public abstract bool AcknowledgementRequired { get; }
 
+
+        /// <summary>
+        /// Care must be taken when overriding the OnTimeout property, as this may be called from multiple NetworkConnections
+        /// if the payload is enqueued on multiple connections.
+        /// </summary>
+        /// <param name="connection"></param>
         public virtual void OnTimeout(NetworkConnection connection)
         {
         }
-
+        
         public abstract void OnReception(NetworkConnection connection);
 
 
@@ -49,25 +55,25 @@ namespace NetCode.Packing
             size = Primitive.ReadUShort(data, ref index);
         }
         
-        public void AllocateContent(int contentSize)
+        public void AllocateAndWrite()
         {
-            Size = contentSize + ContentHeaderSize() + PAYLOAD_HEADER_SIZE;
+            Size = ContentSize() + PAYLOAD_HEADER_SIZE;
             Data = new byte[Size];
             DataStart = 0;
             DataIndex = DataStart;
 
             WritePayloadHeader();
-            WriteContentHeader();
+            WriteContent();
         }
 
-        public void AllocateFromExisting(byte[] data, int start, int size)
+        public void ReadFromExisting(byte[] data, int start, int size)
         {
             Size = size;
             Data = data;
             DataStart = start;
             DataIndex = DataStart + PAYLOAD_HEADER_SIZE; // Skip datagram header.
 
-            ReadContentHeader();
+            ReadContent();
         }
 
         public static Payload Decode(byte[] data, ref int index)
@@ -82,7 +88,7 @@ namespace NetCode.Packing
                 return null;
             }
 
-            payload.AllocateFromExisting(data, index, size);
+            payload.ReadFromExisting(data, index, size);
             index += size;
 
             return payload;
@@ -94,19 +100,16 @@ namespace NetCode.Packing
             index += Size;
         }
         
-        public void ClearContent()
-        {
-            Data = null;
-        }
-        
         public static Payload GetPayloadByType(PayloadType payloadType)
         {
             switch (payloadType)
             {
-                case (PayloadType.PoolRevision):
-                    return new PoolRevisionPayload();
                 case (PayloadType.Acknowledgement):
                     return new AcknowledgementPayload();
+                case (PayloadType.PoolRevision):
+                    return new PoolRevisionPayload();
+                case (PayloadType.PoolDeletion):
+                    return new PoolDeletionPayload();
                 default:
                     return null;
             }

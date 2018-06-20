@@ -44,6 +44,8 @@
     <Compile Include="Connection\NetworkConnection.cs" />
     <Compile Include="Connection\UDPConnection.cs" />
     <Compile Include="Connection\VirtualConnection.cs" />
+    <Compile Include="Packing\PoolDeletionPayload.cs" />
+    <Compile Include="Util\ListExtentions.cs" />
     <Compile Include="Util\DelegateGenerator.cs" />
     <Compile Include="NetCode.cs" />
     <Compile Include="Packing\Payload.cs" />

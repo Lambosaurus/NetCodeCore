@@ -1,25 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 using NetCode.Connection;
 using NetCode.SyncEntity;
 using NetCode.Packing;
+using NetCode.Util;
 
 namespace NetCode.SyncPool
 {
     public class OutgoingSyncPool : SynchronisablePool
     {
-        const uint MAX_POOL_OBJECTS = ushort.MaxValue;
-
+        const uint MAX_ENTITIES = ushort.MaxValue;
+        
+        private List<NetworkConnection> Destinations = new List<NetworkConnection>();
+        
         internal OutgoingSyncPool(SyncEntityGenerator generator, ushort poolID) : base(generator, poolID)
         {
 
         }
-
-        private List<NetworkConnection> Destinations = new List<NetworkConnection>();
-
+        
         public void AddDestination(NetworkConnection connection)
         {
             Destinations.Add(connection);
@@ -28,43 +28,42 @@ namespace NetCode.SyncPool
         /// <summary>
         /// Gets the next free object ID
         /// </summary>
-        private uint lastObjectID = 0;
-        private uint GetNewObjectId()
+        private ushort lastEntityID = 0;
+        private ushort GetNextEntityID()
         {
-            uint potentialObjectID = lastObjectID + 1;
+            ushort potentialEntityID = (ushort)(lastEntityID + 1);
 
             //TODO: This search will start to choke when the dict is nearly full of keys.
             //      Somone should be informed when this happens.
 
             // start searching for free keys from where we found our last free key
             // This will be empty most of the time
-            while (SyncHandles.ContainsKey(potentialObjectID))
+            while (SyncHandles.ContainsKey(potentialEntityID))
             {
-                potentialObjectID++;
-
-                // Wrap search back to start of id space if we hit end of valid space
-                if (potentialObjectID > MAX_POOL_OBJECTS) { potentialObjectID = 0; }
-
+                // We rely on ushort overflow to wrap search around to 0 when we hit the last value.
+                potentialEntityID++;
+                
                 // We hit the starting point of our search. We must be out of ID's. Time to throw an exeption.
-                if (potentialObjectID == lastObjectID)
+                if (potentialEntityID == lastEntityID)
                 {
-                    throw new NetcodeOverloadedException(string.Format("Sync pool has been filled. The pool should not contain more than {0} items.", MAX_POOL_OBJECTS));
+                    throw new NetcodeOverloadedException(string.Format("Sync pool has been filled. The pool should not contain more than {0} entities.", MAX_ENTITIES));
                 }
             }
-
-            lastObjectID = potentialObjectID;
-            return potentialObjectID;
+            
+            lastEntityID = potentialEntityID;
+            return potentialEntityID;
         }
         
         public SyncHandle RegisterEntity(object instance)
         {
+            ushort entityID = GetNextEntityID();
             SyncEntityDescriptor descriptor = entityGenerator.GetEntityDescriptor(instance.GetType().TypeHandle);
             SyncHandle handle = new SyncHandle(
-                new SynchronisableEntity(descriptor, (ushort)GetNewObjectId()),
+                new SynchronisableEntity(descriptor, entityID),
                 instance
                 );
 
-            SyncHandles[handle.sync.EntityID] = handle;
+            SyncHandles[handle.EntityID] = handle;
 
             return handle;
         }
@@ -72,59 +71,89 @@ namespace NetCode.SyncPool
         public void Synchronise()
         {
             uint candidateRevision = Revision + 1;
-            bool changesFound = TrackChanges(candidateRevision);
+            bool changesFound = TrackChanges(candidateRevision, out List<ushort> deletedEntityIDs);
 
             if (changesFound)
             {
                 Revision = candidateRevision;
                 Payload payload = GenerateRevisionPayload(Revision);
+                BroadcastPayload(payload);
+            }
 
-                foreach (NetworkConnection destination in Destinations)
+            if (deletedEntityIDs.Count > 0)
+            {
+                Revision = candidateRevision;
+                foreach ( ushort[] deletedIDs in deletedEntityIDs.Segment(PoolDeletionPayload.MAX_ENTITY_IDS))
                 {
-                    destination.Enqueue(payload);
+                    Payload payload = new PoolDeletionPayload(PoolID, Revision, deletedIDs);
+                    BroadcastPayload(payload);
                 }
             }
         }
+
+        private void BroadcastPayload(Payload payload)
+        {
+            foreach (NetworkConnection destination in Destinations)
+            {
+                destination.Enqueue(payload);
+            }
+        }
         
-        public bool TrackChanges(uint revision)
+        private bool TrackChanges(uint revision, out List<ushort> deletedEntities)
         {
             bool changesFound = false;
+            deletedEntities = new List<ushort>();
 
             foreach (SyncHandle handle in SyncHandles.Values)
             {
-                bool entityChanged = handle.sync.TrackChanges(handle.Obj, revision);
-                if (entityChanged)
+                if (handle.State == SyncHandle.SyncState.Live)
                 {
-                    changesFound = true;
+                    bool entityChanged = handle.Sync.TrackChanges(handle.Obj, revision);
+                    if (entityChanged)
+                    {
+                        changesFound = true;
+                    }
                 }
+                else if (handle.State == SyncHandle.SyncState.Deleted)
+                {
+                    deletedEntities.Add(handle.EntityID);
+                }
+                // SyncState.Suspended is ignored
+            }
+            
+            foreach (ushort entityID in deletedEntities)
+            {
+                SyncHandles.Remove(entityID);
             }
 
             return changesFound;
         }
         
-        public Payload GenerateRevisionPayload(uint revision)
+        internal Payload GenerateRevisionPayload(uint revision)
         {
             List<uint> updatedEntities = new List<uint>();
             
             int size = 0;
             foreach ( SyncHandle handle in SyncHandles.Values )
             {
-                if (handle.sync.ContainsRevision(revision))
+                if (handle.Sync.ContainsRevision(revision))
                 {
-                    size += handle.sync.WriteRevisionToBufferSize(revision);
-                    updatedEntities.Add(handle.sync.EntityID);
+                    size += handle.Sync.WriteRevisionToBufferSize(revision);
+                    updatedEntities.Add(handle.EntityID);
                 }
             }
 
             if (updatedEntities.Count > 0)
             {
-                PoolRevisionPayload payload = new PoolRevisionPayload(this, revision);
-                payload.AllocateContent(size);
+                PoolRevisionPayload payload = new PoolRevisionPayload(this, revision, size);
+                payload.AllocateAndWrite();
 
+                payload.GetRevisionContentBuffer(out byte[] data, out int index, out int count);
+                
                 foreach (ushort entityID in updatedEntities)
                 {
                     SyncHandle handle = SyncHandles[entityID];
-                    handle.sync.WriteRevisionToBuffer(payload.Data, ref payload.DataIndex, revision);
+                    handle.Sync.WriteRevisionToBuffer(data, ref index, revision);
                 }
                 
                 return payload;

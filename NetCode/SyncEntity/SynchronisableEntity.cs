@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 using NetCode.SyncField;
 using NetCode.Util;
@@ -18,20 +17,24 @@ namespace NetCode.SyncEntity
         private SyncEntityDescriptor descriptor;
         private SynchronisableField[] fields;
         
-        public uint Revision { get; private set; } = 0;
-        public uint EntityID { get; private set; }
+        public uint Revision { get; private set; }
+        public ushort EntityID { get; private set; }
         public ushort TypeID { get { return descriptor.TypeID; } }
         public bool Synchronised { get; protected set; } = false;
         
-        internal SynchronisableEntity(SyncEntityDescriptor _descriptor, uint entityID)
+        internal SynchronisableEntity(SyncEntityDescriptor _descriptor, ushort entityID, uint revision = 0)
         {
             descriptor = _descriptor;
             EntityID = entityID;
 
             fields = descriptor.GenerateFields();
+
+            // The revision can be initialised to the creation revision
+            // This protects the entity against deletion from an out of date deletion payload
+            Revision = revision;
         }
 
-        public static void ReadHeader(byte[] data, ref int index, out uint entityID, out ushort typeID)
+        public static void ReadHeader(byte[] data, ref int index, out ushort entityID, out ushort typeID)
         {
             entityID = Primitive.ReadUShort(data, ref index);
             typeID = Primitive.ReadUShort(data, ref index);
@@ -84,7 +87,7 @@ namespace NetCode.SyncEntity
                 }
             }
 
-            Primitive.WriteUShort(data, ref index, (ushort)EntityID);
+            Primitive.WriteUShort(data, ref index, EntityID);
             Primitive.WriteUShort(data, ref index, descriptor.TypeID);
 
             Primitive.WriteByte(data, ref index, (byte)updatedFieldIDs.Count);

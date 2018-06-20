@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
 using NetCode.SyncEntity;
 using NetCode.Connection;
 using NetCode.Packing;
@@ -17,17 +15,7 @@ namespace NetCode.SyncPool
         {
 
         }
-
-        public void SpawnEntity(uint entityID, ushort typeID)
-        {
-            SyncEntityDescriptor descriptor = entityGenerator.GetEntityDescriptor(typeID);
-
-            SyncHandles[entityID] = new SyncHandle(
-                new SynchronisableEntity(descriptor, entityID),
-                descriptor.ConstructObject()
-                );
-        }
-
+        
         public void SetSource(NetworkConnection connection)
         {
             if (SourceConnection != null)
@@ -38,51 +26,75 @@ namespace NetCode.SyncPool
             SourceConnection.AttachSyncPool(this);
         }
 
-        private void AbandonEntity(uint entityID)
+        public void Synchronise()
         {
-            SyncHandles[entityID].state = SyncHandle.SyncState.Deleted;
+            foreach (SyncHandle handle in SyncHandles.Values)
+            {
+                if (!handle.Sync.Synchronised)
+                {
+                    handle.Sync.PushChanges(handle.Obj);
+                }
+            }
+        }
+
+        internal void RemoveEntity(ushort entityID, uint revision)
+        {
+            if (SyncHandles.ContainsKey(entityID))
+            {
+                SyncHandle handle = SyncHandles[entityID];
+                if (handle.Sync.Revision < revision)
+                {
+                    // Only abandon the entity if it has more recent content.
+                    AbandonEntity(entityID);
+                }
+            }
+        }
+
+        private void AbandonEntity(ushort entityID)
+        {
+            SyncHandles[entityID].State = SyncHandle.SyncState.Deleted;
             SyncHandles.Remove(entityID);
         }
 
-        public void UnpackRevisionDatagram(PoolRevisionPayload payload)
+        private void SpawnEntity(ushort entityID, ushort typeID, uint revision)
         {
-            int end = payload.DataStart + payload.Size;
-            while (payload.DataIndex < end)
+            SyncEntityDescriptor descriptor = entityGenerator.GetEntityDescriptor(typeID);
+
+            SyncHandles[entityID] = new SyncHandle(
+                new SynchronisableEntity(descriptor, entityID, revision),
+                descriptor.ConstructObject()
+                );
+        }
+
+        internal void UnpackRevisionDatagram(PoolRevisionPayload payload)
+        {
+            payload.GetRevisionContentBuffer(out byte[] data, out int index, out int count);
+            int end = index + count;
+            while (index < end)
             {
-                uint entityID;
+                ushort entityID;
                 ushort typeID;
-                SynchronisableEntity.ReadHeader(payload.Data, ref payload.DataIndex, out entityID, out typeID);
+                SynchronisableEntity.ReadHeader(data, ref index, out entityID, out typeID);
 
                 if ( SyncHandles.ContainsKey(entityID) )
                 {
                     // If entityID exists, but is incorrect type:
                     // Assume old entity should have been deleted, and replace it
-                    if ( SyncHandles[entityID].sync.TypeID != typeID )
+                    if ( SyncHandles[entityID].Sync.TypeID != typeID )
                     {
                         AbandonEntity(entityID);
-                        SpawnEntity(entityID, typeID);
+                        SpawnEntity(entityID, typeID, payload.Revision);
                     }
                 }
                 else
                 {
                     // Create new entity
-                    SpawnEntity(entityID, typeID);
+                    SpawnEntity(entityID, typeID, payload.Revision);
                 }
                 
-                SynchronisableEntity entity = SyncHandles[entityID].sync;
+                SynchronisableEntity entity = SyncHandles[entityID].Sync;
 
-                entity.ReadRevisionFromBuffer(payload.Data, ref payload.DataIndex, payload.Revision);
-            }
-        }
-
-        public void Synchronise()
-        {
-            foreach (SyncHandle handle in SyncHandles.Values)
-            {
-                if (!handle.sync.Synchronised)
-                {
-                    handle.sync.PushChanges(handle.Obj);
-                }
+                entity.ReadRevisionFromBuffer(data, ref index, payload.Revision);
             }
         }
     }

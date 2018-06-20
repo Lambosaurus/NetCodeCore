@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 using NetCode.SyncEntity;
 
@@ -25,15 +24,16 @@ namespace NetCode.SyncPool
             Deleted,
         };
 
-        internal SynchronisableEntity sync;
+        internal SynchronisableEntity Sync;
         public Object Obj { get; internal set; }
-        public SyncState state;
+        public SyncState State { get; set; }
+        public ushort EntityID { get { return Sync.EntityID; } }
 
         internal SyncHandle(SynchronisableEntity syncEntity, Object syncObject)
         {
-            sync = syncEntity;
+            Sync = syncEntity;
             Obj = syncObject;
-            state = SyncState.Live;
+            State = SyncState.Live;
         }
     }
 

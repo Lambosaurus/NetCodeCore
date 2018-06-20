@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 using System.Diagnostics;
 
 using NetCode.Packing;
 using NetCode.SyncPool;
+using NetCode.Util;
 
 namespace NetCode.Connection
 {
@@ -19,7 +19,7 @@ namespace NetCode.Connection
         private List<Packet> pendingPackets = new List<Packet>();
         private List<Payload> payloadQueue = new List<Payload>();
 
-        private Dictionary<ushort, IncomingSyncPool> recievingPools = new Dictionary<ushort, IncomingSyncPool>();
+        private Dictionary<ushort, IncomingSyncPool> IncomingPools = new Dictionary<ushort, IncomingSyncPool>();
 
         private List<uint> packetAcknowledgementQueue = new List<uint>();
         
@@ -33,23 +33,23 @@ namespace NetCode.Connection
 
         internal void AttachSyncPool(IncomingSyncPool syncPool)
         {
-            if (recievingPools.ContainsKey(syncPool.PoolID))
+            if (IncomingPools.ContainsKey(syncPool.PoolID))
             {
                 throw new NetcodeOverloadedException(string.Format("An IncomingSyncPool with PoolID of {0} has already been attached to this NetworkConnection", syncPool.PoolID));
             }
-            recievingPools[syncPool.PoolID] = syncPool;
+            IncomingPools[syncPool.PoolID] = syncPool;
         }
 
         internal void DetachSyncPool(IncomingSyncPool syncPool)
         {
-            recievingPools.Remove(syncPool.PoolID);
+            IncomingPools.Remove(syncPool.PoolID);
         }
         
         internal IncomingSyncPool GetSyncPool(ushort poolID)
         {
-            if (recievingPools.ContainsKey(poolID))
+            if (IncomingPools.ContainsKey(poolID))
             {
-                return recievingPools[poolID];
+                return IncomingPools[poolID];
             }
             return null;
         }
@@ -105,7 +105,10 @@ namespace NetCode.Connection
         {
             if ( packetAcknowledgementQueue.Count > 0 )
             {
-                Enqueue(new AcknowledgementPayload(packetAcknowledgementQueue));
+                foreach (uint[] packetIDs in packetAcknowledgementQueue.Segment(PoolDeletionPayload.MAX_ENTITY_IDS))
+                {
+                    Enqueue(new AcknowledgementPayload(packetIDs));
+                }  
                 packetAcknowledgementQueue.Clear();
             }
         }
