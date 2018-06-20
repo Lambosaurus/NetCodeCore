@@ -12,6 +12,8 @@ using NetCode;
 using NetCode.SyncPool;
 using NetCode.Connection;
 
+using NetcodeTest.Entities;
+
 namespace NetcodeTest
 {
     public class TestGame : Microsoft.Xna.Framework.Game
@@ -25,7 +27,8 @@ namespace NetcodeTest
         VirtualConnection outgoingConnection;
         VirtualConnection incomingConnection;
 
-        Entity entity;
+        PlayerEntity player;
+        List<Entity> entities;
 
         SpriteFont font;
         
@@ -34,7 +37,11 @@ namespace NetcodeTest
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
-            entity = new Entity( new Vector2(200,200), Entity.ColorNo.Blue);
+            IsMouseVisible = true;
+
+            player = new PlayerEntity( new Vector2(200,200), PlayerEntity.ColorNo.Blue);
+            entities = new List<Entity>();
+            entities.Add(player);
         }
         
         protected override void Initialize()
@@ -43,6 +50,7 @@ namespace NetcodeTest
         }
 
         KeyboardState lastKeys;
+        MouseState lastMouse;
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
@@ -52,24 +60,26 @@ namespace NetcodeTest
 
             NetcodeFieldSupport.RegisterCustomFields(netcode);
 
-            netcode.RegisterType(typeof(Entity));
+            netcode.RegisterType(typeof(PlayerEntity));
+            netcode.RegisterType(typeof(BulletEntity));
             
             outgoingConnection = new VirtualConnection();
             incomingConnection = new VirtualConnection();
             outgoingConnection.Connect(incomingConnection);
 
-            outgoingConnection.Settings.PacketLoss = 0.5;
-            outgoingConnection.Settings.LatencyMin = 50;
-            outgoingConnection.Settings.LatencyMax = 100;
+            outgoingConnection.Settings.PacketLoss = 0.0;
+            outgoingConnection.Settings.LatencyMin = 0;
+            outgoingConnection.Settings.LatencyMax = 500;
 
             outgoingPool = netcode.GenerateOutgoingPool(1);
             incomingPool = netcode.GenerateIncomingPool(1);
             outgoingPool.AddDestination(outgoingConnection);
             incomingPool.SetSource(incomingConnection);
             
-            outgoingPool.RegisterEntity(entity);
+            outgoingPool.RegisterEntity(player);
 
             lastKeys = Keyboard.GetState();
+            lastMouse = Mouse.GetState();
         }
 
         protected override void UnloadContent()
@@ -77,6 +87,7 @@ namespace NetcodeTest
         }
 
         int tick = 0;
+        int fireTick = 0;
         
 
         protected override void Update(GameTime gameTime)
@@ -87,6 +98,7 @@ namespace NetcodeTest
             }
 
             KeyboardState keys = Keyboard.GetState();
+            MouseState mouse = Mouse.GetState();
 
             Vector2 control = new Vector2(0,0);
             if (keys.IsKeyDown(Keys.Down))
@@ -107,18 +119,47 @@ namespace NetcodeTest
             }
             if (keys.IsKeyDown(Keys.Space) && !lastKeys.IsKeyDown(Keys.Space))
             {
-                entity.color++;
-                if (entity.color > (Entity.ColorNo)2)
+                player.color++;
+                if (player.color > (PlayerEntity.ColorNo)2)
                 {
-                    entity.color = (Entity.ColorNo)0;
+                    player.color = (PlayerEntity.ColorNo)0;
                 }
             }
 
-            entity.velocity = control;
+            player.velocity = control;
+            
+            if (fireTick > 0)
+            {
+                fireTick--;
+            }
+            else
+            {
+                if (mouse.LeftButton == ButtonState.Pressed)
+                {
+                    fireTick = 10;
+                    double angle = Util.AngleTo(player.position, mouse.Position.ToVector2());
+                    BulletEntity bullet = new BulletEntity(player.position, angle);
+                    entities.Add(bullet);
+                    outgoingPool.RegisterEntity(bullet);
+                }
+            }
+            
+            foreach (Entity entity in entities)
+            {
+                entity.Update();
+            }
 
-            entity.Update();
+            for (int i = 0; i < entities.Count; i++)
+            {
+                if (entities[i].expired)
+                {
+                    outgoingPool.GetHandleByObject(entities[i]).State = SyncHandle.SyncState.Deleted;
+                    entities.RemoveAt(i);
+                }
+            }
+            
 
-            if (++tick >= 10)
+            if (++tick >= 5)
             {
                 tick = 0;
                 outgoingPool.Synchronise();
@@ -129,6 +170,7 @@ namespace NetcodeTest
             incomingPool.Synchronise();
 
             lastKeys = keys;
+            lastMouse = mouse;
             base.Update(gameTime);
         }
 
@@ -151,12 +193,16 @@ namespace NetcodeTest
 
             spriteBatch.Begin();
             
-            entity.Draw(spriteBatch);
+
+            foreach (Entity entity in entities)
+            {
+                entity.Draw(spriteBatch, true);
+            }
 
             foreach (SyncHandle handle in incomingPool.Handles)
             {
                 Entity entity = (Entity)(handle.Obj);
-                entity.Draw(spriteBatch);
+                entity.Draw(spriteBatch, false);
             }
 
             spriteBatch.DrawString(font, GetConnectionStatsString(outgoingConnection.Stats), new Vector2(0, 0), Color.White);

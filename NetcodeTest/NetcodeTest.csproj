@@ -41,11 +41,14 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Entity.cs" />
+    <Compile Include="Entities\Entity.cs" />
+    <Compile Include="Entities\BulletEntity.cs" />
+    <Compile Include="Entities\PlayerEntity.cs" />
     <Compile Include="TestGame.cs" />
     <Compile Include="NetcodeFieldSupport.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">
