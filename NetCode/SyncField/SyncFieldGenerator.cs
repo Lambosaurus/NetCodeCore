@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 using System.Reflection;
 using NetCode.Util;
@@ -32,6 +31,7 @@ namespace NetCode.SyncField
             RegisterFieldType(typeof(SynchronisableDouble), typeof(double));
             RegisterFieldType(typeof(SynchronisableString), typeof(string));
             RegisterFieldType(typeof(SynchronisableHalf), typeof(float), SyncFlags.HalfPrecisionFloats);
+            RegisterFieldType(typeof(SynchronisableFloat), typeof(double), SyncFlags.HalfPrecisionFloats);
         }
 
         internal Func<object> LookupConstructorForSyncField(Type type, SyncFlags syncFlags)

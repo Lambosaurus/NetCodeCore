@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 using NetCode.Util;
 
@@ -133,7 +132,7 @@ namespace NetCode.SyncField
         public override void SetValue(object new_value) { value = (string)new_value; }
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (string)new_value == value; }
-        public override int WriteToBufferSize() { return value.Length + 1; }
+        public override int WriteToBufferSize() { return Primitive.ArraySize(value.Length, sizeof(byte)); }
         public override void Write(byte[] data, ref int index) { Primitive.WriteString(data, ref index, value); }
         public override void Read(byte[] data, ref int index) { value = Primitive.ReadString(data, ref index); }
         public override void Skip(byte[] data, ref int index) { Primitive.ReadString(data, ref index); }
@@ -157,7 +156,7 @@ namespace NetCode.SyncField
         public override void SetValue(object new_value) { value = (byte[])((byte[])new_value).Clone(); }
         public override object GetValue() { return value.Clone(); }
         public override bool ValueEqual(object new_value) {  return value.SequenceEqual((byte[])new_value); }
-        public override int WriteToBufferSize() { return value.Length+1; }
+        public override int WriteToBufferSize() { return Primitive.ArraySize(value.Length, sizeof(byte)); }
         public override void Write(byte[] data, ref int index) { Primitive.WriteByteArray(data, ref index, value); }
         public override void Read(byte[] data, ref int index) { value = Primitive.ReadByteArray(data, ref index); }
         public override void Skip(byte[] data, ref int index) { Primitive.ReadByte(data, ref index); }

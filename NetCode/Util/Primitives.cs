@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
+
 
 namespace NetCode.Util
 {
@@ -67,6 +67,22 @@ namespace NetCode.Util
         {
             data[index++] = (byte)value.Length;
             foreach (byte b in value) { data[index++] = b; }
+        }
+        public static void WriteUShortArray(byte[] data, ref int index, ushort[] values)
+        {
+            data[index++] = (byte)values.Length;
+            foreach (ushort value in values)
+            {
+                WriteUShort(data, ref index, value);
+            }
+        }
+        public static void WriteUIntArray(byte[] data, ref int index, uint[] values)
+        {
+            data[index++] = (byte)values.Length;
+            foreach (uint value in values)
+            {
+                WriteUInt(data, ref index, value);
+            }
         }
 
         public static byte ReadByte(byte[] data, ref int index)
@@ -143,6 +159,31 @@ namespace NetCode.Util
             byte[] value = new byte[length];
             for (int i = 0; i < length; i++) { value[index] = data[index++]; }
             return value;
+        }
+        public static ushort[] ReadUShortArray(byte[] data, ref int index)
+        {
+            byte length = data[index++];
+            ushort[] value = new ushort[length];
+            for (int i = 0; i < length; i++)
+            {
+                value[i] = ReadUShort(data, ref index);
+            }
+            return value;
+        }
+        public static uint[] ReadUIntArray(byte[] data, ref int index)
+        {
+            byte length = data[index++];
+            uint[] value = new uint[length];
+            for (int i = 0; i < length; i++)
+            {
+                value[i] = ReadUInt(data, ref index);
+            }
+            return value;
+        }
+
+        public static int ArraySize(int length, int itemsize)
+        {
+            return sizeof(byte) + (length * itemsize);
         }
     }
 }
