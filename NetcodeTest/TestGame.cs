@@ -67,9 +67,9 @@ namespace NetcodeTest
             incomingConnection = new VirtualConnection();
             outgoingConnection.Connect(incomingConnection);
 
-            outgoingConnection.Settings.PacketLoss = 0.0;
-            outgoingConnection.Settings.LatencyMin = 0;
-            outgoingConnection.Settings.LatencyMax = 500;
+            outgoingConnection.Settings.PacketLoss = 0.05;
+            outgoingConnection.Settings.LatencyMin = 150;
+            outgoingConnection.Settings.LatencyMax = 200;
 
             outgoingPool = netcode.GenerateOutgoingPool(1);
             incomingPool = netcode.GenerateIncomingPool(1);
@@ -136,7 +136,7 @@ namespace NetcodeTest
             {
                 if (mouse.LeftButton == ButtonState.Pressed)
                 {
-                    fireTick = 10;
+                    fireTick = 2;
                     double angle = Util.AngleTo(player.position, mouse.Position.ToVector2());
                     BulletEntity bullet = new BulletEntity(player.position, angle);
                     entities.Add(bullet);

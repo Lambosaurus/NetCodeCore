@@ -11,10 +11,9 @@ namespace NetCode.SyncPool
 {
     public class OutgoingSyncPool : SynchronisablePool
     {
-        const uint MAX_ENTITIES = ushort.MaxValue;
-        
+
         private List<NetworkConnection> Destinations = new List<NetworkConnection>();
-        
+
         internal OutgoingSyncPool(SyncEntityGenerator generator, ushort poolID) : base(generator, poolID)
         {
 
@@ -24,35 +23,48 @@ namespace NetCode.SyncPool
         {
             Destinations.Add(connection);
         }
-
+        
+        
         /// <summary>
         /// Gets the next free object ID
         /// </summary>
         private ushort lastEntityID = 0;
         private ushort GetNextEntityID()
         {
-            ushort potentialEntityID = (ushort)(lastEntityID + 1);
+            if (ResizeSyncHandleArrayReccommended())
+            {
+                ResizeSyncHandleArray();
+            }
 
+            ushort potentialEntityID = (ushort)(lastEntityID + 1);
+            if (potentialEntityID >= SyncSlots.Length) { potentialEntityID = 0; }
+            
             //TODO: This search will start to choke when the dict is nearly full of keys.
             //      Somone should be informed when this happens.
 
             // start searching for free keys from where we found our last free key
             // This will be empty most of the time
-            while (SyncHandles.ContainsKey(potentialEntityID))
+            while (SyncSlots[potentialEntityID].Handle != null)
             {
-                // We rely on ushort overflow to wrap search around to 0 when we hit the last value.
                 potentialEntityID++;
+
+                if (potentialEntityID >= SyncSlots.Length)
+                {
+                    // Wrap potentialID
+                    potentialEntityID = 0;
+                }
                 
                 // We hit the starting point of our search. We must be out of ID's. Time to throw an exeption.
                 if (potentialEntityID == lastEntityID)
                 {
-                    throw new NetcodeOverloadedException(string.Format("Sync pool has been filled. The pool should not contain more than {0} entities.", MAX_ENTITIES));
+                    throw new NetcodeOverloadedException(string.Format("Sync pool has been filled. The pool should not contain more than {0} entities.", MAX_SYNCHANDLE_COUNT));
                 }
             }
             
             lastEntityID = potentialEntityID;
             return potentialEntityID;
         }
+        
         
         public SyncHandle RegisterEntity(object instance)
         {
@@ -63,8 +75,7 @@ namespace NetCode.SyncPool
                 instance
                 );
 
-            SyncHandles[handle.EntityID] = handle;
-
+            AddHandle(handle);
             return handle;
         }
 
@@ -104,7 +115,7 @@ namespace NetCode.SyncPool
             bool changesFound = false;
             deletedEntities = new List<ushort>();
 
-            foreach (SyncHandle handle in SyncHandles.Values)
+            foreach (SyncHandle handle in SyncHandles)
             {
                 if (handle.State == SyncHandle.SyncState.Live)
                 {
@@ -123,7 +134,7 @@ namespace NetCode.SyncPool
             
             foreach (ushort entityID in deletedEntities)
             {
-                SyncHandles.Remove(entityID);
+                RemoveHandle(entityID, revision);
             }
 
             return changesFound;
@@ -134,7 +145,7 @@ namespace NetCode.SyncPool
             List<uint> updatedEntities = new List<uint>();
             
             int size = 0;
-            foreach ( SyncHandle handle in SyncHandles.Values )
+            foreach ( SyncHandle handle in SyncHandles )
             {
                 if (handle.Sync.ContainsRevision(revision))
                 {
@@ -152,7 +163,7 @@ namespace NetCode.SyncPool
                 
                 foreach (ushort entityID in updatedEntities)
                 {
-                    SyncHandle handle = SyncHandles[entityID];
+                    SyncHandle handle = SyncSlots[entityID].Handle;
                     handle.Sync.WriteRevisionToBuffer(data, ref index, revision);
                 }
                 

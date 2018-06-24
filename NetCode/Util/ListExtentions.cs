@@ -34,7 +34,7 @@ namespace NetCode.Util
                 list.CopyTo(index, segment, 0, remaining);
                 segments.Add(segment);
             }
-            
+
             return segments;
         }
     }
