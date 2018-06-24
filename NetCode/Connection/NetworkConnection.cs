@@ -13,7 +13,7 @@ namespace NetCode.Connection
     public abstract class NetworkConnection
     {
         public ConnectionStats Stats { get; private set; }
-        public uint PacketTimeout { get; set; } = 1000;
+        public int PacketTimeout { get; set; } = 1000;
 
         private Stopwatch timer;
         private List<Packet> pendingPackets = new List<Packet>();
