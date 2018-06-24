@@ -101,19 +101,19 @@ namespace NetcodeTest
             MouseState mouse = Mouse.GetState();
 
             Vector2 control = new Vector2(0,0);
-            if (keys.IsKeyDown(Keys.Down))
+            if (keys.IsKeyDown(Keys.S))
             {
                 control.Y += 1;
             }
-            if (keys.IsKeyDown(Keys.Up))
+            if (keys.IsKeyDown(Keys.W))
             {
                 control.Y -= 1;
             }
-            if (keys.IsKeyDown(Keys.Right))
+            if (keys.IsKeyDown(Keys.D))
             {
                 control.X += 1;
             }
-            if (keys.IsKeyDown(Keys.Left))
+            if (keys.IsKeyDown(Keys.A))
             {
                 control.X -= 1;
             }

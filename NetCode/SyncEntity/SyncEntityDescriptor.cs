@@ -18,6 +18,9 @@ namespace NetCode.SyncEntity
         public ushort TypeID { get; private set; }
 
         private const BindingFlags FIELD_SEARCH_FLAGS = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+        
+        // This is a set of fields used in the odd cases where an entity update must be skipped.
+        private SynchronisableField[] StaticFields;
 
         public SyncEntityDescriptor(SyncFieldGenerator fieldGenerator, Type entityType, ushort typeID)
         {
@@ -46,6 +49,8 @@ namespace NetCode.SyncEntity
 
             FieldCount = fieldDescriptors.Count;
             if (FieldCount >= byte.MaxValue) { throw new NetcodeOverloadedException(string.Format("Type {0} contains more than {1} synchronisable fields.", entityType.Name, byte.MaxValue)); }
+
+            StaticFields = GenerateFields();
         }
 
         public SynchronisableField[] GenerateFields()
@@ -58,15 +63,19 @@ namespace NetCode.SyncEntity
             return fields;
         }
 
-
-        public void SetField(object obj, int index, object value)
+        internal SynchronisableField GetStaticField(int fieldID)
         {
-            fieldDescriptors[index].Setter(obj, value);
+            return StaticFields[fieldID];
         }
 
-        public object GetField(object obj, int index)
+        public void SetField(object obj, int fieldID, object value)
         {
-            return fieldDescriptors[index].Getter(obj);
+            fieldDescriptors[fieldID].Setter(obj, value);
+        }
+
+        public object GetField(object obj, int fieldID)
+        {
+            return fieldDescriptors[fieldID].Getter(obj);
         }
 
         public object ConstructObject()

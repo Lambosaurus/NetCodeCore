@@ -120,6 +120,25 @@ namespace NetCode.SyncEntity
                 Revision = revision;
             }
         }
+        
+        /// <summary>
+        /// As per ReadRevisionFromBuffer, but skips the data and keeps the index up to date.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="index"></param>
+        /// <param name="descriptor"></param>
+        internal static void SkipRevisionFromBuffer(byte[] data, ref int index, SyncEntityDescriptor descriptor)
+        {
+            byte fieldCount = Primitive.ReadByte(data, ref index);
+
+            for (int i = 0; i < fieldCount; i++)
+            {
+                //TODO: This is unsafe. The field ID may be out or range, and there
+                //      may be insufficient data remaining to call .PullFromBuffer with
+                byte fieldID = Primitive.ReadByte(data, ref index);
+                descriptor.GetStaticField(fieldID).Skip(data, ref index);
+            }
+        }
 
         public bool TrackChanges(object obj, uint revision)
         {
