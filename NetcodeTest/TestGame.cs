@@ -67,7 +67,7 @@ namespace NetcodeTest
             incomingConnection = new VirtualConnection();
             outgoingConnection.Connect(incomingConnection);
 
-            outgoingConnection.Settings.PacketLoss = 0.05;
+            outgoingConnection.Settings.PacketLoss = 0.00;
             outgoingConnection.Settings.LatencyMin = 150;
             outgoingConnection.Settings.LatencyMax = 200;
 
@@ -174,15 +174,15 @@ namespace NetcodeTest
             base.Update(gameTime);
         }
 
-
         private string GetConnectionStatsString(ConnectionStats stats)
         {
             string text = string.Format(
-                "up: {0}B/s\ndown: {1}B/s\nping: {2}ms\nloss: {3}%",
-                stats.SentBytesPerSecond,
-                stats.RecievedBytesPerSecond,
+                "up: {0:0.00}KB/s\ndown: {1:0.00}KB/s\nping: {2}ms\nloss: {3}%\ntimeout: {4:0.0}s",
+                stats.SentBytesPerSecond / 1024.0,
+                stats.RecievedBytesPerSecond / 1024.0,
                 stats.Latency,
-                (int)(stats.PacketLoss * 100)
+                (int)(stats.PacketLoss * 100),
+                ((double)stats.MillisecondsSinceLastReception)/1000
                 );
             return text;
         }

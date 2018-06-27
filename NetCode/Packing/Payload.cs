@@ -9,7 +9,7 @@ namespace NetCode.Packing
 {
     public abstract class Payload
     {
-        public enum PayloadType { None, Acknowledgement, PoolRevision, PoolDeletion }
+        public enum PayloadType { None, KeepAlive, Acknowledgement, PoolRevision, PoolDeletion }
         public abstract PayloadType Type { get; }
 
         public int Size { get; protected set; }
@@ -104,6 +104,8 @@ namespace NetCode.Packing
         {
             switch (payloadType)
             {
+                case (PayloadType.KeepAlive):
+                    return new KeepAlivePayload();
                 case (PayloadType.Acknowledgement):
                     return new AcknowledgementPayload();
                 case (PayloadType.PoolRevision):

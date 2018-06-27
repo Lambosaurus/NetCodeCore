@@ -14,6 +14,8 @@ namespace NetCode.Connection
     {
         public ConnectionStats Stats { get; private set; }
         public int PacketTimeout { get; set; } = 1000;
+        public int KeepAliveTimeout { get; set; } = 300;
+        public int ConnectionClosedTimeout { get; set; } = 5000;
 
         private Stopwatch timer;
         private List<Packet> pendingPackets = new List<Packet>();
@@ -22,6 +24,8 @@ namespace NetCode.Connection
         private Dictionary<ushort, IncomingSyncPool> IncomingPools = new Dictionary<ushort, IncomingSyncPool>();
 
         private List<uint> packetAcknowledgementQueue = new List<uint>();
+
+        private long timeSinceLastKeepAlive;
         
         public NetworkConnection()
         {
@@ -74,8 +78,8 @@ namespace NetCode.Connection
             }
 
             UpdatePacketTimeouts(timestamp);
-
             GenerateAcknowledgementPayloads();
+            CheckConnectionStatus();
 
             while (payloadQueue.Count > 0)
             {
@@ -186,6 +190,19 @@ namespace NetCode.Connection
                 }
             }
             pendingPackets.RemoveRange(0, culledPackets);
+        }
+
+        private void CheckConnectionStatus()
+        {
+            if ( Stats.MillisecondsSinceLastReception > KeepAliveTimeout )
+            {
+                long timestamp = Timestamp();
+                if (timestamp - timeSinceLastKeepAlive > KeepAliveTimeout)
+                {
+                    timeSinceLastKeepAlive = timestamp;
+                    Enqueue(KeepAlivePayload.Allocated());
+                }
+            }
         }
 
         protected abstract bool Connected();

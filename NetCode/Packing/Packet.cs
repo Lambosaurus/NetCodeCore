@@ -79,7 +79,7 @@ namespace NetCode.Packing
             Packet packet = new Packet(packetID);
             packet.Timestamp = timestamp;
             
-            while (index + Payload.PAYLOAD_HEADER_SIZE < length)
+            while (index + Payload.PAYLOAD_HEADER_SIZE <= length)
             {
                 Payload payload = Payload.Decode(data, ref index);
                 if (payload == null)

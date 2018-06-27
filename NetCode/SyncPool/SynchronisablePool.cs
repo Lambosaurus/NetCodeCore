@@ -10,12 +10,11 @@ namespace NetCode.SyncPool
     {
         public IEnumerable<SyncHandle> Handles  { get {  return SyncHandles; } }
         public ushort PoolID { get; private set; }
-        public uint Revision { get; protected set; }
+        protected uint Revision { get; set; }
         
         private const double POOL_REALLOCATION_THRESHOLD = 0.8;
         public const int MAX_SYNCHANDLE_COUNT = ushort.MaxValue + 1;
         private const int DEFAULT_SYNCHANDLE_COUNT = 32; // This should be a power of two
-
 
         
         protected struct SyncSlot
@@ -27,7 +26,6 @@ namespace NetCode.SyncPool
         protected SyncSlot[] SyncSlots;
         protected List<SyncHandle> SyncHandles { get; private set; }
         
-
         internal SyncEntityGenerator entityGenerator;
 
         internal SynchronisablePool(SyncEntityGenerator generator, ushort poolID)
@@ -77,13 +75,14 @@ namespace NetCode.SyncPool
 
         public bool HandleExists(ushort entityID)
         {
-            return entityID < SyncSlots.Length && SyncSlots[entityID].Handle != null;
+            return     entityID < SyncSlots.Length
+                    && SyncSlots[entityID].Handle != null;
         }
         
         protected bool ResizeSyncHandleArrayReccommended()
         {
-            return SyncHandles.Count < MAX_SYNCHANDLE_COUNT
-                && SyncHandles.Count > SyncSlots.Length * POOL_REALLOCATION_THRESHOLD;
+            return     SyncHandles.Count < MAX_SYNCHANDLE_COUNT
+                    && SyncHandles.Count > SyncSlots.Length * POOL_REALLOCATION_THRESHOLD;
         }
 
         protected void ResizeSyncHandleArray()
