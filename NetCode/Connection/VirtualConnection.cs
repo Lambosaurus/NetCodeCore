@@ -28,14 +28,9 @@ namespace NetCode.Connection
             endpoint.Settings = Settings;
         }
 
-        protected override bool Connected()
+        protected override void SendData(byte[] data)
         {
-            return Endpoint != null;
-        }
-
-        protected override void Send(byte[] data)
-        {
-            if (random.NextDouble() > Settings.PacketLoss)
+            if (Settings.Connected && random.NextDouble() > Settings.PacketLoss)
             {
                 int delay = ((int)(random.NextDouble() * (Settings.LatencyMax - Settings.LatencyMin)) + Settings.LatencyMin) / 2;
                 Endpoint.QueueForRecieve(data, delay);
@@ -53,7 +48,7 @@ namespace NetCode.Connection
             );
         }
         
-        protected override List<byte[]> Recieve()
+        protected override List<byte[]> RecieveData()
         {
             List<byte[]> recieved = new List<byte[]>();
             List<int> removedIndexes = new List<int>();
@@ -86,6 +81,8 @@ namespace NetCode.Connection
             
             public int LatencyMax = 0;
             public int LatencyMin = 0;
+
+            public bool Connected = true;
         };
 }
 }

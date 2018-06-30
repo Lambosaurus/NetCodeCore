@@ -12,16 +12,16 @@ namespace NetCode.SyncPool
     public class OutgoingSyncPool : SynchronisablePool
     {
 
-        private List<NetworkConnection> Destinations = new List<NetworkConnection>();
+        private List<NetworkClient> Destinations = new List<NetworkClient>();
 
         internal OutgoingSyncPool(SyncEntityGenerator generator, ushort poolID) : base(generator, poolID)
         {
 
         }
         
-        public void AddDestination(NetworkConnection connection)
+        public void AddDestination(NetworkClient destination)
         {
-            Destinations.Add(connection);
+            Destinations.Add(destination);
         }
         
         
@@ -104,7 +104,7 @@ namespace NetCode.SyncPool
 
         private void BroadcastPayload(Payload payload)
         {
-            foreach (NetworkConnection destination in Destinations)
+            foreach (NetworkClient destination in Destinations)
             {
                 destination.Enqueue(payload);
             }

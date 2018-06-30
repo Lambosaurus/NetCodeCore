@@ -24,8 +24,10 @@ namespace NetcodeTest
         NetCodeManager netcode = new NetCodeManager();
         OutgoingSyncPool outgoingPool;
         IncomingSyncPool incomingPool;
-        VirtualConnection outgoingConnection;
-        VirtualConnection incomingConnection;
+
+        VirtualConnection virtualConnection;
+        NetworkClient outgoingClient;
+        NetworkClient incomingClient;
 
         PlayerEntity player;
         List<Entity> entities;
@@ -49,6 +51,33 @@ namespace NetcodeTest
             base.Initialize();
         }
 
+        private void SetupNetwork()
+        {
+            NetcodeFieldSupport.RegisterCustomFields(netcode);
+
+            netcode.RegisterType(typeof(PlayerEntity));
+            netcode.RegisterType(typeof(BulletEntity));
+
+            virtualConnection = new VirtualConnection();
+            VirtualConnection otherConenction = new VirtualConnection();
+            virtualConnection.Connect(otherConenction);
+            outgoingClient = new NetworkClient(virtualConnection);
+            incomingClient = new NetworkClient(otherConenction);
+            outgoingClient.SetState(NetworkClient.ConnectionState.Open);
+            incomingClient.SetState(NetworkClient.ConnectionState.Listening);
+
+            virtualConnection.Settings.PacketLoss = 0.00;
+            virtualConnection.Settings.LatencyMin = 150;
+            virtualConnection.Settings.LatencyMax = 200;
+
+            outgoingPool = netcode.GenerateOutgoingPool(1);
+            incomingPool = netcode.GenerateIncomingPool(1);
+            outgoingPool.AddDestination(outgoingClient);
+            incomingPool.SetSource(incomingClient);
+
+            outgoingPool.RegisterEntity(player);
+        }
+
         KeyboardState lastKeys;
         MouseState lastMouse;
         protected override void LoadContent()
@@ -58,25 +87,7 @@ namespace NetcodeTest
 
             font = Content.Load<SpriteFont>("MenuFont");
 
-            NetcodeFieldSupport.RegisterCustomFields(netcode);
-
-            netcode.RegisterType(typeof(PlayerEntity));
-            netcode.RegisterType(typeof(BulletEntity));
-            
-            outgoingConnection = new VirtualConnection();
-            incomingConnection = new VirtualConnection();
-            outgoingConnection.Connect(incomingConnection);
-
-            outgoingConnection.Settings.PacketLoss = 0.00;
-            outgoingConnection.Settings.LatencyMin = 150;
-            outgoingConnection.Settings.LatencyMax = 200;
-
-            outgoingPool = netcode.GenerateOutgoingPool(1);
-            incomingPool = netcode.GenerateIncomingPool(1);
-            outgoingPool.AddDestination(outgoingConnection);
-            incomingPool.SetSource(incomingConnection);
-            
-            outgoingPool.RegisterEntity(player);
+            SetupNetwork();
 
             lastKeys = Keyboard.GetState();
             lastMouse = Mouse.GetState();
@@ -89,7 +100,6 @@ namespace NetcodeTest
         int tick = 0;
         int fireTick = 0;
         
-
         protected override void Update(GameTime gameTime)
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
@@ -157,6 +167,11 @@ namespace NetcodeTest
                     entities.RemoveAt(i);
                 }
             }
+
+            if ( keys.IsKeyDown(Keys.Tab) && !lastKeys.IsKeyDown(Keys.Tab))
+            {
+                virtualConnection.Settings.Connected = !virtualConnection.Settings.Connected;
+            }
             
 
             if (++tick >= 5)
@@ -165,8 +180,8 @@ namespace NetcodeTest
                 outgoingPool.Synchronise();
             }
 
-            outgoingConnection.Update();
-            incomingConnection.Update();
+            outgoingClient.Update();
+            incomingClient.Update();
             incomingPool.Synchronise();
 
             lastKeys = keys;
@@ -174,15 +189,17 @@ namespace NetcodeTest
             base.Update(gameTime);
         }
 
-        private string GetConnectionStatsString(ConnectionStats stats)
+        private string GetConnectionStatsString(NetworkClient client)
         {
+            ConnectionStats stats = client.Connection.Stats;
             string text = string.Format(
-                "up: {0:0.00}KB/s\ndown: {1:0.00}KB/s\nping: {2}ms\nloss: {3}%\ntimeout: {4:0.0}s",
+                "up: {0:0.00}KB/s\ndown: {1:0.00}KB/s\nping: {2}ms\nloss: {3}%\ntimeout: {4:0.0}s\nstate: {5}",
                 stats.SentBytesPerSecond / 1024.0,
                 stats.RecievedBytesPerSecond / 1024.0,
                 stats.Latency,
                 (int)(stats.PacketLoss * 100),
-                ((double)stats.MillisecondsSinceLastReception)/1000
+                ((double)stats.MillisecondsSinceLastAcknowledgement)/1000,
+                client.State.ToString()
                 );
             return text;
         }
@@ -205,7 +222,7 @@ namespace NetcodeTest
                 entity.Draw(spriteBatch, false);
             }
 
-            spriteBatch.DrawString(font, GetConnectionStatsString(outgoingConnection.Stats), new Vector2(0, 0), Color.White);
+            spriteBatch.DrawString(font, GetConnectionStatsString(outgoingClient), new Vector2(0, 0), Color.White);
 
             spriteBatch.End();
 

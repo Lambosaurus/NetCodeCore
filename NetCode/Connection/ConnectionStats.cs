@@ -12,7 +12,7 @@ namespace NetCode.Connection
         public int RecievedBytesPerSecond { get { return (recievedBytesOverPeriod * 1000) / AveragingPeriodMilliseconds; } }
         public double SentPacketsPerSecond { get { return (sentPacketSizes.Count * 1000.0) / AveragingPeriodMilliseconds; } }
         public double RecievedPacketsPerSecond { get { return (recievedPacketSizes.Count * 1000.0) / AveragingPeriodMilliseconds; } }
-        public int MillisecondsSinceLastReception { get; private set; } = 0;
+        public int MillisecondsSinceLastAcknowledgement { get; private set; } = 0;
         
         /// <summary>
         /// The number of milliseconds that averages are taken over for the PerSecond stats, and the Latency and PacketLoss stats.
@@ -42,11 +42,10 @@ namespace NetCode.Connection
         private List<PacketRecord> sentPacketSizes = new List<PacketRecord>();
         private List<PacketRecord> recievedPacketSizes = new List<PacketRecord>();
         private List<PacketRecord> packetAcknowledgement = new List<PacketRecord>();
-        private long lastRecievedTime = 0;
+        private long lastAcknowledgedTime = 0;
 
         internal void RecordReceive( int size, long timestamp, bool damaged )
         {
-            lastRecievedTime = timestamp;
             TotalBytesRecieved += size;
             recievedBytesOverPeriod += size;
 
@@ -76,6 +75,7 @@ namespace NetCode.Connection
 
         internal void RecordAcknowledgement(int latency, long timestamp)
         {
+            lastAcknowledgedTime = timestamp;
             if (latency < 0)
             {
                 throw new NetcodeOverloadedException("Packet latency should never be less than 0.");
@@ -132,7 +132,7 @@ namespace NetCode.Connection
             Latency = (acknowledged > 0) ? (latencySum / acknowledged) : 0;
             PacketLoss = (total > 0) ? (1.0 - ((float)acknowledged / total)) : 0.0;
 
-            MillisecondsSinceLastReception = (int)(timestamp - lastRecievedTime);
+            MillisecondsSinceLastAcknowledgement = (int)(timestamp - lastAcknowledgedTime);
         }
         
         private int RemoveOldRecords(List<PacketRecord> records, long timestamp)

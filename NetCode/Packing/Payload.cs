@@ -9,7 +9,7 @@ namespace NetCode.Packing
 {
     public abstract class Payload
     {
-        public enum PayloadType { None, KeepAlive, Acknowledgement, PoolRevision, PoolDeletion }
+        public enum PayloadType { None, Handshake, Acknowledgement, PoolRevision, PoolDeletion }
         public abstract PayloadType Type { get; }
 
         public int Size { get; protected set; }
@@ -32,11 +32,11 @@ namespace NetCode.Packing
         /// if the payload is enqueued on multiple connections.
         /// </summary>
         /// <param name="connection"></param>
-        public virtual void OnTimeout(NetworkConnection connection)
+        public virtual void OnTimeout(NetworkClient connection)
         {
         }
         
-        public abstract void OnReception(NetworkConnection connection);
+        public abstract void OnReception(NetworkClient connection);
 
 
         public Payload()
@@ -104,8 +104,8 @@ namespace NetCode.Packing
         {
             switch (payloadType)
             {
-                case (PayloadType.KeepAlive):
-                    return new KeepAlivePayload();
+                case (PayloadType.Handshake):
+                    return new HandshakePayload();
                 case (PayloadType.Acknowledgement):
                     return new AcknowledgementPayload();
                 case (PayloadType.PoolRevision):

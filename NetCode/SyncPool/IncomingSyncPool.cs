@@ -9,21 +9,21 @@ namespace NetCode.SyncPool
 {
     public class IncomingSyncPool : SynchronisablePool
     {
-        NetworkConnection SourceConnection;
+        NetworkClient SourceClient;
 
         internal IncomingSyncPool(SyncEntityGenerator generator, ushort poolID) : base(generator, poolID)
         {
 
         }
         
-        public void SetSource(NetworkConnection connection)
+        public void SetSource(NetworkClient source)
         {
-            if (SourceConnection != null)
+            if (SourceClient != null)
             {
-                SourceConnection.DetachSyncPool(this);
+                SourceClient.DetachSyncPool(this);
             }
-            SourceConnection = connection;
-            SourceConnection.AttachSyncPool(this);
+            SourceClient = source;
+            SourceClient.AttachSyncPool(this);
         }
 
         public void Synchronise()

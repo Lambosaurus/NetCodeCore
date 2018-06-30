@@ -8,18 +8,13 @@ namespace NetCode.Connection
 {
     public class UDPConnection : NetworkConnection
     {
-        protected override void Send(byte[] data)
+        protected override void SendData(byte[] data)
         {
         }
 
-        protected override List<byte[]> Recieve()
+        protected override List<byte[]> RecieveData()
         {
             return null;
-        }
-
-        protected override bool Connected()
-        {
-            return false;
         }
     }
 }

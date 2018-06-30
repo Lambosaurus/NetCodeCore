@@ -57,18 +57,18 @@ namespace NetCode.Packing
             count = RevisionSize;
         }
 
-        public override void OnTimeout(NetworkConnection connection)
+        public override void OnTimeout(NetworkClient client)
         {
             Payload payload = SyncPool.GenerateRevisionPayload(Revision);
             if (payload != null)
             {
-                connection.Enqueue(payload);
+                client.Enqueue(payload);
             }
         }
 
-        public override void OnReception(NetworkConnection connection)
+        public override void OnReception(NetworkClient client)
         {
-            IncomingSyncPool destination = connection.GetSyncPool(PoolID);
+            IncomingSyncPool destination = client.GetSyncPool(PoolID);
             if (destination != null)
             {
                 destination.UnpackRevisionDatagram(this);

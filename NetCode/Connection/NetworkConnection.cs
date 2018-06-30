@@ -5,7 +5,6 @@ using System.Linq;
 using System.Diagnostics;
 
 using NetCode.Packing;
-using NetCode.SyncPool;
 using NetCode.Util;
 
 namespace NetCode.Connection
@@ -14,19 +13,15 @@ namespace NetCode.Connection
     {
         public ConnectionStats Stats { get; private set; }
         public int PacketTimeout { get; set; } = 1000;
-        public int KeepAliveTimeout { get; set; } = 300;
-        public int ConnectionClosedTimeout { get; set; } = 5000;
 
         private Stopwatch timer;
         private List<Packet> pendingPackets = new List<Packet>();
         private List<Payload> payloadQueue = new List<Payload>();
-
-        private Dictionary<ushort, IncomingSyncPool> IncomingPools = new Dictionary<ushort, IncomingSyncPool>();
+        
 
         private List<uint> packetAcknowledgementQueue = new List<uint>();
-
-        private long timeSinceLastKeepAlive;
         
+
         public NetworkConnection()
         {
             Stats = new ConnectionStats();
@@ -34,28 +29,50 @@ namespace NetCode.Connection
             timer = new Stopwatch();
             timer.Start();
         }
-
-        internal void AttachSyncPool(IncomingSyncPool syncPool)
-        {
-            if (IncomingPools.ContainsKey(syncPool.PoolID))
-            {
-                throw new NetcodeOverloadedException(string.Format("An IncomingSyncPool with PoolID of {0} has already been attached to this NetworkConnection", syncPool.PoolID));
-            }
-            IncomingPools[syncPool.PoolID] = syncPool;
-        }
-
-        internal void DetachSyncPool(IncomingSyncPool syncPool)
-        {
-            IncomingPools.Remove(syncPool.PoolID);
-        }
         
-        internal IncomingSyncPool GetSyncPool(ushort poolID)
+        internal List<Payload> Recieve()
         {
-            if (IncomingPools.ContainsKey(poolID))
+            List<Payload> payloads = new List<Payload>();
+            
+            List<byte[]> incomingData = RecieveData();
+            if (incomingData != null)
             {
-                return IncomingPools[poolID];
+                foreach (byte[] data in incomingData)
+                {
+                    payloads.AddRange(RecievePacket(data));
+                }
             }
-            return null;
+            return payloads;
+        }
+
+        internal void Transmit()
+        {
+            long timestamp = Timestamp();
+            
+            FlushAcknowledgements();
+
+            while (payloadQueue.Count > 0)
+            {
+                Packet packet = ConstructPacket();
+                SendPacket(packet);
+            }
+
+            Stats.Update(timestamp);
+        }
+
+        internal long Timestamp()
+        {
+            return timer.ElapsedMilliseconds;
+        }
+
+        internal void Enqueue(Payload payload)
+        {
+            payloadQueue.Add(payload);
+        }
+
+        internal void EnqueueAcknowledgement(uint packetID)
+        {
+            packetAcknowledgementQueue.Add(packetID);
         }
 
         private uint lastPacketID = 0;
@@ -64,48 +81,7 @@ namespace NetCode.Connection
             return ++lastPacketID;
         }
         
-        public void Update()
-        {
-            long timestamp = Timestamp();
-
-            List<byte[]> incomingData = Recieve();
-            if (incomingData != null)
-            {
-                foreach (byte[] data in incomingData)
-                {
-                    RecievePacket(data);
-                }
-            }
-
-            UpdatePacketTimeouts(timestamp);
-            GenerateAcknowledgementPayloads();
-            CheckConnectionStatus();
-
-            while (payloadQueue.Count > 0)
-            {
-                Packet packet = ConstructPacket();
-                Transmit(packet);
-            }
-
-            Stats.Update(timestamp);
-        }
-
-        private long Timestamp()
-        {
-            return timer.ElapsedMilliseconds;
-        }
-
-        public void Enqueue(Payload payload)
-        {
-            payloadQueue.Add(payload);
-        }
-
-        public void EnqueueAcknowledgement(uint packetID)
-        {
-            packetAcknowledgementQueue.Add(packetID);
-        }
-
-        private void GenerateAcknowledgementPayloads()
+        private void FlushAcknowledgements()
         {
             if ( packetAcknowledgementQueue.Count > 0 )
             {
@@ -128,7 +104,7 @@ namespace NetCode.Connection
             return packet;
         }
         
-        private void Transmit(Packet packet)
+        private void SendPacket(Packet packet)
         {
             if (packet.RequiresAcknowledgement())
             {
@@ -137,24 +113,21 @@ namespace NetCode.Connection
             long timestamp = Timestamp();
             byte[] data = packet.Encode(timestamp);
             Stats.RecordSend(data.Length, timestamp);
-            Send(data);
+            SendData(data);
         }
 
-        private void RecievePacket(byte[] data)
+        private List<Payload> RecievePacket(byte[] data)
         {
             long timestamp = Timestamp();
             Packet packet = Packet.Decode(data, timestamp);
             Stats.RecordReceive(data.Length, timestamp, packet.DecodingError);
-
-            foreach( Payload payload in packet.Payloads )
-            {
-                payload.OnReception(this);
-            }
-
+            
             if (packet.RequiresAcknowledgement())
             {
                 EnqueueAcknowledgement(packet.PacketID);
             }
+
+            return packet.Payloads;
         }
         
         internal void AcknowledgePacket(uint packetID)
@@ -169,9 +142,11 @@ namespace NetCode.Connection
             }
         }
 
-        private void UpdatePacketTimeouts(long timestamp)
+        internal List<Payload> GetTimeouts()
         {
+            long timestamp = Timestamp();
             // Assuming packets are ordered by timestamp.
+            List<Payload> timeouts = new List<Payload>();
             int culledPackets = 0;
             foreach( Packet packet in pendingPackets )
             {
@@ -179,10 +154,7 @@ namespace NetCode.Connection
                 {
                     culledPackets++;
                     Stats.RecordTimeout(timestamp);
-                    foreach(Payload payload in packet.Payloads)
-                    {
-                        payload.OnTimeout(this);
-                    }
+                    timeouts.AddRange(packet.Payloads);
                 }
                 else
                 {
@@ -190,23 +162,10 @@ namespace NetCode.Connection
                 }
             }
             pendingPackets.RemoveRange(0, culledPackets);
+            return timeouts;
         }
-
-        private void CheckConnectionStatus()
-        {
-            if ( Stats.MillisecondsSinceLastReception > KeepAliveTimeout )
-            {
-                long timestamp = Timestamp();
-                if (timestamp - timeSinceLastKeepAlive > KeepAliveTimeout)
-                {
-                    timeSinceLastKeepAlive = timestamp;
-                    Enqueue(KeepAlivePayload.Allocated());
-                }
-            }
-        }
-
-        protected abstract bool Connected();
-        protected abstract void Send(byte[] data);
-        protected abstract List<byte[]> Recieve();
+        
+        protected abstract void SendData(byte[] data);
+        protected abstract List<byte[]> RecieveData();
     }
 }

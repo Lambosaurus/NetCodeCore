@@ -38,9 +38,9 @@ namespace NetCode.Packing
             AllocateAndWrite();
         }
 
-        public override void OnReception(NetworkConnection connection)
+        public override void OnReception(NetworkClient client)
         {
-            IncomingSyncPool destination = connection.GetSyncPool(PoolID);
+            IncomingSyncPool destination = client.GetSyncPool(PoolID);
             if (destination != null)
             {
                 foreach (ushort entityID in EntityIDs)
@@ -53,9 +53,9 @@ namespace NetCode.Packing
             }
         }
 
-        public override void OnTimeout(NetworkConnection connection)
+        public override void OnTimeout(NetworkClient client)
         {
-            connection.Enqueue(this);
+            client.Enqueue(this);
         }
 
         /*

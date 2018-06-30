@@ -32,11 +32,11 @@ namespace NetCode.Packing
             AllocateAndWrite();
         }
 
-        public override void OnReception(NetworkConnection connection)
+        public override void OnReception(NetworkClient client)
         {
             foreach (uint packetID in PacketIDs)
             {
-                connection.AcknowledgePacket(packetID);
+                client.Connection.AcknowledgePacket(packetID);
             }
         }
         

@@ -42,9 +42,10 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Connection\ConnectionStats.cs" />
     <Compile Include="Connection\NetworkConnection.cs" />
+    <Compile Include="Connection\NetworkClient.cs" />
     <Compile Include="Connection\UDPConnection.cs" />
     <Compile Include="Connection\VirtualConnection.cs" />
-    <Compile Include="Packing\KeepAlivePayload.cs" />
+    <Compile Include="Packing\HandshakePayload.cs" />
     <Compile Include="Packing\PoolDeletionPayload.cs" />
     <Compile Include="Util\ListExtentions.cs" />
     <Compile Include="Util\DelegateGenerator.cs" />
