@@ -51,45 +51,49 @@ namespace NetCode.Connection
             State = ConnectionState.Closed;
         }
 
-        public void SetState(ConnectionState state)
+        /// <summary>
+        /// Puts the client into the specified ConnectionState.
+        /// </summary>
+        /// <param name="requestedState">The state to enter. Open and Opening are equivilent here.</param>
+        public void SetState(ConnectionState requestedState)
         {
-            switch (state)
+            switch (requestedState)
             {
                 case (ConnectionState.Open):
                 case (ConnectionState.Opening):
                     if (State != ConnectionState.Open && State != ConnectionState.Opening)
                     {
-                        EnterOpening();
+                        EnterStateOpening();
                     }
                     break;
 
                 case (ConnectionState.Listening):
                     if (State != ConnectionState.Listening)
                     {
-                        EnterListening();
+                        EnterStateListening();
                     }
                     break;
 
                 case (ConnectionState.Closed):
                     if (State != ConnectionState.Closed)
                     {
-                        EnterClosed();
+                        EnterStateClosed();
                     }
                     break;
             }
         }
 
-        private void EnterOpen()
+        private void EnterStateOpen()
         {
             State = ConnectionState.Open;
         }
 
-        private void EnterOpening()
+        private void EnterStateOpening()
         {
             State = ConnectionState.Opening;
         }
 
-        private void EnterListening()
+        private void EnterStateListening()
         {
             if (State == ConnectionState.Open || State == ConnectionState.Opening)
             {
@@ -100,7 +104,7 @@ namespace NetCode.Connection
             State = ConnectionState.Listening;
         }
 
-        private void EnterClosed()
+        private void EnterStateClosed()
         {
             if (State == ConnectionState.Open || State == ConnectionState.Opening)
             {
@@ -147,6 +151,11 @@ namespace NetCode.Connection
             Connection.Transmit();
         }
 
+
+        /// <summary>
+        /// This is called by the OnRecieve method of n incoming HandshakePacket.
+        /// </summary>
+        /// <param name="endpointState">Indicates the state declared by the endpoint client.</param>
         internal void RecieveEndpointState(ConnectionState endpointState)
         {
             switch (endpointState)
@@ -155,7 +164,7 @@ namespace NetCode.Connection
                 case (ConnectionState.Opening):
                     if ( State != ConnectionState.Open )
                     {
-                        EnterOpen();
+                        EnterStateOpen();
                     }
                     break;
                 case (ConnectionState.Listening):
@@ -174,6 +183,7 @@ namespace NetCode.Connection
         
         private void UpdateConnectionStatus()
         {
+            // TODO: Keep track of acknowledgements in a better way
             if (State == ConnectionState.Opening ||
                (State == ConnectionState.Open && (Connection.Stats.MillisecondsSinceLastAcknowledgement > KeepAliveTimeout)))
             {
@@ -185,9 +195,10 @@ namespace NetCode.Connection
                 }
             }
 
+            // TODO: THIS IS REALLY UNSAFE.
             if (State == ConnectionState.Opening && Connection.Stats.MillisecondsSinceLastAcknowledgement < 20)
             {
-                EnterOpen();
+                EnterStateOpen();
             }
         }
   
