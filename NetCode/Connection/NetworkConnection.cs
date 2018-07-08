@@ -26,7 +26,7 @@ namespace NetCode.Connection
             Stats = new ConnectionStats();
         }
         
-        internal List<Payload> Recieve()
+        internal List<Payload> RecievePackets()
         {
             List<Payload> payloads = new List<Payload>();
             
@@ -41,15 +41,17 @@ namespace NetCode.Connection
             return payloads;
         }
 
-        internal void Transmit(bool transmitAcks)
+        internal void DiscardIncomingPackets()
+        {
+            RecieveData();
+        }
+
+        internal void TransmitPackets()
         {
             long timestamp = NetTime.Now();
 
-            if (transmitAcks)
-            {
-                FlushAcknowledgements(transmitAcks);
-            }
-
+            FlushAcknowledgements();
+            
             while (payloadQueue.Count > 0)
             {
                 Packet packet = ConstructPacket();
@@ -144,16 +146,13 @@ namespace NetCode.Connection
             return packet.Payloads;
         }
 
-        private void FlushAcknowledgements( bool transmitAcks )
+        private void FlushAcknowledgements()
         {
             if (packetAcknowledgementQueue.Count > 0)
             {
-                if (transmitAcks)
+                foreach (uint[] packetIDs in packetAcknowledgementQueue.Segment(PoolDeletionPayload.MAX_ENTITY_IDS))
                 {
-                    foreach (uint[] packetIDs in packetAcknowledgementQueue.Segment(PoolDeletionPayload.MAX_ENTITY_IDS))
-                    {
-                        Enqueue(new AcknowledgementPayload(packetIDs));
-                    }
+                    Enqueue(new AcknowledgementPayload(packetIDs));
                 }
                 packetAcknowledgementQueue.Clear();
             }
