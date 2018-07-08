@@ -2,19 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Runtime.CompilerServices;
 
 using NetCode.SyncPool;
-using NetCode.Packing;
+using NetCode.Payloads;
+using NetCode.Util;
 
 namespace NetCode.Connection
 {
     public class NetworkClient
     {
-        
-        public int KeepAliveTimeout { get; set; } = 300;
-        public int ConnectionClosedTimeout { get; set; } = 5000;
-        public NetworkConnection Connection { get; private set; }
-        
         public enum ConnectionState
         {
             /// <summary>
@@ -40,15 +37,33 @@ namespace NetCode.Connection
         }
 
         public ConnectionState State { get; private set; }
-        
+        public int KeepAliveTimeout { get; set; } = 300;
+        public int ConnectionClosedTimeout { get; set; } = 5000;
+        public NetworkConnection Connection { get; private set; }
+
+
+        [Flags]
+        private enum ConnectionBehavior {
+            None                        = 0     ,
+            HandleIncomingPayloads      = 1 << 0,
+            HandleIncomingHandshakes    = 1 << 1,
+            AllowOutgoingPayloads       = 1 << 2,
+            GenerateOutgoingHandshakes  = 1 << 3,
+            CloseOnTimeout              = 1 << 4,
+        }
+
+        private ConnectionBehavior Behavior;
         private Dictionary<ushort, IncomingSyncPool> IncomingPools = new Dictionary<ushort, IncomingSyncPool>();
-        private long timeSinceLastHandshake;
+
+        private EventMarker HandshakeSentMarker = new EventMarker();
+        private EventMarker KeepAliveMarker = new EventMarker();
         
-        
+
         public NetworkClient(NetworkConnection connection)
         {
             Connection = connection;
             State = ConnectionState.Closed;
+            Behavior = ConnectionBehavior.None;
         }
 
         /// <summary>
@@ -83,70 +98,106 @@ namespace NetCode.Connection
             }
         }
 
+        [MethodImpl(256)] // Set for aggressive inlining.
+        private bool BehaviorSet( ConnectionBehavior behavior )
+        {
+            return (Behavior & behavior) != 0;
+        }
+
         private void EnterStateOpen()
         {
             State = ConnectionState.Open;
+            Behavior = ConnectionBehavior.AllowOutgoingPayloads
+                     | ConnectionBehavior.HandleIncomingPayloads
+                     | ConnectionBehavior.GenerateOutgoingHandshakes
+                     | ConnectionBehavior.CloseOnTimeout;
         }
 
         private void EnterStateOpening()
         {
             State = ConnectionState.Opening;
+            Behavior = ConnectionBehavior.GenerateOutgoingHandshakes
+                     | ConnectionBehavior.HandleIncomingPayloads
+                     | ConnectionBehavior.CloseOnTimeout;
+            
+            
+            // Kick the connection off.
+            Connection.Enqueue(new HandshakePayload(State));
+            HandshakeSentMarker.Mark();
+            KeepAliveMarker.Mark();
         }
 
         private void EnterStateListening()
         {
-            if (State == ConnectionState.Open || State == ConnectionState.Opening)
+            if (BehaviorSet(ConnectionBehavior.GenerateOutgoingHandshakes))
             {
-                // Notify any potential endpoint that we are no longer active.
                 Connection.Enqueue(new HandshakePayload(State));
             }
 
             State = ConnectionState.Listening;
+            Behavior = ConnectionBehavior.HandleIncomingHandshakes;
         }
 
         private void EnterStateClosed()
         {
-            if (State == ConnectionState.Open || State == ConnectionState.Opening)
+            if (BehaviorSet(ConnectionBehavior.GenerateOutgoingHandshakes))
             {
-                // Notify any potential endpoint that we are no longer active.
+                // If we have just come from a state where handshakes are required, then we should notify the endpoint that we are closing.
                 Connection.Enqueue(new HandshakePayload(State));
             }
 
             State = ConnectionState.Closed;
+            Behavior = ConnectionBehavior.None;
         }
 
         public void Update()
         {
             List<Payload> recieved = Connection.Recieve();
-            List<Payload> timeouts = Connection.GetTimeouts();
-            
-            switch (State)
+            if (BehaviorSet(ConnectionBehavior.HandleIncomingPayloads))
             {
-                case (ConnectionState.Open):
-                case (ConnectionState.Opening):
-                    foreach (Payload payload in timeouts)
-                    {
-                        payload.OnTimeout(this);
-                    }
-                    foreach (Payload payload in recieved)
+                foreach (Payload payload in recieved)
+                {
+                    payload.OnReception(this);
+                }
+            }
+            else if (BehaviorSet(ConnectionBehavior.HandleIncomingHandshakes))
+            {
+                foreach (Payload payload in recieved)
+                {
+                    if (payload is HandshakePayload)
                     {
                         payload.OnReception(this);
                     }
-                    break;
-                case (ConnectionState.Listening):
-                    foreach (Payload payload in recieved)
-                    {
-                        if (payload is HandshakePayload)
-                        {
-                            payload.OnReception(this);
-                        }
-                    }
-                    break;
-                case (ConnectionState.Closed):
-                    break;
+                }
             }
 
-            UpdateConnectionStatus();
+            List<Payload> timeouts = Connection.GetTimeouts();
+            if (BehaviorSet(ConnectionBehavior.HandleIncomingPayloads))
+            {
+                foreach (Payload payload in timeouts)
+                {
+                    payload.OnTimeout(this);
+                }
+            }
+            
+            if (BehaviorSet(ConnectionBehavior.GenerateOutgoingHandshakes))
+            {
+                // periodically generate handshakes unless acknowledgements are being marked.
+                if (   (!KeepAliveMarker.MarkedInPast(KeepAliveTimeout))
+                    && (!HandshakeSentMarker.MarkedInPast(KeepAliveTimeout) ))
+                {
+                    HandshakeSentMarker.Mark();
+                    Connection.Enqueue(new HandshakePayload(State));
+                }
+            }
+
+            if (BehaviorSet(ConnectionBehavior.CloseOnTimeout))
+            {
+                if ( !KeepAliveMarker.MarkedInPast(ConnectionClosedTimeout) )
+                {
+                    EnterStateClosed();
+                }
+            }
 
             Connection.Transmit();
         }
@@ -162,43 +213,39 @@ namespace NetCode.Connection
             {
                 case (ConnectionState.Open):
                 case (ConnectionState.Opening):
-                    if ( State != ConnectionState.Open )
+                    if ( State == ConnectionState.Listening )
                     {
-                        EnterStateOpen();
+                        EnterStateOpening();
                     }
                     break;
                 case (ConnectionState.Listening):
                 case (ConnectionState.Closed):
+                    if ( State != ConnectionState.Closed )
+                    {
+                        EnterStateClosed();
+                    }
                     break;
+            }
+        }
+
+        /// <summary>
+        /// This will be called by an AcknowledgementPayload
+        /// </summary>
+        internal void RecieveAcknowledgement()
+        {
+            KeepAliveMarker.Mark();
+
+            if ( State == ConnectionState.Opening )
+            {
+                EnterStateOpen();
             }
         }
 
         internal void Enqueue(Payload payload)
         {
-            if (State == ConnectionState.Open)
+            if (BehaviorSet(ConnectionBehavior.AllowOutgoingPayloads))
             {
                 Connection.Enqueue(payload);
-            }
-        }
-        
-        private void UpdateConnectionStatus()
-        {
-            // TODO: Keep track of acknowledgements in a better way
-            if (State == ConnectionState.Opening ||
-               (State == ConnectionState.Open && (Connection.Stats.MillisecondsSinceLastAcknowledgement > KeepAliveTimeout)))
-            {
-                long timestamp = Connection.Timestamp();
-                if (timestamp - timeSinceLastHandshake > KeepAliveTimeout)
-                {
-                    timeSinceLastHandshake = timestamp;
-                    Connection.Enqueue(new HandshakePayload(State));
-                }
-            }
-
-            // TODO: THIS IS REALLY UNSAFE.
-            if (State == ConnectionState.Opening && Connection.Stats.MillisecondsSinceLastAcknowledgement < 20)
-            {
-                EnterStateOpen();
             }
         }
   

@@ -5,7 +5,7 @@ using System.Linq;
 using NetCode.Util;
 using NetCode.Connection;
 
-namespace NetCode.Packing
+namespace NetCode.Payloads
 {
     public abstract class Payload
     {

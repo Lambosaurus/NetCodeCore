@@ -45,14 +45,15 @@
     <Compile Include="Connection\NetworkClient.cs" />
     <Compile Include="Connection\UDPConnection.cs" />
     <Compile Include="Connection\VirtualConnection.cs" />
-    <Compile Include="Packing\HandshakePayload.cs" />
-    <Compile Include="Packing\PoolDeletionPayload.cs" />
+    <Compile Include="Payloads\HandshakePayload.cs" />
+    <Compile Include="Payloads\PoolDeletionPayload.cs" />
+    <Compile Include="Util\EventMarker.cs" />
     <Compile Include="Util\ListExtentions.cs" />
     <Compile Include="Util\DelegateGenerator.cs" />
     <Compile Include="NetCode.cs" />
-    <Compile Include="Packing\Payload.cs" />
-    <Compile Include="Packing\Packet.cs" />
-    <Compile Include="Packing\AcknowledgementPayload.cs" />
+    <Compile Include="Payloads\Payload.cs" />
+    <Compile Include="Payloads\Packet.cs" />
+    <Compile Include="Payloads\AcknowledgementPayload.cs" />
     <Compile Include="Util\Primitives.cs" />
     <Compile Include="SyncEntity\SyncEntityDescriptor.cs" />
     <Compile Include="SyncEntity\SyncEntityGenerator.cs" />
@@ -62,11 +63,12 @@
     <Compile Include="SyncField\SyncFieldImplementations.cs" />
     <Compile Include="SynchronisableAttribute.cs" />
     <Compile Include="SyncField\SynchronisableField.cs" />
-    <Compile Include="Packing\PoolRevisionPayload.cs" />
+    <Compile Include="Payloads\PoolRevisionPayload.cs" />
     <Compile Include="SyncPool\SyncHandle.cs" />
     <Compile Include="SyncPool\SynchronisablePool.cs" />
     <Compile Include="SyncPool\IncomingSyncPool.cs" />
     <Compile Include="SyncPool\OutgoingSyncPool.cs" />
+    <Compile Include="NetTime.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="lib\System.Half.dll" />

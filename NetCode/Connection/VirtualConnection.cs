@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Diagnostics;
 
 namespace NetCode.Connection
 {
@@ -12,13 +11,10 @@ namespace NetCode.Connection
         private List<VirtualPacket> recievebuffer = new List<VirtualPacket>();
         private VirtualConnection Endpoint = null;
         private Random random = new Random();
-        private Stopwatch stopwatch;
 
         public VirtualConnection()
         {
             Settings = new NetworkSettings();
-            stopwatch = new Stopwatch();
-            stopwatch.Start();
         }
         
         public void Connect(VirtualConnection endpoint)
@@ -42,7 +38,7 @@ namespace NetCode.Connection
             recievebuffer.Add(
                 new VirtualPacket
                 {
-                    Timestamp = stopwatch.ElapsedMilliseconds + delay,
+                    Timestamp = NetTime.Now() + delay,
                     Data = data
                 }
             );
@@ -50,11 +46,13 @@ namespace NetCode.Connection
         
         protected override List<byte[]> RecieveData()
         {
+            long timestamp = NetTime.Now();
+
             List<byte[]> recieved = new List<byte[]>();
             List<int> removedIndexes = new List<int>();
             for (int i = 0; i < recievebuffer.Count; i++)
             {
-                if (recievebuffer[i].Timestamp < stopwatch.ElapsedMilliseconds)
+                if (recievebuffer[i].Timestamp < timestamp)
                 {
                     recieved.Add(recievebuffer[i].Data);
                     recievebuffer.RemoveAt(i--);

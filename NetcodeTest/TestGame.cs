@@ -77,6 +77,8 @@ namespace NetcodeTest
             incomingPool.SetSource(incomingClient);
 
             outgoingPool.RegisterEntity(player);
+
+            NetTime.Realtime = false;
         }
 
         KeyboardState lastKeys;
@@ -103,6 +105,8 @@ namespace NetcodeTest
         
         protected override void Update(GameTime gameTime)
         {
+            NetTime.Advance( (int)(gameTime.ElapsedGameTime.TotalMilliseconds) );
+
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
             {
                 this.Exit();
@@ -172,6 +176,11 @@ namespace NetcodeTest
             if ( keys.IsKeyDown(Keys.Tab) && !lastKeys.IsKeyDown(Keys.Tab))
             {
                 virtualConnection.Settings.Connected = !virtualConnection.Settings.Connected;
+
+                if (outgoingClient.State == NetworkClient.ConnectionState.Closed && virtualConnection.Settings.Connected)
+                {
+                    outgoingClient.SetState(NetworkClient.ConnectionState.Open);
+                }
             }
             
 
@@ -184,6 +193,13 @@ namespace NetcodeTest
             outgoingClient.Update();
             incomingClient.Update();
             incomingPool.Synchronise();
+
+
+            if (incomingClient.State == NetworkClient.ConnectionState.Closed)
+            {
+                incomingClient.SetState(NetworkClient.ConnectionState.Listening);
+            }
+
 
             lastKeys = keys;
             lastMouse = mouse;
@@ -224,6 +240,7 @@ namespace NetcodeTest
             }
 
             spriteBatch.DrawString(font, GetConnectionStatsString(outgoingClient), new Vector2(0, 0), Color.White);
+            spriteBatch.DrawString(font, GetConnectionStatsString(incomingClient), new Vector2(0, 300), Color.White);
 
             spriteBatch.End();
 

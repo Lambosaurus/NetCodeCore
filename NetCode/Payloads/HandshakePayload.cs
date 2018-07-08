@@ -6,7 +6,7 @@ using System.Text;
 using NetCode.Connection;
 using NetCode.Util;
 
-namespace NetCode.Packing
+namespace NetCode.Payloads
 {
     public class HandshakePayload : Payload
     {

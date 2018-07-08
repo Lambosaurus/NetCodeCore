@@ -6,7 +6,7 @@ using NetCode.Util;
 using NetCode.SyncPool;
 using NetCode.Connection;
 
-namespace NetCode.Packing
+namespace NetCode.Payloads
 {
     public class PoolRevisionPayload : Payload
     {

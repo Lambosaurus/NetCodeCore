@@ -4,7 +4,7 @@ using System.Linq;
 
 using NetCode.Util;
 
-namespace NetCode.Packing
+namespace NetCode.Payloads
 {
     public class Packet
     {

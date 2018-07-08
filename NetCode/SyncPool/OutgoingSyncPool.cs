@@ -4,7 +4,7 @@ using System.Linq;
 
 using NetCode.Connection;
 using NetCode.SyncEntity;
-using NetCode.Packing;
+using NetCode.Payloads;
 using NetCode.Util;
 
 namespace NetCode.SyncPool

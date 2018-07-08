@@ -5,7 +5,7 @@ using System.Linq;
 using NetCode.Connection;
 using NetCode.Util;
 
-namespace NetCode.Packing
+namespace NetCode.Payloads
 {
     public class AcknowledgementPayload : Payload
     {
@@ -34,9 +34,18 @@ namespace NetCode.Packing
 
         public override void OnReception(NetworkClient client)
         {
+            bool validIDFound = false;
             foreach (uint packetID in PacketIDs)
             {
-                client.Connection.AcknowledgePacket(packetID);
+                bool IDValid = client.Connection.AcknowledgePacket(packetID);
+                if (IDValid)
+                {
+                    validIDFound = true;
+                }
+            }
+            if (validIDFound)
+            {
+                client.RecieveAcknowledgement();
             }
         }
         
