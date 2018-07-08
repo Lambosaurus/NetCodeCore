@@ -44,13 +44,12 @@ namespace NetCode.Connection
 
         [Flags]
         private enum ConnectionBehavior {
-            None                        = 0     ,
-            HandleIncomingPayloads      = 1 << 0,
-            HandleIncomingHandshakes    = 1 << 1,
-            AllowOutgoingPayloads       = 1 << 2,
-            GenerateOutgoingHandshakes  = 1 << 3,
-            CloseOnTimeout              = 1 << 4,
-            AcknowledgeIncomingPackets  = 1 << 5,
+            None                          = 0     ,
+            HandleIncomingPayloads        = 1 << 0,
+            HandleIncomingHandshakesOnly  = 1 << 1,
+            AllowOutgoingPayloads         = 1 << 2,
+            GenerateOutgoingHandshakes    = 1 << 3,
+            CloseOnTimeout                = 1 << 4,
         }
 
         private ConnectionBehavior Behavior;
@@ -111,8 +110,7 @@ namespace NetCode.Connection
             Behavior = ConnectionBehavior.AllowOutgoingPayloads
                      | ConnectionBehavior.HandleIncomingPayloads
                      | ConnectionBehavior.GenerateOutgoingHandshakes
-                     | ConnectionBehavior.CloseOnTimeout
-                     | ConnectionBehavior.AcknowledgeIncomingPackets;
+                     | ConnectionBehavior.CloseOnTimeout;
         }
 
         private void EnterStateOpening()
@@ -120,8 +118,7 @@ namespace NetCode.Connection
             State = ConnectionState.Opening;
             Behavior = ConnectionBehavior.GenerateOutgoingHandshakes
                      | ConnectionBehavior.HandleIncomingPayloads
-                     | ConnectionBehavior.CloseOnTimeout
-                     | ConnectionBehavior.AcknowledgeIncomingPackets;
+                     | ConnectionBehavior.CloseOnTimeout;
 
 
             // Kick the connection off.
@@ -137,7 +134,7 @@ namespace NetCode.Connection
             {
                 Connection.Enqueue(new HandshakePayload(State));
             }
-            Behavior = ConnectionBehavior.HandleIncomingHandshakes;
+            Behavior = ConnectionBehavior.HandleIncomingHandshakesOnly;
         }
 
         private void EnterStateClosed()
@@ -153,16 +150,17 @@ namespace NetCode.Connection
 
         public void Update()
         {
-            List<Payload> recieved = Connection.Recieve();
             if (BehaviorSet(ConnectionBehavior.HandleIncomingPayloads))
             {
+                List<Payload> recieved = Connection.RecievePackets();
                 foreach (Payload payload in recieved)
                 {
                     payload.OnReception(this);
                 }
             }
-            else if (BehaviorSet(ConnectionBehavior.HandleIncomingHandshakes))
+            else if (BehaviorSet(ConnectionBehavior.HandleIncomingHandshakesOnly))
             {
+                List<Payload> recieved = Connection.RecievePackets();
                 foreach (Payload payload in recieved)
                 {
                     if (payload is HandshakePayload)
@@ -171,7 +169,12 @@ namespace NetCode.Connection
                     }
                 }
             }
+            else
+            {
+                Connection.DiscardIncomingPackets();
+            }
 
+            // This is done after all payload.OnReception() calls because they may contain relevant AcknowledgementPayloads
             List<Payload> timeouts = Connection.GetTimeouts();
             if (BehaviorSet(ConnectionBehavior.HandleIncomingPayloads))
             {
@@ -200,7 +203,7 @@ namespace NetCode.Connection
                 }
             }
 
-            Connection.Transmit( BehaviorSet(ConnectionBehavior.AcknowledgeIncomingPackets) );
+            Connection.TransmitPackets();
         }
 
 
