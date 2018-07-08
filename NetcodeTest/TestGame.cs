@@ -176,8 +176,15 @@ namespace NetcodeTest
             if ( keys.IsKeyDown(Keys.Tab) && !lastKeys.IsKeyDown(Keys.Tab))
             {
                 virtualConnection.Settings.Connected = !virtualConnection.Settings.Connected;
+            }
 
-                if (outgoingClient.State == NetworkClient.ConnectionState.Closed && virtualConnection.Settings.Connected)
+            if (keys.IsKeyDown(Keys.C) && !lastKeys.IsKeyDown(Keys.C))
+            {
+                if (outgoingClient.State != NetworkClient.ConnectionState.Closed)
+                {
+                    outgoingClient.SetState(NetworkClient.ConnectionState.Closed);
+                }
+                else
                 {
                     outgoingClient.SetState(NetworkClient.ConnectionState.Open);
                 }

@@ -41,11 +41,14 @@ namespace NetCode.Connection
             return payloads;
         }
 
-        internal void Transmit()
+        internal void Transmit(bool transmitAcks)
         {
             long timestamp = NetTime.Now();
-            
-            FlushAcknowledgements();
+
+            if (transmitAcks)
+            {
+                FlushAcknowledgements(transmitAcks);
+            }
 
             while (payloadQueue.Count > 0)
             {
@@ -141,18 +144,21 @@ namespace NetCode.Connection
             return packet.Payloads;
         }
 
-        private void FlushAcknowledgements()
+        private void FlushAcknowledgements( bool transmitAcks )
         {
             if (packetAcknowledgementQueue.Count > 0)
             {
-                foreach (uint[] packetIDs in packetAcknowledgementQueue.Segment(PoolDeletionPayload.MAX_ENTITY_IDS))
+                if (transmitAcks)
                 {
-                    Enqueue(new AcknowledgementPayload(packetIDs));
+                    foreach (uint[] packetIDs in packetAcknowledgementQueue.Segment(PoolDeletionPayload.MAX_ENTITY_IDS))
+                    {
+                        Enqueue(new AcknowledgementPayload(packetIDs));
+                    }
                 }
                 packetAcknowledgementQueue.Clear();
             }
         }
-
+        
         protected abstract void SendData(byte[] data);
         protected abstract List<byte[]> RecieveData();
     }

@@ -50,6 +50,7 @@ namespace NetCode.Connection
             AllowOutgoingPayloads       = 1 << 2,
             GenerateOutgoingHandshakes  = 1 << 3,
             CloseOnTimeout              = 1 << 4,
+            AcknowledgeIncomingPackets  = 1 << 5,
         }
 
         private ConnectionBehavior Behavior;
@@ -110,7 +111,8 @@ namespace NetCode.Connection
             Behavior = ConnectionBehavior.AllowOutgoingPayloads
                      | ConnectionBehavior.HandleIncomingPayloads
                      | ConnectionBehavior.GenerateOutgoingHandshakes
-                     | ConnectionBehavior.CloseOnTimeout;
+                     | ConnectionBehavior.CloseOnTimeout
+                     | ConnectionBehavior.AcknowledgeIncomingPackets;
         }
 
         private void EnterStateOpening()
@@ -118,9 +120,10 @@ namespace NetCode.Connection
             State = ConnectionState.Opening;
             Behavior = ConnectionBehavior.GenerateOutgoingHandshakes
                      | ConnectionBehavior.HandleIncomingPayloads
-                     | ConnectionBehavior.CloseOnTimeout;
-            
-            
+                     | ConnectionBehavior.CloseOnTimeout
+                     | ConnectionBehavior.AcknowledgeIncomingPackets;
+
+
             // Kick the connection off.
             Connection.Enqueue(new HandshakePayload(State));
             HandshakeSentMarker.Mark();
@@ -129,24 +132,22 @@ namespace NetCode.Connection
 
         private void EnterStateListening()
         {
+            State = ConnectionState.Listening;
             if (BehaviorSet(ConnectionBehavior.GenerateOutgoingHandshakes))
             {
                 Connection.Enqueue(new HandshakePayload(State));
             }
-
-            State = ConnectionState.Listening;
             Behavior = ConnectionBehavior.HandleIncomingHandshakes;
         }
 
         private void EnterStateClosed()
         {
+            State = ConnectionState.Closed;
             if (BehaviorSet(ConnectionBehavior.GenerateOutgoingHandshakes))
             {
                 // If we have just come from a state where handshakes are required, then we should notify the endpoint that we are closing.
                 Connection.Enqueue(new HandshakePayload(State));
             }
-
-            State = ConnectionState.Closed;
             Behavior = ConnectionBehavior.None;
         }
 
@@ -199,7 +200,7 @@ namespace NetCode.Connection
                 }
             }
 
-            Connection.Transmit();
+            Connection.Transmit( BehaviorSet(ConnectionBehavior.AcknowledgeIncomingPackets) );
         }
 
 
