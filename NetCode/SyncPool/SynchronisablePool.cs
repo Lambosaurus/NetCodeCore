@@ -35,6 +35,19 @@ namespace NetCode.SyncPool
 
             SyncHandles = new List<SyncHandle>();
             SyncSlots = new SyncSlot[DEFAULT_SYNCHANDLE_COUNT];
+            Revision = 0;
+        }
+
+        public void Clear()
+        {
+            foreach (SyncHandle handle in SyncHandles)
+            {
+                handle.State = SyncHandle.SyncState.Deleted;
+            }
+
+            SyncHandles.Clear();
+            SyncSlots = new SyncSlot[DEFAULT_SYNCHANDLE_COUNT];
+            Revision = 0;
         }
 
         public SyncHandle GetHandleByObject(object obj)
@@ -63,7 +76,7 @@ namespace NetCode.SyncPool
             SyncSlots[entityID].Handle = null;
             SyncSlots[entityID].Revision = revision;
         }
-
+        
         public SyncHandle GetHandle(ushort entityID)
         {
             if (entityID < SyncSlots.Length && SyncSlots[entityID].Handle != null)

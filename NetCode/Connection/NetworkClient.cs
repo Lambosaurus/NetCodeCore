@@ -54,6 +54,7 @@ namespace NetCode.Connection
 
         private ConnectionBehavior Behavior;
         private Dictionary<ushort, IncomingSyncPool> IncomingPools = new Dictionary<ushort, IncomingSyncPool>();
+        private Dictionary<ushort, OutgoingSyncPool> OutgoingPools = new Dictionary<ushort, OutgoingSyncPool>();
 
         private EventMarker HandshakeSentMarker = new EventMarker();
         private EventMarker KeepAliveMarker = new EventMarker();
@@ -66,15 +67,13 @@ namespace NetCode.Connection
             Behavior = ConnectionBehavior.None;
         }
 
-        /// <summary>
-        /// Puts the client into the specified ConnectionState.
-        /// </summary>
-        /// <param name="requestedState">The state to enter. Open and Opening are equivilent here.</param>
         public void SetState(ConnectionState requestedState)
         {
             switch (requestedState)
             {
                 case (ConnectionState.Open):
+                    // We must always transition to Open through the Opening state.
+                    // This ensure the connection is set up and that acknowledgmets comes through.
                 case (ConnectionState.Opening):
                     if (State != ConnectionState.Open && State != ConnectionState.Opening)
                     {
@@ -98,6 +97,93 @@ namespace NetCode.Connection
             }
         }
 
+        /// <summary>
+        /// This is called by the OnRecieve method of an incoming HandshakePacket.
+        /// </summary>
+        /// <param name="endpointState">Indicates the state declared by the endpoint client.</param>
+        internal void RecieveEndpointState(ConnectionState endpointState)
+        {
+            switch (endpointState)
+            {
+                case (ConnectionState.Open):
+                case (ConnectionState.Opening):
+                    if (State == ConnectionState.Listening)
+                    {
+                        // Do not transition directly to Open.
+                        EnterStateOpening();
+                    }
+                    break;
+                case (ConnectionState.Listening):
+                case (ConnectionState.Closed):
+                    if (State != ConnectionState.Closed)
+                    {
+                        EnterStateClosed();
+                    }
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// This is called by the OnRecieve method of an incoming AcknowledgementPayload.
+        /// </summary>
+        internal void RecieveAcknowledgement()
+        {
+            KeepAliveMarker.Mark();
+
+            if (State == ConnectionState.Opening)
+            {
+                EnterStateOpen();
+            }
+        }
+
+        internal void Enqueue(Payload payload)
+        {
+            if (BehaviorSet(ConnectionBehavior.AllowOutgoingPayloads))
+            {
+                Connection.Enqueue(payload);
+            }
+        }
+
+        public void Attach(IncomingSyncPool syncPool)
+        {
+            if (IncomingPools.ContainsKey(syncPool.PoolID))
+            {
+                throw new NetcodeOverloadedException(string.Format("An IncomingSyncPool with PoolID of {0} has already been attached to this NetworkClient", syncPool.PoolID));
+            }
+            IncomingPools[syncPool.PoolID] = syncPool;
+        }
+
+        public void Detach(IncomingSyncPool syncPool)
+        {
+            IncomingPools.Remove(syncPool.PoolID);
+        }
+
+        public void Attach(OutgoingSyncPool syncPool)
+        {
+            if (OutgoingPools.ContainsKey(syncPool.PoolID))
+            {
+                throw new NetcodeOverloadedException(string.Format("An OutgoingSyncPool with PoolID of {0} has already been attached to this NetworkClient", syncPool.PoolID));
+            }
+            syncPool.Subscribe(this);
+            OutgoingPools[syncPool.PoolID] = syncPool;
+        }
+
+        public void Detach(OutgoingSyncPool syncPool)
+        {
+            syncPool.Unsubscribe(this);
+            OutgoingPools.Remove(syncPool.PoolID);
+        }
+
+        internal IncomingSyncPool GetSyncPool(ushort poolID)
+        {
+            if (IncomingPools.ContainsKey(poolID))
+            {
+                return IncomingPools[poolID];
+            }
+            return null;
+        }
+        
+
         [MethodImpl(256)] // Set for aggressive inlining.
         private bool BehaviorSet( ConnectionBehavior behavior )
         {
@@ -111,6 +197,8 @@ namespace NetCode.Connection
                      | ConnectionBehavior.HandleIncomingPayloads
                      | ConnectionBehavior.GenerateOutgoingHandshakes
                      | ConnectionBehavior.CloseOnTimeout;
+
+            EnqueueSetupPayloads();
         }
 
         private void EnterStateOpening()
@@ -119,12 +207,12 @@ namespace NetCode.Connection
             Behavior = ConnectionBehavior.GenerateOutgoingHandshakes
                      | ConnectionBehavior.HandleIncomingPayloads
                      | ConnectionBehavior.CloseOnTimeout;
-
-
+            
             // Kick the connection off.
             Connection.Enqueue(new HandshakePayload(State));
             HandshakeSentMarker.Mark();
             KeepAliveMarker.Mark();
+            ClearIncomingSyncPools();
         }
 
         private void EnterStateListening()
@@ -206,74 +294,20 @@ namespace NetCode.Connection
             Connection.TransmitPackets();
         }
 
-
-        /// <summary>
-        /// This is called by the OnRecieve method of n incoming HandshakePacket.
-        /// </summary>
-        /// <param name="endpointState">Indicates the state declared by the endpoint client.</param>
-        internal void RecieveEndpointState(ConnectionState endpointState)
+        private void EnqueueSetupPayloads()
         {
-            switch (endpointState)
+            foreach (OutgoingSyncPool pool in OutgoingPools.Values)
             {
-                case (ConnectionState.Open):
-                case (ConnectionState.Opening):
-                    if ( State == ConnectionState.Listening )
-                    {
-                        EnterStateOpening();
-                    }
-                    break;
-                case (ConnectionState.Listening):
-                case (ConnectionState.Closed):
-                    if ( State != ConnectionState.Closed )
-                    {
-                        EnterStateClosed();
-                    }
-                    break;
+                Enqueue(pool.GenerateCompleteStatePayload());
             }
         }
 
-        /// <summary>
-        /// This will be called by an AcknowledgementPayload
-        /// </summary>
-        internal void RecieveAcknowledgement()
+        private void ClearIncomingSyncPools()
         {
-            KeepAliveMarker.Mark();
-
-            if ( State == ConnectionState.Opening )
+            foreach (IncomingSyncPool pool in IncomingPools.Values)
             {
-                EnterStateOpen();
+                pool.Clear();
             }
-        }
-
-        internal void Enqueue(Payload payload)
-        {
-            if (BehaviorSet(ConnectionBehavior.AllowOutgoingPayloads))
-            {
-                Connection.Enqueue(payload);
-            }
-        }
-  
-        internal void AttachSyncPool(IncomingSyncPool syncPool)
-        {
-            if (IncomingPools.ContainsKey(syncPool.PoolID))
-            {
-                throw new NetcodeOverloadedException(string.Format("An IncomingSyncPool with PoolID of {0} has already been attached to this NetworkClient", syncPool.PoolID));
-            }
-            IncomingPools[syncPool.PoolID] = syncPool;
-        }
-
-        internal void DetachSyncPool(IncomingSyncPool syncPool)
-        {
-            IncomingPools.Remove(syncPool.PoolID);
-        }
-
-        internal IncomingSyncPool GetSyncPool(ushort poolID)
-        {
-            if (IncomingPools.ContainsKey(poolID))
-            {
-                return IncomingPools[poolID];
-            }
-            return null;
         }
     }
 }

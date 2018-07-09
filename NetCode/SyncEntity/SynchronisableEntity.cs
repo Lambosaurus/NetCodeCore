@@ -74,6 +74,16 @@ namespace NetCode.SyncEntity
             }
             return size;
         }
+
+        public int WriteAllToBufferSize()
+        {
+            int size = ID_HEADER_LENGTH + FIELD_COUNT_HEADER_LENGTH + TYPEID_HEADER_LENGTH;
+            foreach (SynchronisableField field in fields)
+            {
+                size += FIELDID_HEADER_LENGTH + field.WriteToBufferSize();
+            }
+            return size;
+        }
         
         public void WriteRevisionToBuffer(byte[] data, ref int index, uint revision)
         {
@@ -93,6 +103,20 @@ namespace NetCode.SyncEntity
             Primitive.WriteByte(data, ref index, (byte)updatedFieldIDs.Count);
 
             foreach (byte fieldID in updatedFieldIDs)
+            {
+                SynchronisableField field = fields[fieldID];
+                Primitive.WriteByte(data, ref index, fieldID);
+                field.Write(data, ref index);
+            }
+        }
+
+        public void WriteAllToBuffer(byte[] data, ref int index)
+        {
+            Primitive.WriteUShort(data, ref index, EntityID);
+            Primitive.WriteUShort(data, ref index, descriptor.TypeID);
+            Primitive.WriteByte(data, ref index, (byte)fields.Length );
+
+            for (byte fieldID = 0; fieldID < fields.Length; fieldID++)
             {
                 SynchronisableField field = fields[fieldID];
                 Primitive.WriteByte(data, ref index, fieldID);

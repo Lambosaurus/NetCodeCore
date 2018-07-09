@@ -9,23 +9,11 @@ namespace NetCode.SyncPool
 {
     public class IncomingSyncPool : SynchronisablePool
     {
-        NetworkClient SourceClient;
-
         internal IncomingSyncPool(SyncEntityGenerator generator, ushort poolID) : base(generator, poolID)
         {
 
         }
         
-        public void SetSource(NetworkClient source)
-        {
-            if (SourceClient != null)
-            {
-                SourceClient.DetachSyncPool(this);
-            }
-            SourceClient = source;
-            SourceClient.AttachSyncPool(this);
-        }
-
         public void Synchronise()
         {
             foreach (SyncHandle handle in SyncHandles)
@@ -36,8 +24,7 @@ namespace NetCode.SyncPool
                 }
             }
         }
-
-
+        
         internal void RemoveEntity(ushort entityID, uint revision)
         {
             SyncHandle handle = GetHandle(entityID);

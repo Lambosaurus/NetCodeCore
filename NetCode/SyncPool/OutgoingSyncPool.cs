@@ -12,18 +12,22 @@ namespace NetCode.SyncPool
     public class OutgoingSyncPool : SynchronisablePool
     {
 
-        private List<NetworkClient> Destinations = new List<NetworkClient>();
+        private List<NetworkClient> Subscribers = new List<NetworkClient>();
 
         internal OutgoingSyncPool(SyncEntityGenerator generator, ushort poolID) : base(generator, poolID)
         {
 
         }
         
-        public void AddDestination(NetworkClient destination)
+        internal void Subscribe(NetworkClient destination)
         {
-            Destinations.Add(destination);
+            Subscribers.Add(destination);
         }
         
+        internal void Unsubscribe(NetworkClient destination)
+        {
+            Subscribers.Remove(destination);
+        }
         
         /// <summary>
         /// Gets the next free object ID
@@ -104,9 +108,9 @@ namespace NetCode.SyncPool
 
         private void BroadcastPayload(Payload payload)
         {
-            foreach (NetworkClient destination in Destinations)
+            foreach (NetworkClient clients in Subscribers)
             {
-                destination.Enqueue(payload);
+                clients.Enqueue(payload);
             }
         }
         
@@ -170,6 +174,27 @@ namespace NetCode.SyncPool
                 return payload;
             }
             return null;
+        }
+
+        internal Payload GenerateCompleteStatePayload()
+        {
+            int size = 0;
+            foreach (SyncHandle handle in SyncHandles)
+            {
+                size += handle.Sync.WriteAllToBufferSize();
+            }
+            
+            PoolRevisionPayload payload = new PoolRevisionPayload(this, Revision, size);
+            payload.AllocateAndWrite();
+
+            payload.GetRevisionContentBuffer(out byte[] data, out int index, out int count);
+
+            foreach (SyncHandle handle in SyncHandles)
+            {
+                handle.Sync.WriteAllToBuffer(data, ref index);
+            }
+
+            return payload;
         }
     }
 }

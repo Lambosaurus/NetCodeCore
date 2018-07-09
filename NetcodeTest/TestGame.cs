@@ -63,18 +63,15 @@ namespace NetcodeTest
             virtualConnection.Connect(otherConenction);
             outgoingClient = new NetworkClient(virtualConnection);
             incomingClient = new NetworkClient(otherConenction);
-            outgoingClient.SetState(NetworkClient.ConnectionState.Open);
-            incomingClient.SetState(NetworkClient.ConnectionState.Listening);
 
             virtualConnection.Settings.PacketLoss = 0.00;
             virtualConnection.Settings.LatencyMin = 150;
             virtualConnection.Settings.LatencyMax = 200;
-            virtualConnection.Settings.Connected = false;
 
             outgoingPool = netcode.GenerateOutgoingPool(1);
             incomingPool = netcode.GenerateIncomingPool(1);
-            outgoingPool.AddDestination(outgoingClient);
-            incomingPool.SetSource(incomingClient);
+            outgoingClient.Attach(outgoingPool);
+            incomingClient.Attach(incomingPool);
 
             outgoingPool.RegisterEntity(player);
 
