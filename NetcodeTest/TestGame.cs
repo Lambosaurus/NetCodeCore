@@ -25,7 +25,6 @@ namespace NetcodeTest
         OutgoingSyncPool outgoingPool;
         IncomingSyncPool incomingPool;
 
-        VirtualConnection virtualConnection;
         NetworkClient outgoingClient;
         NetworkClient incomingClient;
 
@@ -57,16 +56,9 @@ namespace NetcodeTest
 
             netcode.RegisterType(typeof(PlayerEntity));
             netcode.RegisterType(typeof(BulletEntity));
-
-            virtualConnection = new VirtualConnection();
-            VirtualConnection otherConenction = new VirtualConnection();
-            virtualConnection.Connect(otherConenction);
-            outgoingClient = new NetworkClient(virtualConnection);
-            incomingClient = new NetworkClient(otherConenction);
-
-            virtualConnection.Settings.PacketLoss = 0.00;
-            virtualConnection.Settings.LatencyMin = 150;
-            virtualConnection.Settings.LatencyMax = 200;
+            
+            outgoingClient = new NetworkClient( new UDPConnection( System.Net.IPAddress.Parse("127.0.0.1"), 11003, 11002 ));
+            incomingClient = new NetworkClient( new UDPConnection( System.Net.IPAddress.Parse("127.0.0.1"), 11002, 11003 ));
 
             outgoingPool = netcode.GenerateOutgoingPool(1);
             incomingPool = netcode.GenerateIncomingPool(1);
@@ -168,11 +160,6 @@ namespace NetcodeTest
                     outgoingPool.GetHandleByObject(entities[i]).State = SyncHandle.SyncState.Deleted;
                     entities.RemoveAt(i);
                 }
-            }
-
-            if ( keys.IsKeyDown(Keys.Tab) && !lastKeys.IsKeyDown(Keys.Tab))
-            {
-                virtualConnection.Settings.Connected = !virtualConnection.Settings.Connected;
             }
 
             if (keys.IsKeyDown(Keys.C) && !lastKeys.IsKeyDown(Keys.C))
