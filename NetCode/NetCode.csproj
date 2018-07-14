@@ -43,7 +43,8 @@
     <Compile Include="Connection\ConnectionStats.cs" />
     <Compile Include="Connection\NetworkConnection.cs" />
     <Compile Include="Connection\NetworkClient.cs" />
-    <Compile Include="Connection\UDPConnection.cs" />
+    <Compile Include="Connection\UDP\UDPListenerConnection.cs" />
+    <Compile Include="Connection\UDP\UDPDirectConnection.cs" />
     <Compile Include="Connection\VirtualConnection.cs" />
     <Compile Include="Payloads\HandshakePayload.cs" />
     <Compile Include="Payloads\PoolDeletionPayload.cs" />

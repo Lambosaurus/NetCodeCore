@@ -207,6 +207,8 @@ namespace NetCode.Connection
             Behavior = ConnectionBehavior.GenerateOutgoingHandshakes
                      | ConnectionBehavior.HandleIncomingPayloads
                      | ConnectionBehavior.CloseOnTimeout;
+
+            Connection.OnConnect();
             
             // Kick the connection off.
             Connection.Enqueue(new HandshakePayload(State));
@@ -223,6 +225,8 @@ namespace NetCode.Connection
                 Connection.Enqueue(new HandshakePayload(State));
             }
             Behavior = ConnectionBehavior.HandleIncomingHandshakesOnly;
+
+            Connection.OnListen();
         }
 
         private void EnterStateClosed()
@@ -234,6 +238,8 @@ namespace NetCode.Connection
                 Connection.Enqueue(new HandshakePayload(State));
             }
             Behavior = ConnectionBehavior.None;
+
+            Connection.OnClose();
         }
 
         public void Update()

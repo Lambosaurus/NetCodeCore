@@ -160,5 +160,9 @@ namespace NetCode.Connection
         
         protected abstract void SendData(byte[] data);
         protected abstract List<byte[]> RecieveData();
+
+        internal virtual void OnConnect() { }
+        internal virtual void OnListen() { }
+        internal virtual void OnClose() { }
     }
 }

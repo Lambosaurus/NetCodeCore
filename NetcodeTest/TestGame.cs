@@ -11,6 +11,7 @@ using Microsoft.Xna.Framework.Media;
 using NetCode;
 using NetCode.SyncPool;
 using NetCode.Connection;
+using NetCode.Connection.UDP;
 
 using NetcodeTest.Entities;
 
@@ -57,8 +58,8 @@ namespace NetcodeTest
             netcode.RegisterType(typeof(PlayerEntity));
             netcode.RegisterType(typeof(BulletEntity));
             
-            outgoingClient = new NetworkClient( new UDPConnection( System.Net.IPAddress.Parse("127.0.0.1"), 11003, 11002 ));
-            incomingClient = new NetworkClient( new UDPConnection( System.Net.IPAddress.Parse("127.0.0.1"), 11002, 11003 ));
+            outgoingClient = new NetworkClient( new UDPDirectConnection( System.Net.IPAddress.Parse("127.0.0.1"), 11003, 11002 ));
+            incomingClient = new NetworkClient( new UDPListenerConnection( 11002 ));
 
             outgoingPool = netcode.GenerateOutgoingPool(1);
             incomingPool = netcode.GenerateIncomingPool(1);
