@@ -24,12 +24,17 @@ namespace NetCode.Payloads
         {
         }
 
-        public PoolRevisionPayload(OutgoingSyncPool syncPool, uint revision, int size)
+        public static PoolRevisionPayload Generate(OutgoingSyncPool syncPool, uint revision, int size)
         {
-            PoolID = syncPool.PoolID;
-            Revision = revision;
-            SyncPool = syncPool;
-            RevisionSize = size;
+            PoolRevisionPayload payload = new PoolRevisionPayload()
+            {
+                PoolID = syncPool.PoolID,
+                Revision = revision,
+                SyncPool = syncPool,
+                RevisionSize = size
+            };
+            payload.AllocateAndWrite();
+            return payload;
         }
         
         public override void WriteContent()

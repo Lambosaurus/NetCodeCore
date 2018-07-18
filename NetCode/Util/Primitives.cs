@@ -150,7 +150,7 @@ namespace NetCode.Util
         public static Half ReadHalf(byte[] data, ref int index)
         {
             Half value = Half.ToHalf(data, index);
-            index += 2; //sizeof(Half);
+            index += SizeofHalf;
             return value;
         }
         public static byte[] ReadByteArray(byte[] data, ref int index)

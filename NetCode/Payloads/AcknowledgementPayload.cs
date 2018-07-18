@@ -21,15 +21,19 @@ namespace NetCode.Payloads
         {
         }
 
-        public AcknowledgementPayload(IEnumerable<uint> packetIDs)
+        public static AcknowledgementPayload Generate(IEnumerable<uint> packetIDs)
         {
-            //TODO: Potentially remove this once packing is properly abstracted.
             if (packetIDs.Count() > MAX_PACKET_IDS)
             {
+                //TODO: Potentially remove this, as the packets are being validated correctly.
                 throw new NetcodeOverloadedException(string.Format("May not acknowledge more than {0} packets in one payload", MAX_PACKET_IDS));
             }
-            PacketIDs = packetIDs.ToArray();
-            AllocateAndWrite();
+            AcknowledgementPayload payload = new AcknowledgementPayload()
+            {
+                PacketIDs = packetIDs.ToArray()
+            };
+            payload.AllocateAndWrite();
+            return payload;
         }
 
         public override void OnReception(NetworkClient client)

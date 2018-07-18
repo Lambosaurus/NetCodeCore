@@ -24,20 +24,24 @@ namespace NetCode.Payloads
         {
         }
 
-        public PoolDeletionPayload(ushort poolID, uint revision, IEnumerable<ushort> entityIDs)
+        public static PoolDeletionPayload Generate(ushort poolID, uint revision, IEnumerable<ushort> entityIDs)
         {
             //TODO: Potentially remove this once packing is properly abstracted.
             if (entityIDs.Count() > MAX_ENTITY_IDS)
             {
                 throw new NetcodeOverloadedException(string.Format("May not delete more than {0} entities in one payload", MAX_ENTITY_IDS));
             }
-            EntityIDs = entityIDs.ToArray();
-            Revision = revision;
-            PoolID = poolID;
 
-            AllocateAndWrite();
+            PoolDeletionPayload payload = new PoolDeletionPayload()
+            {
+                EntityIDs = entityIDs.ToArray(),
+                Revision = revision,
+                PoolID = poolID
+            };
+            payload.AllocateAndWrite();
+            return payload;
         }
-
+        
         public override void OnReception(NetworkClient client)
         {
             IncomingSyncPool destination = client.GetSyncPool(PoolID);

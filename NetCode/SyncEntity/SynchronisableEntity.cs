@@ -9,10 +9,8 @@ namespace NetCode.SyncEntity
 {
     internal class SynchronisableEntity
     {
-        const int ID_HEADER_LENGTH = sizeof(ushort);
-        const int TYPEID_HEADER_LENGTH = sizeof(ushort);
-        const int FIELD_COUNT_HEADER_LENGTH = sizeof(byte);
-        const int FIELDID_HEADER_LENGTH = sizeof(byte);
+        internal const int HeaderSize = sizeof(ushort) + sizeof(ushort) + sizeof(byte);
+        internal const int FieldHeaderSize = sizeof(byte);
 
         private SyncEntityDescriptor descriptor;
         private SynchronisableField[] fields;
@@ -64,12 +62,12 @@ namespace NetCode.SyncEntity
 
         public int WriteRevisionToBufferSize(uint revision)
         {
-            int size = ID_HEADER_LENGTH + FIELD_COUNT_HEADER_LENGTH + TYPEID_HEADER_LENGTH;
+            int size = HeaderSize;
             foreach (SynchronisableField field in fields)
             {
                 if (field.Revision == revision)
                 {
-                    size += FIELDID_HEADER_LENGTH + field.WriteToBufferSize();
+                    size += FieldHeaderSize + field.WriteToBufferSize();
                 }
             }
             return size;
@@ -77,10 +75,10 @@ namespace NetCode.SyncEntity
 
         public int WriteAllToBufferSize()
         {
-            int size = ID_HEADER_LENGTH + FIELD_COUNT_HEADER_LENGTH + TYPEID_HEADER_LENGTH;
+            int size = HeaderSize;
             foreach (SynchronisableField field in fields)
             {
-                size += FIELDID_HEADER_LENGTH + field.WriteToBufferSize();
+                size += FieldHeaderSize + field.WriteToBufferSize();
             }
             return size;
         }

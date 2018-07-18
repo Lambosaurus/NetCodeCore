@@ -4,20 +4,21 @@ using System.Linq;
 
 using System.Net.Sockets;
 using System.Net;
+using NetCode.Payloads;
 
 namespace NetCode.Connection.UDP
 {
-    public class UDPDirectConnection : NetworkConnection
+    public class UDPConnection : NetworkConnection
     {
         private UdpClient Socket;
 
-        public UDPDirectConnection(IPAddress address, int port)
+        public UDPConnection(IPAddress address, int port)
         {
             Socket = new UdpClient(port);
             Socket.Connect(address, port);
         }
 
-        public UDPDirectConnection(IPAddress address, int srcport, int destport)
+        public UDPConnection(IPAddress address, int srcport, int destport)
         {
             Socket = new UdpClient(srcport);
             Socket.Connect(address, destport);
@@ -40,6 +41,11 @@ namespace NetCode.Connection.UDP
             }
 
             return data;
+        }
+
+        internal override Payload GetConnectionRequestPayload()
+        {
+            return UDPConnectionRequestPayload.Generate();
         }
     }
 }

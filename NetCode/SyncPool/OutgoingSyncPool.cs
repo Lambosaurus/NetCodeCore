@@ -100,7 +100,7 @@ namespace NetCode.SyncPool
                 Revision = candidateRevision;
                 foreach ( ushort[] deletedIDs in deletedEntityIDs.Segment(PoolDeletionPayload.MAX_ENTITY_IDS))
                 {
-                    Payload payload = new PoolDeletionPayload(PoolID, Revision, deletedIDs);
+                    Payload payload = PoolDeletionPayload.Generate(PoolID, Revision, deletedIDs);
                     BroadcastPayload(payload);
                 }
             }
@@ -160,8 +160,7 @@ namespace NetCode.SyncPool
 
             if (updatedEntities.Count > 0)
             {
-                PoolRevisionPayload payload = new PoolRevisionPayload(this, revision, size);
-                payload.AllocateAndWrite();
+                PoolRevisionPayload payload = PoolRevisionPayload.Generate(this, revision, size);
 
                 payload.GetRevisionContentBuffer(out byte[] data, out int index, out int count);
                 
@@ -184,8 +183,7 @@ namespace NetCode.SyncPool
                 size += handle.Sync.WriteAllToBufferSize();
             }
             
-            PoolRevisionPayload payload = new PoolRevisionPayload(this, Revision, size);
-            payload.AllocateAndWrite();
+            PoolRevisionPayload payload = PoolRevisionPayload.Generate(this, Revision, size);
 
             payload.GetRevisionContentBuffer(out byte[] data, out int index, out int count);
 

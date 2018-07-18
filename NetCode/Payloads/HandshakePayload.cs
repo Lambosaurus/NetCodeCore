@@ -26,10 +26,14 @@ namespace NetCode.Payloads
         {
         }
 
-        public HandshakePayload(NetworkClient.ConnectionState state)
+        public static HandshakePayload Generate(NetworkClient.ConnectionState state)
         {
-            State = state;
-            AllocateAndWrite();
+            HandshakePayload payload = new HandshakePayload()
+            {
+                State = state
+            };
+            payload.AllocateAndWrite();
+            return payload;
         }
 
         public override void OnReception(NetworkClient client)

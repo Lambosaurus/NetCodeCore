@@ -41,7 +41,7 @@ namespace NetCode.Connection
             return payloads;
         }
 
-        internal void DiscardIncomingPackets()
+        internal void FlushRecievedPackets()
         {
             RecieveData();
         }
@@ -152,17 +152,15 @@ namespace NetCode.Connection
             {
                 foreach (uint[] packetIDs in packetAcknowledgementQueue.Segment(PoolDeletionPayload.MAX_ENTITY_IDS))
                 {
-                    Enqueue(new AcknowledgementPayload(packetIDs));
+                    Enqueue(AcknowledgementPayload.Generate(packetIDs));
                 }
                 packetAcknowledgementQueue.Clear();
             }
         }
-        
+
+        internal virtual Payload GetConnectionRequestPayload() { return null; }
+
         protected abstract void SendData(byte[] data);
         protected abstract List<byte[]> RecieveData();
-
-        internal virtual void OnConnect() { }
-        internal virtual void OnListen() { }
-        internal virtual void OnClose() { }
     }
 }

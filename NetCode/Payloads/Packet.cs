@@ -8,14 +8,13 @@ namespace NetCode.Payloads
 {
     public class Packet
     {
-        public List<Payload> Payloads { get; private set; }
-
+        internal const int HeaderSize = sizeof(uint);
+        
         public bool DecodingError { get; private set; } = false;
         public uint PacketID { get; private set; }
-
-        const int PACKET_HEADER_SIZE = sizeof(uint);
-
         public long Timestamp { get; private set; }
+        public List<Payload> Payloads { get; private set; }
+        
 
         public Packet(uint packetID)
         {
@@ -37,7 +36,7 @@ namespace NetCode.Payloads
         {
             Timestamp = timestamp;
 
-            int size = PACKET_HEADER_SIZE;
+            int size = HeaderSize;
             foreach (Payload payload in Payloads)
             {
                 size += payload.Size;
@@ -79,11 +78,12 @@ namespace NetCode.Payloads
             Packet packet = new Packet(packetID);
             packet.Timestamp = timestamp;
             
-            while (index + Payload.PAYLOAD_HEADER_SIZE <= length)
+            while (index + Payload.HeaderSize <= length)
             {
                 Payload payload = Payload.Decode(data, ref index);
                 if (payload == null)
                 {
+                    packet.DecodingError = true;
                     break;
                 }
                 packet.Payloads.Add(payload);

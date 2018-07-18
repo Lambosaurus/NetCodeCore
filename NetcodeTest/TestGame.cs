@@ -26,7 +26,8 @@ namespace NetcodeTest
         OutgoingSyncPool outgoingPool;
         IncomingSyncPool incomingPool;
 
-        NetworkClient outgoingClient;
+        UDPServer udpServer;
+        List<NetworkClient> outgoingClients;
         NetworkClient incomingClient;
 
         PlayerEntity player;
@@ -57,13 +58,15 @@ namespace NetcodeTest
 
             netcode.RegisterType(typeof(PlayerEntity));
             netcode.RegisterType(typeof(BulletEntity));
-            
-            outgoingClient = new NetworkClient( new UDPDirectConnection( System.Net.IPAddress.Parse("127.0.0.1"), 11003, 11002 ));
-            incomingClient = new NetworkClient( new UDPListenerConnection( 11002 ));
+
+            udpServer = new UDPServer(11002);
+            udpServer.IncomingConnectionLimit = 1;
+
+            outgoingClients = new List<NetworkClient>();
+            incomingClient = new NetworkClient( new UDPConnection( System.Net.IPAddress.Parse("127.0.0.1"), 11003, 11002 ));
 
             outgoingPool = netcode.GenerateOutgoingPool(1);
             incomingPool = netcode.GenerateIncomingPool(1);
-            outgoingClient.Attach(outgoingPool);
             incomingClient.Attach(incomingPool);
 
             outgoingPool.RegisterEntity(player);
@@ -165,32 +168,45 @@ namespace NetcodeTest
 
             if (keys.IsKeyDown(Keys.C) && !lastKeys.IsKeyDown(Keys.C))
             {
-                if (outgoingClient.State != NetworkClient.ConnectionState.Closed)
+                if (incomingClient.State != NetworkClient.ConnectionState.Closed)
                 {
-                    outgoingClient.SetState(NetworkClient.ConnectionState.Closed);
+                    incomingClient.SetState(NetworkClient.ConnectionState.Closed);
                 }
                 else
                 {
-                    outgoingClient.SetState(NetworkClient.ConnectionState.Open);
+                    incomingClient.SetState(NetworkClient.ConnectionState.Open);
                 }
             }
-            
+
+
+            UDPFeed feed = udpServer.RecieveConnection();
+            if (feed != null)
+            {
+                NetworkClient client = new NetworkClient(feed);
+                client.SetState(NetworkClient.ConnectionState.Open);
+                client.Attach(outgoingPool);
+                outgoingClients.Add(client);
+            }
+
 
             if (++tick >= 5)
             {
                 tick = 0;
                 outgoingPool.Synchronise();
             }
+            
+            foreach (NetworkClient client in outgoingClients)
+            {
+                client.Update();
 
-            outgoingClient.Update();
+                if (client.State == NetworkClient.ConnectionState.Closed)
+                {
+                    client.SetState(NetworkClient.ConnectionState.Opening);
+                }
+            }
+
             incomingClient.Update();
             incomingPool.Synchronise();
-
-
-            if (incomingClient.State == NetworkClient.ConnectionState.Closed)
-            {
-                incomingClient.SetState(NetworkClient.ConnectionState.Listening);
-            }
 
 
             lastKeys = keys;
@@ -231,7 +247,6 @@ namespace NetcodeTest
                 entity.Draw(spriteBatch, false);
             }
 
-            spriteBatch.DrawString(font, GetConnectionStatsString(outgoingClient), new Vector2(0, 0), Color.White);
             spriteBatch.DrawString(font, GetConnectionStatsString(incomingClient), new Vector2(0, 300), Color.White);
 
             spriteBatch.End();

@@ -5,11 +5,15 @@ using System.Linq;
 using NetCode.Util;
 using NetCode.Connection;
 
+// Used only for payload definitions
+using NetCode.Connection.UDP;
+
+
 namespace NetCode.Payloads
 {
     public abstract class Payload
     {
-        public enum PayloadType { None, Handshake, Acknowledgement, PoolRevision, PoolDeletion }
+        public enum PayloadType { None, Handshake, Acknowledgement, PoolRevision, PoolDeletion, UDPConnectionRequest }
         public abstract PayloadType Type { get; }
 
         public int Size { get; protected set; }
@@ -18,7 +22,7 @@ namespace NetCode.Payloads
         protected int DataStart;
         protected int DataIndex;
 
-        public const int PAYLOAD_HEADER_SIZE = sizeof(ushort) + sizeof(byte);
+        internal const int HeaderSize = sizeof(ushort) + sizeof(byte);
 
         public abstract void WriteContent();
         public abstract void ReadContent();
@@ -57,7 +61,7 @@ namespace NetCode.Payloads
         
         public void AllocateAndWrite()
         {
-            Size = ContentSize() + PAYLOAD_HEADER_SIZE;
+            Size = ContentSize() + HeaderSize;
             Data = new byte[Size];
             DataStart = 0;
             DataIndex = DataStart;
@@ -71,7 +75,7 @@ namespace NetCode.Payloads
             Size = size;
             Data = data;
             DataStart = start;
-            DataIndex = DataStart + PAYLOAD_HEADER_SIZE; // Skip datagram header.
+            DataIndex = DataStart + HeaderSize; // Skip datagram header.
 
             ReadContent();
         }
@@ -112,6 +116,8 @@ namespace NetCode.Payloads
                     return new PoolRevisionPayload();
                 case (PayloadType.PoolDeletion):
                     return new PoolDeletionPayload();
+                case (PayloadType.UDPConnectionRequest):
+                    return new UDPConnectionRequestPayload();
                 default:
                     return null;
             }

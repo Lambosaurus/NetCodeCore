@@ -44,12 +44,13 @@ namespace NetCode.Connection
 
         [Flags]
         private enum ConnectionBehavior {
-            None                          = 0     ,
-            HandleIncomingPayloads        = 1 << 0,
-            HandleIncomingHandshakesOnly  = 1 << 1,
-            AllowOutgoingPayloads         = 1 << 2,
-            GenerateOutgoingHandshakes    = 1 << 3,
-            CloseOnTimeout                = 1 << 4,
+            None                                = 0     ,
+            HandleIncomingPayloads              = 1 << 0,
+            HandleIncomingHandshakesOnly        = 1 << 1,
+            AllowOutgoingPayloads               = 1 << 2,
+            GenerateOutgoingHandshakes          = 1 << 3,
+            GenerateOutgoingConnectionRequests  = 1 << 4,
+            CloseOnTimeout                      = 1 << 5,
         }
 
         private ConnectionBehavior Behavior;
@@ -206,13 +207,11 @@ namespace NetCode.Connection
             State = ConnectionState.Opening;
             Behavior = ConnectionBehavior.GenerateOutgoingHandshakes
                      | ConnectionBehavior.HandleIncomingPayloads
-                     | ConnectionBehavior.CloseOnTimeout;
+                     | ConnectionBehavior.CloseOnTimeout
+                     | ConnectionBehavior.GenerateOutgoingConnectionRequests;
 
-            Connection.OnConnect();
-            
             // Kick the connection off.
-            Connection.Enqueue(new HandshakePayload(State));
-            HandshakeSentMarker.Mark();
+            EnqueueHandshakes();
             KeepAliveMarker.Mark();
             ClearIncomingSyncPools();
         }
@@ -222,11 +221,9 @@ namespace NetCode.Connection
             State = ConnectionState.Listening;
             if (BehaviorSet(ConnectionBehavior.GenerateOutgoingHandshakes))
             {
-                Connection.Enqueue(new HandshakePayload(State));
+                Connection.Enqueue(HandshakePayload.Generate(State));
             }
             Behavior = ConnectionBehavior.HandleIncomingHandshakesOnly;
-
-            Connection.OnListen();
         }
 
         private void EnterStateClosed()
@@ -235,13 +232,11 @@ namespace NetCode.Connection
             if (BehaviorSet(ConnectionBehavior.GenerateOutgoingHandshakes))
             {
                 // If we have just come from a state where handshakes are required, then we should notify the endpoint that we are closing.
-                Connection.Enqueue(new HandshakePayload(State));
+                Connection.Enqueue(HandshakePayload.Generate(State));
             }
             Behavior = ConnectionBehavior.None;
-
-            Connection.OnClose();
         }
-
+        
         public void Update()
         {
             if (BehaviorSet(ConnectionBehavior.HandleIncomingPayloads))
@@ -265,7 +260,7 @@ namespace NetCode.Connection
             }
             else
             {
-                Connection.DiscardIncomingPackets();
+                Connection.FlushRecievedPackets();
             }
 
             // This is done after all payload.OnReception() calls because they may contain relevant AcknowledgementPayloads
@@ -284,8 +279,7 @@ namespace NetCode.Connection
                 if (   (!KeepAliveMarker.MarkedInPast(KeepAliveTimeout))
                     && (!HandshakeSentMarker.MarkedInPast(KeepAliveTimeout) ))
                 {
-                    HandshakeSentMarker.Mark();
-                    Connection.Enqueue(new HandshakePayload(State));
+                    EnqueueHandshakes();
                 }
             }
 
@@ -298,6 +292,20 @@ namespace NetCode.Connection
             }
 
             Connection.TransmitPackets();
+        }
+
+        private void EnqueueHandshakes()
+        {
+            HandshakeSentMarker.Mark();
+            Connection.Enqueue(HandshakePayload.Generate(State));
+            if (BehaviorSet(ConnectionBehavior.GenerateOutgoingConnectionRequests))
+            {
+                Payload request = Connection.GetConnectionRequestPayload();
+                if (request != null)
+                {
+                    Connection.Enqueue(request);
+                }
+            }
         }
 
         private void EnqueueSetupPayloads()
