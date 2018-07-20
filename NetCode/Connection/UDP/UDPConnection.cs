@@ -12,13 +12,11 @@ namespace NetCode.Connection.UDP
     {
         private UdpClient Socket;
 
-        public UDPConnection(IPAddress address, int port)
+        public UDPConnection(IPAddress address, int port) : this(address, port, port)
         {
-            Socket = new UdpClient(port);
-            Socket.Connect(address, port);
         }
 
-        public UDPConnection(IPAddress address, int srcport, int destport)
+        public UDPConnection(IPAddress address, int destport, int srcport)
         {
             Socket = new UdpClient(srcport);
             Socket.Connect(address, destport);

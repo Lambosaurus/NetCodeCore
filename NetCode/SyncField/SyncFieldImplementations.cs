@@ -142,7 +142,7 @@ namespace NetCode.SyncField
     {
         private Half value;
         public override void SetValue(object new_value) { value = (Half)((float)new_value); }
-        public override object GetValue() { return value; }
+        public override object GetValue() { return (float)value; }
         public override bool ValueEqual(object new_value) { return (Half)((float)new_value) == value; }
         public override int WriteToBufferSize() { return 2; }
         public override void Write(byte[] data, ref int index) { Primitive.WriteHalf(data, ref index, value); }

@@ -4,36 +4,36 @@ using System.Linq;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Content;
 
 using NetCode;
 
 namespace NetcodeTest.Entities
 {
-    public class Entity
+    public abstract class Entity
     {
         [Synchronisable(SyncFlags.HalfPrecisionFloats)]
-        public Vector2 position;
-        
-        public Vector2 velocity;
+        public Vector2 Position { get; protected set; }
+        [Synchronisable(SyncFlags.HalfPrecisionFloats)]
+        public Vector2 Velocity { get; protected set; }
+        [Synchronisable(SyncFlags.HalfPrecisionFloats)]
+        public float Angle { get; protected set; }
+        [Synchronisable]
+        public float AngularVelocity { get; protected set; } 
 
-        public bool expired = false;
-        
-        public virtual void Update()
+        public Entity( Vector2 position )
         {
-            position += velocity;
+            Position = position;
+            Velocity = new Vector2(0, 0);
+            Angle = 0f;
+            AngularVelocity = 0f;
         }
 
-        public virtual void Draw(SpriteBatch batch, bool local)
+        public virtual void Update(float delta)
         {
+            Position += Velocity * delta;
+            Angle += AngularVelocity * delta;
         }
-        
-        protected static Texture2D sq_texture;
-        protected static Vector2 sq_center;
-        public static void Load(ContentManager content)
-        {
-            sq_texture = content.Load<Texture2D>("sq");
-            sq_center = new Vector2(sq_texture.Width, sq_texture.Height) / 2f;
-        }
+
+        public abstract void Draw(SpriteBatch batch);
     }
 }

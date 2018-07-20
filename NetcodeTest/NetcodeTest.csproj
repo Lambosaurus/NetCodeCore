@@ -41,9 +41,10 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Client\AsteroidServer.cs" />
+    <Compile Include="Drawing.cs" />
+    <Compile Include="Entities\Asteroid.cs" />
     <Compile Include="Entities\Entity.cs" />
-    <Compile Include="Entities\BulletEntity.cs" />
-    <Compile Include="Entities\PlayerEntity.cs" />
     <Compile Include="TestGame.cs" />
     <Compile Include="NetcodeFieldSupport.cs" />
     <Compile Include="Program.cs" />
