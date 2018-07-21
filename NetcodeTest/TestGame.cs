@@ -140,8 +140,8 @@ namespace NetcodeTest
         {
             GraphicsDevice.Clear(Color.Black);
 
-            spriteBatch.Begin();
-           
+            spriteBatch.Begin(samplerState:SamplerState.LinearClamp);
+            
             foreach ( SyncHandle handle in incomingPool.Handles )
             {
                 if (handle.Obj is Entity entity)

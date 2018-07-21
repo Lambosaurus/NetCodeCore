@@ -61,7 +61,7 @@ namespace NetcodeTest.Server
             return new Asteroid(
                 Util.RandomVector(Boundary),
                 Util.Angle(Util.RandAngle(), Util.RandF(50)),
-                4 + Util.RandF(4f),
+                4 + Util.RandF(8f),
                 Util.RandAngle(),
                 Util.RandF(1f)
                 );

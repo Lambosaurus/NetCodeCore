@@ -17,7 +17,7 @@ namespace NetcodeTest.Entities
         public Vector2 Velocity { get; protected set; }
         [Synchronisable(SyncFlags.HalfPrecisionFloats)]
         public float Angle { get; protected set; }
-        [Synchronisable]
+        [Synchronisable(SyncFlags.HalfPrecisionFloats)]
         public float AngularVelocity { get; protected set; } 
 
         public Entity( Vector2 position )
