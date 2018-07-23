@@ -125,13 +125,14 @@ namespace NetcodeTest
         {
             ConnectionStats stats = client.Connection.Stats;
             string text = string.Format(
-                "up: {0:0.00}KB/s\ndown: {1:0.00}KB/s\nping: {2}ms\nloss: {3}%\ntimeout: {4:0.0}s\nstate: {5}",
+                "up: {0:0.00}KB/s\ndown: {1:0.00}KB/s\nping: {2}ms\nloss: {3}%\ntimeout: {4:0.0}s\nstate: {5}\noffset: {6}ms",
                 stats.SentBytesPerSecond / 1024.0,
                 stats.RecievedBytesPerSecond / 1024.0,
                 stats.Latency,
                 (int)(stats.PacketLoss * 100),
                 ((double)stats.MillisecondsSinceLastAcknowledgement)/1000,
-                client.State.ToString()
+                client.State.ToString(),
+                client.EndpointNetTimeOffset
                 );
             return text;
         }

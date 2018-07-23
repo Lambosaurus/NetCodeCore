@@ -28,12 +28,21 @@ namespace NetCode.Payloads
         public abstract void ReadContent();
         public abstract int ContentSize();
 
+        /// <summary>
+        /// Indicates whether the packet must be acknowledged by the endpoint.
+        /// OnTimout will be called if this is true and no acknowledgement is recieved.
+        /// </summary>
         public abstract bool AcknowledgementRequired { get; }
+
+        /// <summary>
+        /// Indicates whether this payload may be delayed so that it may be packed
+        /// with other payloads. This will reduce traffic, at the cost of a few hundred ms.
+        /// </summary>
+        public abstract bool ImmediateTransmitRequired { get; }
 
 
         /// <summary>
-        /// Care must be taken when overriding the OnTimeout property, as this may be called from multiple NetworkConnections
-        /// if the payload is enqueued on multiple connections.
+        /// The payload may timeout for each connection it is enqueued into.
         /// </summary>
         /// <param name="connection"></param>
         public virtual void OnTimeout(NetworkClient connection)

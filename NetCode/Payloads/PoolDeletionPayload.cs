@@ -12,6 +12,7 @@ namespace NetCode.Payloads
     {
         public override PayloadType Type { get { return PayloadType.PoolDeletion; } }
         public override bool AcknowledgementRequired { get { return true; } }
+        public override bool ImmediateTransmitRequired { get { return true; } }
 
         public const int MAX_ENTITY_IDS = byte.MaxValue;
         

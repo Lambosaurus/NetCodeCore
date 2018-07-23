@@ -12,7 +12,8 @@ namespace NetCode.Payloads
     {
         public override PayloadType Type { get { return PayloadType.PoolRevision; } }
         public override bool AcknowledgementRequired { get { return true; } }
-        
+        public override bool ImmediateTransmitRequired { get { return true; } }
+
         public ushort PoolID { get; protected set; }
         public uint Revision { get; protected set; }
         

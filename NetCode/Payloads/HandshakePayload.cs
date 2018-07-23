@@ -11,26 +11,31 @@ namespace NetCode.Payloads
     public class HandshakePayload : Payload
     {
         public override PayloadType Type { get { return PayloadType.Handshake; } }
+        public override bool ImmediateTransmitRequired { get { return true; } }
 
         public override bool AcknowledgementRequired
         {
             get {
-                return State == NetworkClient.ConnectionState.Opening ||
-                       State == NetworkClient.ConnectionState.Open;
+                return AckRequired;
             }
         }
 
         private NetworkClient.ConnectionState State;
+        private uint LocalNetTime;
+        private bool AckRequired;
+        private const byte AckRequriedBit = 0x80;
 
         public HandshakePayload()
         {
         }
 
-        public static HandshakePayload Generate(NetworkClient.ConnectionState state)
+        public static HandshakePayload Generate(NetworkClient.ConnectionState state, bool ackRequired)
         {
             HandshakePayload payload = new HandshakePayload()
             {
-                State = state
+                State = state,
+                LocalNetTime = (uint)NetTime.Now(),
+                AckRequired = ackRequired
             };
             payload.AllocateAndWrite();
             return payload;
@@ -39,6 +44,7 @@ namespace NetCode.Payloads
         public override void OnReception(NetworkClient client)
         {
             client.RecieveEndpointState(State);
+            client.RecieveEndpointNetTime(LocalNetTime);
         }
 
         public override void OnTimeout(NetworkClient client)
@@ -47,17 +53,23 @@ namespace NetCode.Payloads
 
         public override int ContentSize()
         {
-            return sizeof(byte);
+            return sizeof(byte) + sizeof(uint);
         }
 
         public override void ReadContent()
         {
-            State = (NetworkClient.ConnectionState)(Primitive.ReadByte(Data, ref DataIndex));
+            byte header = Primitive.ReadByte(Data, ref DataIndex);
+            State = (NetworkClient.ConnectionState)(header & ~AckRequriedBit);
+            AckRequired = (header & AckRequriedBit) != 0;
+            LocalNetTime = Primitive.ReadUInt(Data, ref DataIndex);
         }
 
         public override void WriteContent()
         {
-            Primitive.WriteByte(Data, ref DataIndex, (byte)State);
+            byte header = (byte)State;
+            if (AckRequired) { header |= AckRequriedBit; }
+            Primitive.WriteByte(Data, ref DataIndex, header );
+            Primitive.WriteUInt(Data, ref DataIndex, LocalNetTime);
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 using NetCode.Payloads;
 
@@ -11,6 +10,7 @@ namespace NetCode.Connection.UDP
     {
         public override bool AcknowledgementRequired { get { return false; } }
         public override PayloadType Type { get { return PayloadType.UDPConnectionRequest; } }
+        public override bool ImmediateTransmitRequired { get { return true; } }
 
         public UDPConnectionRequestPayload()
         {

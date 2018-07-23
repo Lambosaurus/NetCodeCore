@@ -40,7 +40,7 @@ namespace NetCode.Connection
         public int KeepAliveTimeout { get; set; } = 300;
         public int ConnectionClosedTimeout { get; set; } = 5000;
         public NetworkConnection Connection { get; private set; }
-
+        
 
         [Flags]
         private enum ConnectionBehavior {
@@ -211,7 +211,7 @@ namespace NetCode.Connection
                      | ConnectionBehavior.GenerateOutgoingConnectionRequests;
 
             // Kick the connection off.
-            EnqueueHandshakes();
+            EnqueueHandshake(true);
             KeepAliveMarker.Mark();
             ClearIncomingSyncPools();
         }
@@ -221,7 +221,7 @@ namespace NetCode.Connection
             State = ConnectionState.Listening;
             if (BehaviorSet(ConnectionBehavior.GenerateOutgoingHandshakes))
             {
-                Connection.Enqueue(HandshakePayload.Generate(State));
+                Connection.Enqueue(HandshakePayload.Generate(State, false));
             }
             Behavior = ConnectionBehavior.HandleIncomingHandshakesOnly;
         }
@@ -232,7 +232,7 @@ namespace NetCode.Connection
             if (BehaviorSet(ConnectionBehavior.GenerateOutgoingHandshakes))
             {
                 // If we have just come from a state where handshakes are required, then we should notify the endpoint that we are closing.
-                Connection.Enqueue(HandshakePayload.Generate(State));
+                Connection.Enqueue(HandshakePayload.Generate(State, false));
             }
             Behavior = ConnectionBehavior.None;
         }
@@ -276,10 +276,10 @@ namespace NetCode.Connection
             if (BehaviorSet(ConnectionBehavior.GenerateOutgoingHandshakes))
             {
                 // periodically generate handshakes unless acknowledgements are being marked.
-                if (   (!KeepAliveMarker.MarkedInPast(KeepAliveTimeout))
-                    && (!HandshakeSentMarker.MarkedInPast(KeepAliveTimeout) ))
+                if (!HandshakeSentMarker.MarkedInPast(KeepAliveTimeout))
                 {
-                    EnqueueHandshakes();
+                    bool ackRequired = !KeepAliveMarker.MarkedInPast(KeepAliveTimeout);
+                    EnqueueHandshake(ackRequired);
                 }
             }
 
@@ -294,10 +294,10 @@ namespace NetCode.Connection
             Connection.TransmitPackets();
         }
 
-        private void EnqueueHandshakes()
+        private void EnqueueHandshake(bool ackRequired)
         {
             HandshakeSentMarker.Mark();
-            Connection.Enqueue(HandshakePayload.Generate(State));
+            Connection.Enqueue(HandshakePayload.Generate(State, ackRequired));
             if (BehaviorSet(ConnectionBehavior.GenerateOutgoingConnectionRequests))
             {
                 Payload request = Connection.GetConnectionRequestPayload();
@@ -306,6 +306,13 @@ namespace NetCode.Connection
                     Connection.Enqueue(request);
                 }
             }
+        }
+
+        public long EndpointNetTimeOffset = 0;
+
+        internal void RecieveEndpointNetTime(long endpointTime)
+        {
+            EndpointNetTimeOffset = endpointTime - NetTime.Now();
         }
 
         private void EnqueueSetupPayloads()

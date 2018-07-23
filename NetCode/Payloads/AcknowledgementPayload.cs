@@ -11,6 +11,7 @@ namespace NetCode.Payloads
     {
         public override PayloadType Type { get { return PayloadType.Acknowledgement; } }
         public override bool AcknowledgementRequired { get { return false; } }
+        public override bool ImmediateTransmitRequired { get { return true; } }
 
         public const int MAX_PACKET_IDS = byte.MaxValue;
         
