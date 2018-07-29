@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 
 using NetCode;
+using NetCode.Util;
 using NetCode.SyncPool;
 using NetCode.Connection;
 using NetCode.Connection.UDP;
@@ -125,9 +126,9 @@ namespace NetcodeTest
         {
             ConnectionStats stats = client.Connection.Stats;
             string text = string.Format(
-                "up: {0:0.00}KB/s\ndown: {1:0.00}KB/s\nping: {2}ms\nloss: {3}%\ntimeout: {4:0.0}s\nstate: {5}\noffset: {6}ms",
-                stats.BytesSent.PerSecond / 1024.0,
-                stats.BytesRecieved.PerSecond / 1024.0,
+                "up: {0}\ndown: {1}\nping: {2}ms\nloss: {3}%\ntimeout: {4:0.0}s\nstate: {5}\noffset: {6}ms",
+                Primitive.SIFormat( stats.BytesSent.PerSecond, "B/s"),
+                Primitive.SIFormat( stats.BytesRecieved.PerSecond, "B/s"),
                 stats.Latency,
                 (int)(stats.PacketLoss * 100),
                 ((double)stats.MillisecondsSinceAcknowledgement)/1000,

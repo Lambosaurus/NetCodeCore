@@ -8,9 +8,9 @@ namespace NetCode.Connection
 {
     public class ConnectionStats
     {
-        public int Latency { get { return (int)LatencyAggregator.Average; } }
+        public int Latency { get { return (int)LatencyAggregator.LongAverage; } }
         public double PacketLoss { get { return LossAggregator.Average; } }
-        public long NetTimeOffset { get { return NetTimeOffsetAggregator.LongAverage; } }
+        public long NetTimeOffset { get { return NetTimeOffsetAggregator.LongAverage - (LatencyAggregator.LongAverage/2); } }
 
         public int TotalDamagedPackets { get; protected set; } = 0;
         public int MillisecondsSinceAcknowledgement { get; protected set; } = 0;
@@ -39,7 +39,7 @@ namespace NetCode.Connection
         private PeriodAggregator BytesRecievedAggregator;
         
 
-        // The following aggregators use these constant parameters. This is because the client uses these stats for stuff.
+        // The following aggregators use these constant parameters. This is because the client relies on these stats
         private const int TimeAggregationMinimumCount = 20;
         private const int TimeAggregationPeriodMilliseconds = 2000;
 

@@ -5,7 +5,22 @@ using System.Linq;
 namespace NetCode
 {
     [Flags]
-    public enum SyncFlags { None = 0, HalfPrecisionFloats = 1 };
+    public enum SyncFlags
+    {
+        None = 0,
+
+        /// <summary>
+        /// Indicates the specified variable precisions can be downgraded for transport.
+        /// Ie, doubles will be cast to floats, and floats cast to halfs.
+        /// </summary>
+        HalfPrecisionFloats,
+
+        /// <summary>
+        /// The synchronised value is a timestamp derived from the local NetTime.
+        /// The value will be translated into a local NetTime by the endpoint.
+        /// </summary>
+        Timestamp
+    };
 
     /// <summary>
     /// Indicates what variables and properties should be tracked and synched between SynchronisableEntities.
