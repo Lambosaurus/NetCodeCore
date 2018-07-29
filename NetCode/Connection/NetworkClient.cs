@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using NetCode.SyncPool;
 using NetCode.Payloads;
 using NetCode.Util;
+using NetCode.Util.Aggregators;
 
 namespace NetCode.Connection
 {
@@ -307,14 +308,7 @@ namespace NetCode.Connection
                 }
             }
         }
-
-        public long EndpointNetTimeOffset = 0;
-
-        internal void RecieveEndpointNetTime(long endpointTime)
-        {
-            EndpointNetTimeOffset = endpointTime - NetTime.Now();
-        }
-
+        
         private void EnqueueSetupPayloads()
         {
             foreach (OutgoingSyncPool pool in OutgoingPools.Values)

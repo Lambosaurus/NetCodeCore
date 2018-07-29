@@ -44,7 +44,8 @@ namespace NetCode.Payloads
         public override void OnReception(NetworkClient client)
         {
             client.RecieveEndpointState(State);
-            client.RecieveEndpointNetTime(LocalNetTime);
+            long timestamp = NetTime.Now();
+            client.Connection.Stats.RecordNetTimeOffset(LocalNetTime - timestamp, timestamp);
         }
 
         public override void OnTimeout(NetworkClient client)

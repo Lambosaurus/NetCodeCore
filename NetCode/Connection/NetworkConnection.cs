@@ -17,7 +17,6 @@ namespace NetCode.Connection
         private List<Packet> pendingPackets = new List<Packet>();
         private List<Payload> payloadQueue = new List<Payload>();
         
-
         private List<uint> packetAcknowledgementQueue = new List<uint>();
         
 
@@ -162,5 +161,7 @@ namespace NetCode.Connection
 
         protected abstract void SendData(byte[] data);
         protected abstract List<byte[]> RecieveData();
+
+
     }
 }

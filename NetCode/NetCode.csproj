@@ -50,6 +50,8 @@
     <Compile Include="Connection\VirtualConnection.cs" />
     <Compile Include="Payloads\HandshakePayload.cs" />
     <Compile Include="Payloads\PoolDeletionPayload.cs" />
+    <Compile Include="Util\Aggregators\IAggregator.cs" />
+    <Compile Include="Util\Aggregators\PeriodAggregator.cs" />
     <Compile Include="Util\EventMarker.cs" />
     <Compile Include="Util\ListExtentions.cs" />
     <Compile Include="Util\DelegateGenerator.cs" />
