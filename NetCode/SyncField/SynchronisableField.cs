@@ -8,7 +8,8 @@ namespace NetCode.SyncField
     {
         public uint Revision { get; private set; } = 0;
         public bool Synchronised { get; set; } = false;
-
+        public SyncFlags Flags { get; set; }
+        
         internal bool TrackChanges(object newValue, uint revision)
         {
             if (!ValueEqual(newValue))
@@ -20,11 +21,17 @@ namespace NetCode.SyncField
             return false;
         }
 
-        internal void ReadChanges(byte[] data, ref int index, uint revision)
+        internal void ReadChanges(byte[] data, ref int index, uint revision, long offsetMilliseconds)
         {
             if (revision > Revision)
             {
                 Read(data, ref index);
+
+                if ((Flags & SyncFlags.Timestamp) != 0)
+                {
+                    AddTimestamp(offsetMilliseconds);
+                }
+
                 Revision = revision;
                 Synchronised = false;
             }
@@ -32,6 +39,15 @@ namespace NetCode.SyncField
             {
                 Skip(data, ref index);
             }
+        }
+
+        /// <summary>
+        /// This is used for when the type is a timestamps, and the time offset should be applied
+        /// </summary>
+        /// <param name="value"></param>
+        public virtual void AddTimestamp(long offset)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>

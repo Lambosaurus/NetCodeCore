@@ -47,7 +47,7 @@ namespace NetCode.SyncPool
             AddHandle(handle);
         }
         
-        internal void UnpackRevisionDatagram(PoolRevisionPayload payload)
+        internal void UnpackRevisionDatagram(PoolRevisionPayload payload, long offsetMilliseconds)
         {
             payload.GetRevisionContentBuffer(out byte[] data, out int index, out int count);
             int end = index + count;
@@ -103,7 +103,7 @@ namespace NetCode.SyncPool
                 else
                 {
                     SynchronisableEntity entity = SyncSlots[entityID].Handle.Sync;
-                    entity.ReadRevisionFromBuffer(data, ref index, payload.Revision);
+                    entity.ReadRevisionFromBuffer(data, ref index, payload.Revision, offsetMilliseconds);
                 }
             }
         }

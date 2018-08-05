@@ -77,7 +77,8 @@ namespace NetCode.Payloads
             IncomingSyncPool destination = client.GetSyncPool(PoolID);
             if (destination != null)
             {
-                destination.UnpackRevisionDatagram(this);
+                long offset = client.Connection.Stats.NetTimeOffset;
+                destination.UnpackRevisionDatagram(this, offset);
             }
         }
     }

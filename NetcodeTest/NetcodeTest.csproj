@@ -45,6 +45,8 @@
     <Compile Include="Drawing.cs" />
     <Compile Include="Entities\Asteroid.cs" />
     <Compile Include="Entities\Entity.cs" />
+    <Compile Include="Physics\Physical.cs" />
+    <Compile Include="Physics\Hitbox.cs" />
     <Compile Include="TestGame.cs" />
     <Compile Include="NetcodeFieldSupport.cs" />
     <Compile Include="Program.cs" />

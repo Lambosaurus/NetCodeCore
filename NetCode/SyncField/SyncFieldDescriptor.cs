@@ -22,7 +22,9 @@ namespace NetCode.SyncField
 
         public SynchronisableField GenerateField()
         {
-            return (SynchronisableField)(constructor.Invoke());
+            SynchronisableField field = (SynchronisableField)(constructor.Invoke());
+            field.Flags = flags;
+            return field;
         }
     }
 }

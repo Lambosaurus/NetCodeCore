@@ -10,6 +10,7 @@ using NetCode.SyncPool;
 using Microsoft.Xna.Framework;
 
 using NetcodeTest.Entities;
+using NetcodeTest.Physics;
 
 namespace NetcodeTest.Server
 {
@@ -36,7 +37,7 @@ namespace NetcodeTest.Server
 
         NetCodeManager NetManager;
 
-        private List<Entity> Entities;
+        private List<Physical> Entities;
 
         public AsteroidServer(NetCodeManager manager, int port )
         {
@@ -46,13 +47,13 @@ namespace NetcodeTest.Server
             MaxPlayers = 8;
 
             OugoingPool = manager.GenerateOutgoingPool(0);
-            Entities = new List<Entity>();
+            Entities = new List<Physical>();
 
             Clients = new List<RemoteClient>();
 
             for (int i = 0; i < 100; i++)
             {
-                AddEntity(NewAsteroid());
+                AddPhysical(NewAsteroid());
             }
         }
 
@@ -60,15 +61,16 @@ namespace NetcodeTest.Server
         {
             return new Asteroid(
                 Util.RandomVector(Boundary),
-                Util.Angle(Util.RandAngle(), Util.RandF(50)),
+                Util.CosSin(Util.RandAngle(), Util.RandF(50)),
                 4 + Util.RandF(8f),
                 Util.RandAngle(),
                 Util.RandF(1f)
                 );
         }
 
-        private void AddEntity(Entity entity)
+        private void AddPhysical(Physical entity)
         {
+            entity.UpdateMotion(NetTime.Now());
             Entities.Add(entity);
 
             OugoingPool.RegisterEntity(entity);
@@ -91,11 +93,8 @@ namespace NetcodeTest.Server
                 });
             }
 
-            foreach (Entity entity in Entities)
-            {
-                entity.Update(delta);
-            }
-
+            UpdateEntitites(delta);
+            
             syncCounter += delta;
             if (syncCounter >= TransmitRate)
             {
@@ -108,6 +107,33 @@ namespace NetcodeTest.Server
             {
                 client.Incoming.Synchronise();
                 client.Client.Update();
+            }
+        }
+        
+        private void UpdateEntitites(float delta)
+        {
+            long timestamp = NetTime.Now();
+
+            foreach (Entity entity in Entities)
+            {
+                entity.Update(delta);
+            }
+            
+            int end = Entities.Count;
+            for (int i = 0; i < end; i++)
+            {
+                for (int j = i + 1; j < end; j++)
+                {
+                    Entities[i].HitCheck(Entities[j]);
+                }
+            }
+
+            foreach (Entity entity in Entities)
+            {
+                if (entity.MotionUpdateRequired)
+                {
+                    entity.UpdateMotion(timestamp);
+                }
             }
         }
     }

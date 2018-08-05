@@ -88,6 +88,7 @@ namespace NetCode.SyncField
         public override void Write(byte[] data, ref int index) { Primitive.WriteLong(data, ref index, value); }
         public override void Read(byte[] data, ref int index) { value = Primitive.ReadLong(data, ref index); }
         public override void Skip(byte[] data, ref int index) { index += sizeof(long); }
+        public override void AddTimestamp(long offset) { value += offset; }
     }
 
     public class SynchronisableULong : SynchronisableField

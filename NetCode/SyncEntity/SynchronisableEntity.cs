@@ -122,7 +122,7 @@ namespace NetCode.SyncEntity
             }
         }
         
-        public void ReadRevisionFromBuffer(byte[] data, ref int index, uint revision)
+        public void ReadRevisionFromBuffer(byte[] data, ref int index, uint revision, long offsetMilliseconds)
         {
             byte fieldCount = Primitive.ReadByte(data, ref index);
 
@@ -132,8 +132,8 @@ namespace NetCode.SyncEntity
                 //      may be insufficient data remaining to call .PullFromBuffer with
                 byte fieldID = Primitive.ReadByte(data, ref index);
                 SynchronisableField field = fields[fieldID];
-                field.ReadChanges(data, ref index, revision);
-
+                field.ReadChanges(data, ref index, revision, offsetMilliseconds);
+                
                 if (!field.Synchronised) { Synchronised = false; }
             }
 

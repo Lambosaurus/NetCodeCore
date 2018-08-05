@@ -56,9 +56,9 @@ namespace NetcodeTest
             //netcode.RegisterType(typeof(BulletEntity));
 
             server = new AsteroidServer(netcode, 11002);
-            
 
             client = new NetworkClient(new UDPConnection(System.Net.IPAddress.Parse("127.0.0.1"), 11002, 11003));
+            //client = new NetworkClient(new UDPConnection(System.Net.IPAddress.Parse("192.168.1.151"), 11002, 11003));
             incomingPool = netcode.GenerateIncomingPool(0);
             client.Attach(incomingPool);
 
@@ -143,11 +143,14 @@ namespace NetcodeTest
             GraphicsDevice.Clear(Color.Black);
 
             spriteBatch.Begin(samplerState:SamplerState.LinearClamp);
-            
+
+            long timestamp = NetTime.Now();
+
             foreach ( SyncHandle handle in incomingPool.Handles )
             {
                 if (handle.Obj is Entity entity)
                 {
+                    entity.Predict(timestamp);
                     entity.Draw(spriteBatch);
                 }
             }

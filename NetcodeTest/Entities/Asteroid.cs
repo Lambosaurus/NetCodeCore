@@ -6,24 +6,30 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 using NetCode;
+using NetcodeTest.Physics;
 
 namespace NetcodeTest.Entities
 {
-    public class Asteroid : Entity
+    public class Asteroid : Physical
     {
         [Synchronisable]
         public float Size { get; protected set; }
 
-        public Asteroid() : base(new Vector2(0,0))
+        public Asteroid()
         {
         }
 
-        public Asteroid( Vector2 position, Vector2 velocity, float size, float angle, float angleV ) : base(position)
+        public Asteroid( Vector2 position, Vector2 velocity, float size, float angle, float angleV)
         {
+            Position = position;
             Size = size;
             Velocity = velocity;
             Angle = angle;
             AngularVelocity = angleV;
+
+            Mass = size * size;
+            Moment = Mass * size * size;
+            Hitbox = HitboxPolygon.Square(size);
         }
         
         public override void Draw(SpriteBatch batch)
