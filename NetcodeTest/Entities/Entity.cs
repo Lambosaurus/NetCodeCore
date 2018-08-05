@@ -6,7 +6,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 using NetCode;
-using NetcodeTest.Physics;
 
 namespace NetcodeTest.Entities
 {
@@ -26,8 +25,6 @@ namespace NetcodeTest.Entities
         protected float baseAngle { get; set; }
         [Synchronisable(SyncFlags.Timestamp)]
         protected long baseTimestamp { get; set; }
-
-        public bool MotionUpdateRequired { get; protected set; } = true;
         
         public Entity()
         {
@@ -48,7 +45,6 @@ namespace NetcodeTest.Entities
             baseTimestamp = timestamp;
             basePosition = Position;
             baseAngle = Angle;
-            MotionUpdateRequired = false;
         }
 
         public virtual void Predict(long timestamp)

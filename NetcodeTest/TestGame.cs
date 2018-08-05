@@ -146,6 +146,7 @@ namespace NetcodeTest
 
             long timestamp = NetTime.Now();
 
+            /*
             foreach ( SyncHandle handle in incomingPool.Handles )
             {
                 if (handle.Obj is Entity entity)
@@ -153,6 +154,12 @@ namespace NetcodeTest
                     entity.Predict(timestamp);
                     entity.Draw(spriteBatch);
                 }
+            }
+            */
+
+            foreach ( Entity entity in server.Entities )
+            {
+                entity.Draw(spriteBatch);
             }
             
             spriteBatch.DrawString(font, GetConnectionStatsString(client), new Vector2(0, 0), Color.White);

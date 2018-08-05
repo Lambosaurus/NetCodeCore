@@ -10,7 +10,6 @@ using NetCode.SyncPool;
 using Microsoft.Xna.Framework;
 
 using NetcodeTest.Entities;
-using NetcodeTest.Physics;
 
 namespace NetcodeTest.Server
 {
@@ -37,7 +36,7 @@ namespace NetcodeTest.Server
 
         NetCodeManager NetManager;
 
-        private List<Physical> Entities;
+        public List<Entity> Entities;
 
         public AsteroidServer(NetCodeManager manager, int port )
         {
@@ -47,13 +46,13 @@ namespace NetcodeTest.Server
             MaxPlayers = 8;
 
             OugoingPool = manager.GenerateOutgoingPool(0);
-            Entities = new List<Physical>();
+            Entities = new List<Entity>();
 
             Clients = new List<RemoteClient>();
 
             for (int i = 0; i < 100; i++)
             {
-                AddPhysical(NewAsteroid());
+                AddEntity(NewAsteroid());
             }
         }
 
@@ -68,7 +67,7 @@ namespace NetcodeTest.Server
                 );
         }
 
-        private void AddPhysical(Physical entity)
+        private void AddEntity(Entity entity)
         {
             entity.UpdateMotion(NetTime.Now());
             Entities.Add(entity);
@@ -117,23 +116,6 @@ namespace NetcodeTest.Server
             foreach (Entity entity in Entities)
             {
                 entity.Update(delta);
-            }
-            
-            int end = Entities.Count;
-            for (int i = 0; i < end; i++)
-            {
-                for (int j = i + 1; j < end; j++)
-                {
-                    Entities[i].HitCheck(Entities[j]);
-                }
-            }
-
-            foreach (Entity entity in Entities)
-            {
-                if (entity.MotionUpdateRequired)
-                {
-                    entity.UpdateMotion(timestamp);
-                }
             }
         }
     }
