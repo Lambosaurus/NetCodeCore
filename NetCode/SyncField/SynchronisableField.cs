@@ -29,7 +29,8 @@ namespace NetCode.SyncField
 
                 if ((Flags & SyncFlags.Timestamp) != 0)
                 {
-                    AddTimestamp(offsetMilliseconds);
+                    // Adjust times from their frame to ours.
+                    AddTimestamp(-offsetMilliseconds);
                 }
 
                 Revision = revision;
