@@ -8,8 +8,10 @@ using NetCode.Connection.UDP;
 using NetCode.SyncPool;
 
 using Microsoft.Xna.Framework;
+using Volatile;
 
 using NetcodeTest.Entities;
+
 
 namespace NetcodeTest.Server
 {
@@ -32,11 +34,15 @@ namespace NetcodeTest.Server
         private float TransmitRate = 1f / 20;
         private List<RemoteClient> Clients;
         private OutgoingSyncPool OugoingPool;
-        private Vector2 Boundary = new Vector2(800,600);
+
+        private Vector2 BoundaryMargin = new Vector2(50, 50);
+        private Vector2 Boundary = new Vector2(800, 600);
 
         NetCodeManager NetManager;
 
         public List<Entity> Entities;
+
+        public VoltWorld CollisionWorld;
 
         public AsteroidServer(NetCodeManager manager, int port )
         {
@@ -47,7 +53,8 @@ namespace NetcodeTest.Server
 
             OugoingPool = manager.GenerateOutgoingPool(0);
             Entities = new List<Entity>();
-
+            CollisionWorld = new VoltWorld(0,1.0f);
+            
             Clients = new List<RemoteClient>();
 
             for (int i = 0; i < 100; i++)
@@ -71,6 +78,8 @@ namespace NetcodeTest.Server
         {
             entity.UpdateMotion(NetTime.Now());
             Entities.Add(entity);
+
+            entity.GenerateBody(CollisionWorld);
 
             OugoingPool.RegisterEntity(entity);
         }
@@ -113,9 +122,17 @@ namespace NetcodeTest.Server
         {
             long timestamp = NetTime.Now();
 
+            CollisionWorld.DeltaTime = delta;
+            CollisionWorld.Update();
+
+
+            Vector2 MarginLow = - BoundaryMargin;
+            Vector2 MarginHigh = Boundary + BoundaryMargin;
+
             foreach (Entity entity in Entities)
             {
-                entity.Update(delta);
+                entity.Update(delta, timestamp);
+                entity.Clamp(MarginLow, MarginHigh, timestamp);
             }
         }
     }

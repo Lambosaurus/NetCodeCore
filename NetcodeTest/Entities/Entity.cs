@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
+﻿
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-
 using NetCode;
+using Volatile;
 
 namespace NetcodeTest.Entities
 {
     public abstract class Entity
     {
+        public VoltBody CollisionBody { get; protected set; }
         public Vector2 Position { get; protected set; }
         public float Angle { get; protected set; }
 
@@ -25,6 +23,8 @@ namespace NetcodeTest.Entities
         protected float baseAngle { get; set; }
         [Synchronisable(SyncFlags.Timestamp)]
         protected long baseTimestamp { get; set; }
+
+        const float VelocityTolerance = 0.01f;
         
         public Entity()
         {
@@ -34,10 +34,30 @@ namespace NetcodeTest.Entities
             AngularVelocity = 0f;
         }
 
-        public virtual void Update(float delta)
+        public virtual void Update(float delta, long timestamp)
         {
-            Position += Velocity * delta;
-            Angle += AngularVelocity * delta;
+            Position = CollisionBody.Position;
+            Angle = CollisionBody.Angle;
+
+            if ((CollisionBody.LinearVelocity - Velocity).LengthSquared() > VelocityTolerance * VelocityTolerance)
+            {
+                Velocity = CollisionBody.LinearVelocity;
+                AngularVelocity = CollisionBody.AngularVelocity;
+                UpdateMotion(timestamp);
+            }
+        }
+
+        public virtual void Clamp( Vector2 low, Vector2 high, long timestamp )
+        {
+            if (Position.X < low.X || Position.X > high.X || Position.Y < low.Y || Position.Y > high.Y)
+            {
+                Position = new Vector2(Util.Mod(Position.X - low.X, high.X - low.X) + low.X,
+                                       Util.Mod(Position.Y - low.Y, high.Y - low.Y) + low.Y);
+
+                CollisionBody.Set(Position, Angle);
+
+                UpdateMotion(timestamp);
+            }
         }
 
         public virtual void UpdateMotion(long timestamp)
@@ -54,6 +74,7 @@ namespace NetcodeTest.Entities
             Angle = baseAngle + (AngularVelocity * (delta / 1000.0f));
         }
 
+        public abstract void GenerateBody(VoltWorld world);
         public abstract void Draw(SpriteBatch batch);
     }
 }

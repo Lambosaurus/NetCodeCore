@@ -4,6 +4,7 @@ using System.Linq;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Volatile;
 
 using NetCode;
 
@@ -30,6 +31,23 @@ namespace NetcodeTest.Entities
         public override void Draw(SpriteBatch batch)
         {
             Drawing.DrawSquare(batch, Position, new Vector2(Size, Size), Angle, Color.White);
+        }
+
+        public override void GenerateBody(VoltWorld world)
+        {
+            VoltPolygon polygon = world.CreatePolygonBodySpace(
+                new Vector2[]
+                {
+                    new Vector2(Size, Size),
+                    new Vector2(Size, -Size),
+                    new Vector2(-Size, -Size),
+                    new Vector2(-Size, Size),
+                }
+                );
+
+            CollisionBody = world.CreateDynamicBody(Position, Angle, polygon);
+            CollisionBody.AngularVelocity = AngularVelocity;
+            CollisionBody.LinearVelocity = Velocity;
         }
     }
 }

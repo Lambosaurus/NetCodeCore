@@ -63,9 +63,6 @@ namespace NetcodeTest
             client.Attach(incomingPool);
 
             client.SetState(NetworkClient.ConnectionState.Open);
-
-
-            NetTime.Realtime = false;
         }
 
         KeyboardState lastKeys;
@@ -92,8 +89,7 @@ namespace NetcodeTest
         protected override void Update(GameTime gameTime)
         {
             float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
-            NetTime.Advance( (int)(gameTime.ElapsedGameTime.TotalMilliseconds) );
-
+            
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
             {
                 this.Exit();
@@ -146,7 +142,7 @@ namespace NetcodeTest
 
             long timestamp = NetTime.Now();
 
-            /*
+            
             foreach ( SyncHandle handle in incomingPool.Handles )
             {
                 if (handle.Obj is Entity entity)
@@ -155,12 +151,13 @@ namespace NetcodeTest
                     entity.Draw(spriteBatch);
                 }
             }
-            */
-
+            
+            /*
             foreach ( Entity entity in server.Entities )
             {
                 entity.Draw(spriteBatch);
             }
+            */
             
             spriteBatch.DrawString(font, GetConnectionStatsString(client), new Vector2(0, 0), Color.White);
             
