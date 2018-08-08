@@ -17,6 +17,7 @@ namespace NetcodeTest
         {
             netcode.RegisterField(typeof(SynchronisableVector2), typeof(Vector2));
             netcode.RegisterField(typeof(SynchronisableHalfVector2), typeof(Vector2), SyncFlags.HalfPrecisionFloats);
+            netcode.RegisterField(typeof(SynchronisableColor), typeof(Color));
         }
     }
 
@@ -69,4 +70,29 @@ namespace NetcodeTest
         }
         public override void Skip(byte[] data, ref int index) { index += Primitive.SizeofHalf * 2; }
     }
+
+    public class SynchronisableColor : SynchronisableField
+    {
+        private Color value;
+        public override void SetValue(object new_value)
+        {
+            value = (Color)new_value;
+        }
+        public override object GetValue() { return value; }
+        public override bool ValueEqual(object new_value)
+        {
+            return value == (Color)new_value;
+        }
+        public override int WriteToBufferSize() { return sizeof(uint); }
+        public override void Write(byte[] data, ref int index)
+        {
+            Primitive.WriteUInt(data, ref index, value.PackedValue);
+        }
+        public override void Read(byte[] data, ref int index)
+        {
+            value = new Color(Primitive.ReadUInt(data, ref index));
+        }
+        public override void Skip(byte[] data, ref int index) { index += sizeof(uint); }
+    }
+
 }

@@ -29,6 +29,7 @@ namespace NetcodeTest.Server
         {
             public NetworkClient Client;
             public IncomingSyncPool Incoming;
+            public Ship Player;
         }
 
         private float TransmitRate = 1f / 20;
@@ -68,7 +69,18 @@ namespace NetcodeTest.Server
             return new Asteroid(
                 Util.RandomVector(Boundary),
                 Util.CosSin(Util.RandAngle(), Util.RandF(50)),
-                4 + Util.RandF(8f),
+                8 + Util.RandF(16f),
+                Util.RandAngle(),
+                Util.RandF(1f)
+                );
+        }
+
+        private Ship NewPlayer()
+        {
+            return new Ship(
+                Util.RandomVector(Boundary),
+                Util.CosSin(Util.RandAngle(), Util.RandF(50)),
+                Color.Red,
                 Util.RandAngle(),
                 Util.RandF(1f)
                 );
@@ -95,12 +107,16 @@ namespace NetcodeTest.Server
                 NetworkClient client = new NetworkClient(feed);
                 client.SetState(NetworkClient.ConnectionState.Open);
                 client.Attach(OugoingPool);
-                Clients.Add(new RemoteClient() {
-                    Client = client,
-                    Incoming = NetManager.GenerateIncomingPool(0)
-                });
-            }
 
+                RemoteClient newClient = new RemoteClient() {
+                    Client = client,
+                    Incoming = NetManager.GenerateIncomingPool(0),
+                    Player = NewPlayer()
+                };
+
+                Clients.Add(newClient);
+                AddEntity(newClient.Player);
+            }
             UpdateEntitites(delta);
             
             syncCounter += delta;

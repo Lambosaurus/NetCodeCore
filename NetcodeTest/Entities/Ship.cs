@@ -10,39 +10,47 @@ using NetCode;
 
 namespace NetcodeTest.Entities
 {
-    public class Asteroid : Entity
+    public class Ship : Entity
     {
         [Synchronisable]
-        public float Size { get; protected set; }
+        public Color Color { get; protected set; }
+        [Synchronisable]
+        public Vector2 Size { get; protected set; }
+        
 
-        public Asteroid()
+        public Ship()
         {
+            Color = Color.Black;
         }
 
-        public Asteroid( Vector2 position, Vector2 velocity, float size, float angle, float angleV)
+        public Ship( Vector2 position, Vector2 velocity, Color color, float angle, float angleV)
         {
+            Color = color;
             Position = position;
-            Size = size;
             Velocity = velocity;
             Angle = angle;
             AngularVelocity = angleV;
+
+            Size = new Vector2(10, 20);
         }
         
         public override void Draw(SpriteBatch batch)
         {
-            Drawing.DrawSquare(batch, Position, new Vector2(Size, Size), Angle, Color.White);
+            Drawing.DrawTriangle(batch, Position, Size, Angle, Color);
         }
 
         public override void GenerateBody(VoltWorld world)
         {
-            float half = Size / 2;
+            float length = Size.X;
+            float width = Size.Y;
+            float CentroidToBack = length * (1.0f / 6.0f);
+
             VoltPolygon polygon = world.CreatePolygonBodySpace(
                 new Vector2[]
                 {
-                    new Vector2(half, half),
-                    new Vector2(half, -half),
-                    new Vector2(-half, -half),
-                    new Vector2(-half, half),
+                    new Vector2(length - CentroidToBack, 0),
+                    new Vector2(-CentroidToBack, -width/2),
+                    new Vector2(-CentroidToBack, width/2),
                 }
                 );
 

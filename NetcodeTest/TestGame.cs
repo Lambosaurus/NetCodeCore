@@ -53,12 +53,13 @@ namespace NetcodeTest
             NetcodeFieldSupport.RegisterCustomFields(netcode);
 
             netcode.RegisterType(typeof(Asteroid));
-            //netcode.RegisterType(typeof(BulletEntity));
+            netcode.RegisterType(typeof(Ship));
 
             server = new AsteroidServer(netcode, 11002);
 
             client = new NetworkClient(new UDPConnection(System.Net.IPAddress.Parse("127.0.0.1"), 11002, 11003));
             //client = new NetworkClient(new UDPConnection(System.Net.IPAddress.Parse("192.168.1.151"), 11002, 11003));
+
             incomingPool = netcode.GenerateIncomingPool(0);
             client.Attach(incomingPool);
 

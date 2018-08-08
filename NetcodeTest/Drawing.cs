@@ -21,7 +21,12 @@ namespace NetcodeTest
 
         public static void DrawSquare( SpriteBatch batch, Vector2 position, Vector2 scale, float angle, Color color )
         {
-            batch.Draw(Square, position, null, color, angle, new Vector2(6f, 6f), scale/5, SpriteEffects.None, 0);
+            batch.Draw(Square, position, null, color, angle, new Vector2(6f, 6f), scale/12f, SpriteEffects.None, 0);
+        }
+
+        public static void DrawTriangle( SpriteBatch batch, Vector2 position, Vector2 scale, float angle, Color color )
+        {
+            batch.Draw(Square, position, null, color, angle, new Vector2(6f, 6f), scale / 12f, SpriteEffects.None, 0);
         }
     }
 }
