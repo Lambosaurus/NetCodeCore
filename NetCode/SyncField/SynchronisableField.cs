@@ -43,7 +43,7 @@ namespace NetCode.SyncField
         }
 
         /// <summary>
-        /// This is used for when the type is a timestamps, and the time offset should be applied
+        /// This is used for when the type is a Timestamp, and a network offset should be applied
         /// </summary>
         /// <param name="value"></param>
         public virtual void AddTimestamp(long offset)

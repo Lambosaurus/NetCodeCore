@@ -20,6 +20,7 @@ namespace NetCode.SyncField
         private void RegisterDefaultFieldTypes()
         {
             RegisterFieldType(typeof(SynchronisableEnum), typeof(System.Enum));
+            RegisterFieldType(typeof(SynchronisableBool), typeof(bool));
             RegisterFieldType(typeof(SynchronisableByte), typeof(byte));
             RegisterFieldType(typeof(SynchronisableShort), typeof(short));
             RegisterFieldType(typeof(SynchronisableUShort), typeof(ushort));

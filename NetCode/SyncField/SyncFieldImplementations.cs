@@ -18,6 +18,18 @@ namespace NetCode.SyncField
         public override void Skip(byte[] data, ref int index) { index += sizeof(byte); }
     }
 
+    public class SynchronisableBool : SynchronisableField
+    {
+        private bool value;
+        public override void SetValue(object new_value) { value = (bool)new_value; }
+        public override object GetValue() { return value; }
+        public override bool ValueEqual(object new_value) { return (bool)new_value == value; }
+        public override int WriteToBufferSize() { return sizeof(byte); }
+        public override void Write(byte[] data, ref int index) { Primitive.WriteByte(data, ref index, value ? (byte)0x01 : (byte)0x00); }
+        public override void Read(byte[] data, ref int index) { value = Primitive.ReadByte(data, ref index) > 0; }
+        public override void Skip(byte[] data, ref int index) { index += sizeof(byte); }
+    }
+
     public class SynchronisableByte : SynchronisableField
     {
         private byte value;
