@@ -42,8 +42,6 @@ namespace NetcodeTest.Entities
 
             if ((CollisionBody.LinearVelocity - Velocity).LengthSquared() > VelocityTolerance * VelocityTolerance)
             {
-                Velocity = CollisionBody.LinearVelocity;
-                AngularVelocity = CollisionBody.AngularVelocity;
                 RequestMotionUpdate();
             }
         }
@@ -68,6 +66,9 @@ namespace NetcodeTest.Entities
 
         public virtual void UpdateMotion(long timestamp)
         {
+            Velocity = CollisionBody.LinearVelocity;
+            AngularVelocity = CollisionBody.AngularVelocity;
+
             baseTimestamp = timestamp;
             basePosition = Position;
             baseAngle = Angle;

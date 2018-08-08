@@ -36,8 +36,8 @@ namespace NetcodeTest.Server
         private List<RemoteClient> Clients;
         private OutgoingSyncPool OugoingPool;
 
-        private Vector2 BoundaryMargin = new Vector2(50, 50);
-        private Vector2 Boundary = new Vector2(800, 600);
+        private Vector2 BoundaryMargin = new Vector2(20, 20);
+        private Vector2 Boundary;
 
         NetCodeManager NetManager;
 
@@ -45,10 +45,11 @@ namespace NetcodeTest.Server
 
         public VoltWorld CollisionWorld;
 
-        public AsteroidServer(NetCodeManager manager, int port )
+        public AsteroidServer(NetCodeManager manager, Vector2 boundary, int port )
         {
             NetManager = manager;
 
+            Boundary = boundary;
             Server = new UDPServer(port);
             MaxPlayers = 8;
 
@@ -88,11 +89,10 @@ namespace NetcodeTest.Server
 
         private void AddEntity(Entity entity)
         {
+            entity.GenerateBody(CollisionWorld);
             entity.UpdateMotion(NetTime.Now());
             Entities.Add(entity);
-
-            entity.GenerateBody(CollisionWorld);
-
+            
             OugoingPool.RegisterEntity(entity);
         }
 

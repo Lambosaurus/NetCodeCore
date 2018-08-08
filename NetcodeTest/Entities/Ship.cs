@@ -17,8 +17,8 @@ namespace NetcodeTest.Entities
         [Synchronisable]
         public Vector2 Size { get; protected set; }
 
-        float Thrust = 200;
-        float Torque = 300;
+        float Thrust = 300;
+        float Torque = 500;
 
         public Ship()
         {

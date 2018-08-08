@@ -30,7 +30,7 @@ namespace NetcodeTest.Entities
         
         public override void Draw(SpriteBatch batch)
         {
-            Drawing.DrawSquare(batch, Position, new Vector2(Size, Size), Angle, Color.White);
+            Drawing.DrawSquare(batch, Position, new Vector2(Size, Size), Angle, Color.LightGray);
         }
 
         public override void GenerateBody(VoltWorld world)

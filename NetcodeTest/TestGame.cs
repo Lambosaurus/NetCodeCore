@@ -34,14 +34,19 @@ namespace NetcodeTest
         PlayerControl controlVector;
         
         SpriteFont font;
+
+
+        Point Resolution = new Point(1200, 800);
         
         public TestGame()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
-            Window.AllowUserResizing = true;
-
+            Window.AllowUserResizing = false;
+            graphics.PreferredBackBufferWidth = Resolution.X;
+            graphics.PreferredBackBufferHeight = Resolution.Y;
+            
             IsMouseVisible = true;
         }
         
@@ -58,7 +63,7 @@ namespace NetcodeTest
             netcode.RegisterType(typeof(Ship));
             netcode.RegisterType(typeof(PlayerControl));
 
-            server = new AsteroidServer(netcode, 11002);
+            server = new AsteroidServer(netcode, Resolution.ToVector2(), 11002);
 
             client = new NetworkClient(new UDPConnection(System.Net.IPAddress.Parse("127.0.0.1"), 11002, 11003));
             //client = new NetworkClient(new UDPConnection(System.Net.IPAddress.Parse("192.168.1.151"), 11002, 11003));
