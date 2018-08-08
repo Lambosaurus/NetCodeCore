@@ -59,18 +59,18 @@ namespace NetcodeTest.Server
             
             Clients = new List<RemoteClient>();
 
-            for (int i = 0; i < 100; i++)
-            {
-                AddEntity(NewAsteroid());
-            }
+            for (int i = 0; i < 50; i++) { AddEntity(NewAsteroid(16)); }
+            for (int i = 0; i < 60; i++) { AddEntity(NewAsteroid(24)); }
+            for (int i = 0; i < 20; i++) { AddEntity(NewAsteroid(32)); }
+            for (int i = 0; i < 5; i++) { AddEntity(NewAsteroid(48)); }
         }
 
-        private Asteroid NewAsteroid()
+        private Asteroid NewAsteroid(float scale)
         {
             return new Asteroid(
                 Util.RandomVector(Boundary),
                 Util.CosSin(Util.RandAngle(), Util.RandF(50)),
-                8 + Util.RandF(16f),
+                scale/2 + Util.RandF(scale/2),
                 Util.RandAngle(),
                 Util.RandF(1f)
                 );
