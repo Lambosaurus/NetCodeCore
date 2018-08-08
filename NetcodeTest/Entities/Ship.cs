@@ -16,7 +16,9 @@ namespace NetcodeTest.Entities
         public Color Color { get; protected set; }
         [Synchronisable]
         public Vector2 Size { get; protected set; }
-        
+
+        float Thrust = 200;
+        float Torque = 300;
 
         public Ship()
         {
@@ -31,12 +33,23 @@ namespace NetcodeTest.Entities
             Angle = angle;
             AngularVelocity = angleV;
 
-            Size = new Vector2(10, 20);
+            Size = new Vector2(20, 15);
         }
         
         public override void Draw(SpriteBatch batch)
         {
             Drawing.DrawTriangle(batch, Position, Size, Angle, Color);
+        }
+
+        public void Control(float thrust, float torque)
+        {
+            thrust = Util.Clamp(thrust, 0.0f, 1.0f);
+            torque = Util.Clamp(torque, -1.0f, 1.0f);
+
+            CollisionBody.AddForce( Util.CosSin(Angle, Thrust * thrust) );
+            CollisionBody.AddTorque(Torque * torque);
+
+            RequestMotionUpdate();
         }
 
         public override void GenerateBody(VoltWorld world)

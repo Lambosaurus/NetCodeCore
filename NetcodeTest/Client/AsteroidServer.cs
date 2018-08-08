@@ -25,7 +25,7 @@ namespace NetcodeTest.Server
             set { Server.IncomingConnectionLimit = value; }
         }
         
-        struct RemoteClient
+        class RemoteClient
         {
             public NetworkClient Client;
             public IncomingSyncPool Incoming;
@@ -75,12 +75,12 @@ namespace NetcodeTest.Server
                 );
         }
 
-        private Ship NewPlayer()
+        private Ship NewPlayer(Color color)
         {
             return new Ship(
-                Util.RandomVector(Boundary),
+                Util.RandomVector(Boundary/2) + (Boundary/4),
                 Util.CosSin(Util.RandAngle(), Util.RandF(50)),
-                Color.Red,
+                color,
                 Util.RandAngle(),
                 Util.RandF(1f)
                 );
@@ -107,15 +107,16 @@ namespace NetcodeTest.Server
                 NetworkClient client = new NetworkClient(feed);
                 client.SetState(NetworkClient.ConnectionState.Open);
                 client.Attach(OugoingPool);
+                IncomingSyncPool incoming = NetManager.GenerateIncomingPool(0);
+                client.Attach(incoming);
 
                 RemoteClient newClient = new RemoteClient() {
                     Client = client,
-                    Incoming = NetManager.GenerateIncomingPool(0),
-                    Player = NewPlayer()
+                    Incoming = incoming,
+                    Player = null
                 };
 
                 Clients.Add(newClient);
-                AddEntity(newClient.Player);
             }
             UpdateEntitites(delta);
             
@@ -129,8 +130,26 @@ namespace NetcodeTest.Server
 
             foreach ( RemoteClient client in Clients )
             {
-                client.Incoming.Synchronise();
                 client.Client.Update();
+                client.Incoming.Synchronise();
+
+                foreach (SyncHandle handle in client.Incoming.Handles)
+                {
+                    if (handle.Obj is PlayerControl control)
+                    {
+                        if (control.Ready)
+                        {
+                            if (client.Player == null)
+                            {
+                                client.Player = NewPlayer(control.ShipColor);
+                                AddEntity(client.Player);
+                            }
+                            client.Player.Control(control.Thrust, control.Torque);
+                        }
+
+                        break;
+                    }
+                }
             }
         }
         
@@ -147,8 +166,13 @@ namespace NetcodeTest.Server
 
             foreach (Entity entity in Entities)
             {
-                entity.Update(delta, timestamp);
-                entity.Clamp(MarginLow, MarginHigh, timestamp);
+                entity.Update(delta);
+                entity.Clamp(MarginLow, MarginHigh);
+
+                if (entity.MotionRequestRequired)
+                {
+                    entity.UpdateMotion(timestamp);
+                }
             }
         }
     }

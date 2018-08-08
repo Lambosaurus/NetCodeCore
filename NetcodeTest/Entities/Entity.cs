@@ -25,7 +25,8 @@ namespace NetcodeTest.Entities
         protected long baseTimestamp { get; set; }
 
         const float VelocityTolerance = 0.01f;
-        
+        public bool MotionRequestRequired {get; private set; } = false;
+
         public Entity()
         {
             Position = Vector2.Zero;
@@ -34,7 +35,7 @@ namespace NetcodeTest.Entities
             AngularVelocity = 0f;
         }
 
-        public virtual void Update(float delta, long timestamp)
+        public virtual void Update(float delta)
         {
             Position = CollisionBody.Position;
             Angle = CollisionBody.Angle;
@@ -43,11 +44,16 @@ namespace NetcodeTest.Entities
             {
                 Velocity = CollisionBody.LinearVelocity;
                 AngularVelocity = CollisionBody.AngularVelocity;
-                UpdateMotion(timestamp);
+                RequestMotionUpdate();
             }
         }
 
-        public virtual void Clamp( Vector2 low, Vector2 high, long timestamp )
+        protected void RequestMotionUpdate()
+        {
+            MotionRequestRequired = true;
+        }
+
+        public virtual void Clamp( Vector2 low, Vector2 high)
         {
             if (Position.X < low.X || Position.X > high.X || Position.Y < low.Y || Position.Y > high.Y)
             {
@@ -56,7 +62,7 @@ namespace NetcodeTest.Entities
 
                 CollisionBody.Set(Position, Angle);
 
-                UpdateMotion(timestamp);
+                RequestMotionUpdate();
             }
         }
 
@@ -65,6 +71,7 @@ namespace NetcodeTest.Entities
             baseTimestamp = timestamp;
             basePosition = Position;
             baseAngle = Angle;
+            MotionRequestRequired = false;
         }
 
         public virtual void Predict(long timestamp)

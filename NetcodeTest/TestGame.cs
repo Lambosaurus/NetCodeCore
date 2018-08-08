@@ -30,6 +30,8 @@ namespace NetcodeTest
 
         NetworkClient client;
         IncomingSyncPool incomingPool;
+        OutgoingSyncPool outgoingPool;
+        PlayerControl controlVector;
         
         SpriteFont font;
         
@@ -54,6 +56,7 @@ namespace NetcodeTest
 
             netcode.RegisterType(typeof(Asteroid));
             netcode.RegisterType(typeof(Ship));
+            netcode.RegisterType(typeof(PlayerControl));
 
             server = new AsteroidServer(netcode, 11002);
 
@@ -61,7 +64,15 @@ namespace NetcodeTest
             //client = new NetworkClient(new UDPConnection(System.Net.IPAddress.Parse("192.168.1.151"), 11002, 11003));
 
             incomingPool = netcode.GenerateIncomingPool(0);
+            outgoingPool = netcode.GenerateOutgoingPool(0);
             client.Attach(incomingPool);
+            client.Attach(outgoingPool);
+            controlVector = new PlayerControl()
+            {
+                ShipColor = Color.Yellow,
+                Ready = true,
+            };
+            outgoingPool.RegisterEntity(controlVector);
 
             client.SetState(NetworkClient.ConnectionState.Open);
         }
@@ -101,18 +112,22 @@ namespace NetcodeTest
                 server.Update(delta);
             }
 
+            
+            KeyboardState keys = Keyboard.GetState();
+            MouseState mouse = Mouse.GetState();
+
+            controlVector.Thrust = (keys.IsKeyDown(Keys.W) ? 1.0f : 0f);
+            controlVector.Torque = (keys.IsKeyDown(Keys.A) ? 1.0f : 0f) + (keys.IsKeyDown(Keys.D) ? -1.0f : 0f);
+            
             tickCounter += delta;
-            if (tickCounter >= 1f/20)
+            if (tickCounter >= 1f / 20)
             {
                 tickCounter -= 1f / 20;
+                outgoingPool.Synchronise();
             }
 
             client.Update();
             incomingPool.Synchronise();
-            
-            KeyboardState keys = Keyboard.GetState();
-            MouseState mouse = Mouse.GetState();
-            
 
             lastKeys = keys;
             lastMouse = mouse;
