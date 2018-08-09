@@ -40,6 +40,11 @@ namespace NetcodeTest.Entities
             Position = CollisionBody.Position;
             Angle = CollisionBody.Angle;
 
+            if (Angle > MathHelper.TwoPi || Angle < MathHelper.TwoPi)
+            {
+                Angle = Util.Mod(Angle, MathHelper.TwoPi);
+            }
+
             if ((CollisionBody.LinearVelocity - Velocity).LengthSquared() > VelocityTolerance * VelocityTolerance)
             {
                 RequestMotionUpdate();

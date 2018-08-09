@@ -37,7 +37,18 @@ namespace NetCode.Connection
             Open
         }
 
+        public enum ConnectionClosedReason
+        {
+            None,
+            ApplicationRequested,
+            EndpointRequested,
+            EndpointTimeout,
+            EndpointPortClosed,
+            HardwareException,
+        }
+
         public ConnectionState State { get; private set; }
+        public ConnectionClosedReason CloseReason { get; private set; }
         public int KeepAliveTimeout { get; set; } = 300;
         public int ConnectionClosedTimeout { get; set; } = 5000;
         public NetworkConnection Connection { get; private set; }
@@ -67,6 +78,7 @@ namespace NetCode.Connection
             Connection = connection;
             State = ConnectionState.Closed;
             Behavior = ConnectionBehavior.None;
+            CloseReason = ConnectionClosedReason.ApplicationRequested;
         }
 
         public void SetState(ConnectionState requestedState)
@@ -93,7 +105,7 @@ namespace NetCode.Connection
                 case (ConnectionState.Closed):
                     if (State != ConnectionState.Closed)
                     {
-                        EnterStateClosed();
+                        EnterStateClosed(ConnectionClosedReason.ApplicationRequested);
                     }
                     break;
             }
@@ -119,7 +131,7 @@ namespace NetCode.Connection
                 case (ConnectionState.Closed):
                     if (State != ConnectionState.Closed)
                     {
-                        EnterStateClosed();
+                        EnterStateClosed( ConnectionClosedReason.EndpointRequested );
                     }
                     break;
             }
@@ -194,6 +206,7 @@ namespace NetCode.Connection
 
         private void EnterStateOpen()
         {
+            CloseReason = ConnectionClosedReason.None;
             State = ConnectionState.Open;
             Behavior = ConnectionBehavior.AllowOutgoingPayloads
                      | ConnectionBehavior.HandleIncomingPayloads
@@ -205,6 +218,7 @@ namespace NetCode.Connection
 
         private void EnterStateOpening()
         {
+            CloseReason = ConnectionClosedReason.None;
             State = ConnectionState.Opening;
             Behavior = ConnectionBehavior.GenerateOutgoingHandshakes
                      | ConnectionBehavior.HandleIncomingPayloads
@@ -219,6 +233,7 @@ namespace NetCode.Connection
 
         private void EnterStateListening()
         {
+            CloseReason = ConnectionClosedReason.None;
             State = ConnectionState.Listening;
             if (BehaviorSet(ConnectionBehavior.GenerateOutgoingHandshakes))
             {
@@ -227,8 +242,9 @@ namespace NetCode.Connection
             Behavior = ConnectionBehavior.HandleIncomingHandshakesOnly;
         }
 
-        private void EnterStateClosed()
+        private void EnterStateClosed( ConnectionClosedReason reason )
         {
+            CloseReason = reason;
             State = ConnectionState.Closed;
             if (BehaviorSet(ConnectionBehavior.GenerateOutgoingHandshakes))
             {
@@ -240,23 +256,32 @@ namespace NetCode.Connection
         
         public void Update()
         {
-            if (BehaviorSet(ConnectionBehavior.HandleIncomingPayloads))
+            if (   BehaviorSet(ConnectionBehavior.HandleIncomingPayloads)
+                || BehaviorSet(ConnectionBehavior.HandleIncomingHandshakesOnly))
             {
                 List<Payload> recieved = Connection.RecievePackets();
-                foreach (Payload payload in recieved)
+
+                if (BehaviorSet(ConnectionBehavior.HandleIncomingHandshakesOnly))
                 {
-                    payload.OnReception(this);
+                    foreach (Payload payload in recieved)
+                    {
+                        if (payload is HandshakePayload)
+                        {
+                            payload.OnReception(this);
+                        }
+                    }
                 }
-            }
-            else if (BehaviorSet(ConnectionBehavior.HandleIncomingHandshakesOnly))
-            {
-                List<Payload> recieved = Connection.RecievePackets();
-                foreach (Payload payload in recieved)
+                else
                 {
-                    if (payload is HandshakePayload)
+                    foreach (Payload payload in recieved)
                     {
                         payload.OnReception(this);
                     }
+                }
+
+                if (Connection.ConnectionStatus != ConnectionClosedReason.None)
+                {
+                    EnterStateClosed(Connection.ConnectionStatus);
                 }
             }
             else
@@ -288,7 +313,7 @@ namespace NetCode.Connection
             {
                 if ( !KeepAliveMarker.MarkedInPast(ConnectionClosedTimeout) )
                 {
-                    EnterStateClosed();
+                    EnterStateClosed(ConnectionClosedReason.EndpointTimeout);
                 }
             }
 

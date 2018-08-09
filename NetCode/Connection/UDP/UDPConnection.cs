@@ -11,6 +11,7 @@ namespace NetCode.Connection.UDP
     public class UDPConnection : NetworkConnection
     {
         private UdpClient Socket;
+        private NetworkClient.ConnectionClosedReason connectionStatus = NetworkClient.ConnectionClosedReason.None;
 
         public UDPConnection(IPAddress address, int port) : this(address, port, port)
         {
@@ -33,9 +34,23 @@ namespace NetCode.Connection.UDP
 
             List<byte[]> data = new List<byte[]>();
 
-            while (Socket.Available > 0)
+            try
             {
-                data.Add(Socket.Receive(ref source));
+                while (Socket.Available > 0)
+                {
+                    data.Add(Socket.Receive(ref source));
+                }
+            }
+            catch(SocketException ex)
+            {
+                if (ex.ErrorCode == 10054)
+                {
+                    connectionStatus = NetworkClient.ConnectionClosedReason.EndpointPortClosed;
+                }
+                else
+                {
+                    throw ex;
+                }
             }
 
             return data;
@@ -49,6 +64,13 @@ namespace NetCode.Connection.UDP
         public override void Destroy()
         {
             Socket.Close();
+        }
+        
+        public override NetworkClient.ConnectionClosedReason ConnectionStatus
+        { get
+            {
+                return connectionStatus;
+            }
         }
     }
 }
