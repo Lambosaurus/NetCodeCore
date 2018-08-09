@@ -76,6 +76,7 @@ namespace NetcodeTest
             {
                 ShipColor = Color.Yellow,
                 Ready = true,
+                PlayerName = "Somebody"
             };
             outgoingPool.RegisterEntity(controlVector);
 
@@ -173,6 +174,13 @@ namespace NetcodeTest
                 }
             }
             
+            if (server != null)
+            {
+                string[] clients = server.GetClientInfo();
+                string packed = string.Join("\n", clients);
+                spriteBatch.DrawString(font, packed, new Vector2(0, 200), Color.White);
+            }
+
             /*
             foreach ( Entity entity in server.Entities )
             {

@@ -19,5 +19,7 @@ namespace NetcodeTest
         public float Thrust;
         [Synchronisable]
         public bool Ready = false;
+        [Synchronisable]
+        public string PlayerName = "";
     }
 }

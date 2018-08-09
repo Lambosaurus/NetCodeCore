@@ -170,7 +170,7 @@ namespace NetCode.Connection.UDP
         {
             foreach (UDPFeed feed in Feeds)
             {
-                feed.Close();
+                feed.Destroy();
             }
             Socket.Close();
         }

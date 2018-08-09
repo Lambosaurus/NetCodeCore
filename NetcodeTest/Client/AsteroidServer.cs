@@ -30,6 +30,7 @@ namespace NetcodeTest.Server
             public NetworkClient Client;
             public IncomingSyncPool Incoming;
             public Ship Player;
+            public string PlayerName = "";
         }
 
         private float TransmitRate = 1f / 20;
@@ -150,6 +151,7 @@ namespace NetcodeTest.Server
                             {
                                 client.Player = NewPlayer(control.ShipColor);
                                 AddEntity(client.Player);
+                                client.PlayerName = control.PlayerName;
                             }
                             client.Player.Control(control.Thrust, control.Torque);
                         }
@@ -159,7 +161,7 @@ namespace NetcodeTest.Server
                 }
             }
 
-            for (int i = Clients.Count; i >= 0; i--)
+            for (int i = Clients.Count-1; i >= 0; i--)
             {
                 RemoteClient client = Clients[i];
                 if (client.Client.State == NetworkClient.ConnectionState.Closed)
@@ -172,6 +174,24 @@ namespace NetcodeTest.Server
                     }
                 }
             }
+        }
+
+        public string[] GetClientInfo()
+        {
+            string[] lines = new string[Clients.Count];
+            for (int i = 0; i < Clients.Count; i++)
+            {
+                RemoteClient client = Clients[i];
+                if (client.Client.State != NetworkClient.ConnectionState.Open)
+                {
+                    lines[i] = client.Client.State.ToString();
+                }
+                else
+                {
+                    lines[i] = string.Format("{0}: {1}ms", client.PlayerName, client.Client.Connection.Stats.Latency);
+                }
+            }
+            return lines;
         }
         
         private void UpdateEntitites(float delta)
