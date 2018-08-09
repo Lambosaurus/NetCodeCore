@@ -82,6 +82,14 @@ namespace NetcodeTest.Entities
             Angle = baseAngle + (AngularVelocity * (delta / 1000.0f));
         }
 
+        public virtual void DestroyBody()
+        {
+            if (CollisionBody != null && CollisionBody.World != null)
+            {
+                CollisionBody.World.RemoveBody(CollisionBody);
+            }
+        }
+
         public abstract void GenerateBody(VoltWorld world);
         public abstract void Draw(SpriteBatch batch);
     }

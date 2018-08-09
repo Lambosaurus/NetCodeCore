@@ -45,17 +45,17 @@ namespace NetCode.Connection.UDP
             }
             return null;
         }
+        
+        internal override Payload GetConnectionRequestPayload()
+        {
+            return UDPConnectionRequestPayload.Generate();
+        }
 
-        public void Close()
+        public override void Destroy()
         {
             Host.CloseFeed(this);
             Host = null;
             IncomingData.Clear();
-        }
-
-        internal override Payload GetConnectionRequestPayload()
-        {
-            return UDPConnectionRequestPayload.Generate();
         }
     }
 }

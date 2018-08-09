@@ -20,3 +20,4 @@ Version.cpp
 *.ide
 *.lock
 *.cachefile
+*.dtbcache

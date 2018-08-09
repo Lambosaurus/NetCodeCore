@@ -61,6 +61,10 @@ namespace NetCode.Connection
             return recieved;
         }
 
+        public override void Destroy()
+        {
+        }
+
         private struct VirtualPacket
         {
             public long Timestamp;

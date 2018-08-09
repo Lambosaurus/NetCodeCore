@@ -324,5 +324,15 @@ namespace NetCode.Connection
                 pool.Clear();
             }
         }
+
+        public void Destroy()
+        {
+            Connection.Destroy();
+
+            foreach ( OutgoingSyncPool pool in OutgoingPools.Values )
+            {
+                pool.Unsubscribe(this);
+            }
+        }
     }
 }

@@ -45,5 +45,10 @@ namespace NetCode.Connection.UDP
         {
             return UDPConnectionRequestPayload.Generate();
         }
+
+        public override void Destroy()
+        {
+            Socket.Close();
+        }
     }
 }

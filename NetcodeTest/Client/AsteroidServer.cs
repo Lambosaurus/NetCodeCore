@@ -34,7 +34,7 @@ namespace NetcodeTest.Server
 
         private float TransmitRate = 1f / 20;
         private List<RemoteClient> Clients;
-        private OutgoingSyncPool OugoingPool;
+        private OutgoingSyncPool OutgoingPool;
 
         private Vector2 BoundaryMargin = new Vector2(20, 20);
         private Vector2 Boundary;
@@ -53,7 +53,7 @@ namespace NetcodeTest.Server
             Server = new UDPServer(port);
             MaxPlayers = 8;
 
-            OugoingPool = manager.GenerateOutgoingPool(0);
+            OutgoingPool = manager.GenerateOutgoingPool(0);
             Entities = new List<Entity>();
             CollisionWorld = new VoltWorld(0,1.0f);
             
@@ -93,7 +93,14 @@ namespace NetcodeTest.Server
             entity.UpdateMotion(NetTime.Now());
             Entities.Add(entity);
             
-            OugoingPool.RegisterEntity(entity);
+            OutgoingPool.RegisterEntity(entity);
+        }
+
+        private void RemoveEntity(Entity entity)
+        {
+            Entities.Remove(entity);
+            OutgoingPool.GetHandleByObject(entity).State = SyncHandle.SyncState.Deleted;
+            entity.DestroyBody();
         }
 
 
@@ -106,7 +113,7 @@ namespace NetcodeTest.Server
             {
                 NetworkClient client = new NetworkClient(feed);
                 client.SetState(NetworkClient.ConnectionState.Open);
-                client.Attach(OugoingPool);
+                client.Attach(OutgoingPool);
                 IncomingSyncPool incoming = NetManager.GenerateIncomingPool(0);
                 client.Attach(incoming);
 
@@ -125,7 +132,7 @@ namespace NetcodeTest.Server
             {
                 syncCounter -= TransmitRate;
 
-                OugoingPool.Synchronise();
+                OutgoingPool.Synchronise();
             }
 
             foreach ( RemoteClient client in Clients )
@@ -148,6 +155,20 @@ namespace NetcodeTest.Server
                         }
 
                         break;
+                    }
+                }
+            }
+
+            for (int i = Clients.Count; i >= 0; i--)
+            {
+                RemoteClient client = Clients[i];
+                if (client.Client.State == NetworkClient.ConnectionState.Closed)
+                {
+                    Clients.RemoveAt(i);
+                    client.Client.Destroy();
+                    if (client.Player != null)
+                    {
+                        RemoveEntity(client.Player);
                     }
                 }
             }

@@ -50,5 +50,10 @@ namespace NetcodeTest.Entities
             CollisionBody.AngularVelocity = AngularVelocity;
             CollisionBody.LinearVelocity = Velocity;
         }
+
+        public override void DestroyBody()
+        {
+            CollisionBody.World.RemoveBody(CollisionBody);
+        }
     }
 }
