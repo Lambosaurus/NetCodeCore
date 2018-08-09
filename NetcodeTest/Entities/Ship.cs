@@ -56,7 +56,7 @@ namespace NetcodeTest.Entities
         {
             float length = Size.X;
             float width = Size.Y;
-            float CentroidToBack = length * (1.0f / 6.0f);
+            float CentroidToBack = length * (1.0f / 3.0f);
 
             VoltPolygon polygon = world.CreatePolygonBodySpace(
                 new Vector2[]
