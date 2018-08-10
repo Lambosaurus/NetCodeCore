@@ -44,6 +44,11 @@ namespace NetCode
         {
             return baseTimestamp + stopwatch.ElapsedMilliseconds;
         }
+
+        public static double Seconds()
+        {
+            return (baseTimestamp * 1000.0) + stopwatch.Elapsed.TotalSeconds;
+        }
         
         public static void Advance(int ms)
         {

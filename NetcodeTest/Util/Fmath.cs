@@ -4,13 +4,13 @@ using System.Linq;
 
 using Microsoft.Xna.Framework;
 
-namespace NetcodeTest
+namespace NetcodeTest.Util
 {
-    public static class Util
+    public static class Fmath
     {
         private static Random Rand;
 
-        static Util()
+        static Fmath()
         {
             Rand = new Random();
         }

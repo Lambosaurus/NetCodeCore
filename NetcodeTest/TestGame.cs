@@ -16,7 +16,7 @@ using NetCode.Connection.UDP;
 
 using NetcodeTest.Entities;
 using NetcodeTest.Server;
-
+using NetcodeTest.Util;
 
 namespace NetcodeTest
 {
@@ -34,10 +34,10 @@ namespace NetcodeTest
         PlayerControl controlVector;
         
         SpriteFont font;
-
-
+        
         Point Resolution = new Point(1200, 800);
         
+
         public TestGame()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -57,7 +57,7 @@ namespace NetcodeTest
 
         private void SetupNetwork()
         {
-            NetcodeFieldSupport.RegisterCustomFields(netcode);
+            NetcodeFields.RegisterCustomFields(netcode);
 
             netcode.RegisterType(typeof(Asteroid));
             netcode.RegisterType(typeof(Ship));
@@ -65,8 +65,8 @@ namespace NetcodeTest
 
             server = new AsteroidServer(netcode, Resolution.ToVector2(), 11002);
 
-            client = new NetworkClient(new UDPConnection(System.Net.IPAddress.Parse("127.0.0.1"), 11002, 11003));
-            //client = new NetworkClient(new UDPConnection(System.Net.IPAddress.Parse("192.168.1.151"), 11002, 11003));
+            string address = (server != null) ? "127.0.0.1" : "192.168.1.151";
+            client = new NetworkClient(new UDPConnection(System.Net.IPAddress.Parse(address), 11002, 11003));
 
             incomingPool = netcode.GenerateIncomingPool(0);
             outgoingPool = netcode.GenerateOutgoingPool(0);
@@ -76,7 +76,7 @@ namespace NetcodeTest
             {
                 ShipColor = Color.Yellow,
                 Ready = true,
-                PlayerName = "Somebody"
+                PlayerName = "Some Moron"
             };
             outgoingPool.RegisterEntity(controlVector);
 
@@ -115,7 +115,7 @@ namespace NetcodeTest
 
             if (server != null)
             {
-                server.Update(delta);
+                server.Update();
             }
 
             

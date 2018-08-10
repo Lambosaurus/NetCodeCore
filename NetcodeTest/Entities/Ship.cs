@@ -5,8 +5,9 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Volatile;
-
 using NetCode;
+
+using NetcodeTest.Util;
 
 namespace NetcodeTest.Entities
 {
@@ -43,10 +44,10 @@ namespace NetcodeTest.Entities
 
         public void Control(float thrust, float torque)
         {
-            thrust = Util.Clamp(thrust, 0.0f, 1.0f);
-            torque = Util.Clamp(torque, -1.0f, 1.0f);
+            thrust = Fmath.Clamp(thrust, 0.0f, 1.0f);
+            torque = Fmath.Clamp(torque, -1.0f, 1.0f);
 
-            CollisionBody.AddForce( Util.CosSin(Angle, Thrust * thrust) );
+            CollisionBody.AddForce( Fmath.CosSin(Angle, Thrust * thrust) );
             CollisionBody.AddTorque(Torque * torque);
 
             RequestMotionUpdate();

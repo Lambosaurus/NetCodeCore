@@ -4,6 +4,8 @@ using Microsoft.Xna.Framework.Graphics;
 using NetCode;
 using Volatile;
 
+using NetcodeTest.Util;
+
 namespace NetcodeTest.Entities
 {
     public abstract class Entity
@@ -42,7 +44,7 @@ namespace NetcodeTest.Entities
 
             if (Angle > MathHelper.TwoPi || Angle < MathHelper.TwoPi)
             {
-                Angle = Util.Mod(Angle, MathHelper.TwoPi);
+                Angle = Fmath.Mod(Angle, MathHelper.TwoPi);
             }
 
             if ((CollisionBody.LinearVelocity - Velocity).LengthSquared() > VelocityTolerance * VelocityTolerance)
@@ -60,8 +62,8 @@ namespace NetcodeTest.Entities
         {
             if (Position.X < low.X || Position.X > high.X || Position.Y < low.Y || Position.Y > high.Y)
             {
-                Position = new Vector2(Util.Mod(Position.X - low.X, high.X - low.X) + low.X,
-                                       Util.Mod(Position.Y - low.Y, high.Y - low.Y) + low.Y);
+                Position = new Vector2(Fmath.Mod(Position.X - low.X, high.X - low.X) + low.X,
+                                       Fmath.Mod(Position.Y - low.Y, high.Y - low.Y) + low.Y);
 
                 CollisionBody.Set(Position, Angle);
 

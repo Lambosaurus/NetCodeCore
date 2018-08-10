@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Volatile;
 
 using NetCode;
+using NetcodeTest.Util;
 
 namespace NetcodeTest.Entities
 {

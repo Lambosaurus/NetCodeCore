@@ -8,10 +8,10 @@ using NetCode;
 using NetCode.SyncField;
 using NetCode.Util;
 
-namespace NetcodeTest
+namespace NetcodeTest.Util
 {
 
-    public static class NetcodeFieldSupport
+    public static class NetcodeFields
     {
         public static void RegisterCustomFields(NetCodeManager netcode)
         {

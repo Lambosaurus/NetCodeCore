@@ -1,24 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 
 using NetCode;
 using NetCode.Connection;
 using NetCode.Connection.UDP;
 using NetCode.SyncPool;
-
 using Microsoft.Xna.Framework;
 using Volatile;
 
 using NetcodeTest.Entities;
+using NetcodeTest.Util;
 
 
 namespace NetcodeTest.Server
 {
     public class AsteroidServer
     {
-
-        UDPServer Server;
+        
         public int MaxPlayers
         {
             get { return Server.IncomingConnectionLimit; }
@@ -36,15 +36,14 @@ namespace NetcodeTest.Server
         private float TransmitRate = 1f / 20;
         private List<RemoteClient> Clients;
         private OutgoingSyncPool OutgoingPool;
-
+        private NetCodeManager NetManager;
+        private UDPServer Server;
+        
         private Vector2 BoundaryMargin = new Vector2(20, 20);
         private Vector2 Boundary;
-
-        NetCodeManager NetManager;
-
-        public List<Entity> Entities;
-
-        public VoltWorld CollisionWorld;
+        private List<Entity> Entities;
+        private VoltWorld CollisionWorld;
+        private double LastTimestamp;
 
         public AsteroidServer(NetCodeManager manager, Vector2 boundary, int port )
         {
@@ -64,27 +63,29 @@ namespace NetcodeTest.Server
             for (int i = 0; i < 60; i++) { AddEntity(NewAsteroid(24)); }
             for (int i = 0; i < 20; i++) { AddEntity(NewAsteroid(32)); }
             for (int i = 0; i < 5; i++) { AddEntity(NewAsteroid(48)); }
+
+            LastTimestamp = NetTime.Seconds();
         }
 
         private Asteroid NewAsteroid(float scale)
         {
             return new Asteroid(
-                Util.RandomVector(Boundary),
-                Util.CosSin(Util.RandAngle(), Util.RandF(50)),
-                scale/2 + Util.RandF(scale/2),
-                Util.RandAngle(),
-                Util.RandF(1f)
+                Fmath.RandomVector(Boundary),
+                Fmath.CosSin(Fmath.RandAngle(), Fmath.RandF(50)),
+                scale/2 + Fmath.RandF(scale/2),
+                Fmath.RandAngle(),
+                Fmath.RandF(1f)
                 );
         }
 
         private Ship NewPlayer(Color color)
         {
             return new Ship(
-                Util.RandomVector(Boundary/2) + (Boundary/4),
-                Util.CosSin(Util.RandAngle(), Util.RandF(50)),
+                Fmath.RandomVector(Boundary/2) + (Boundary/4),
+                Fmath.CosSin(Fmath.RandAngle(), Fmath.RandF(50)),
                 color,
-                Util.RandAngle(),
-                Util.RandF(1f)
+                Fmath.RandAngle(),
+                Fmath.RandF(1f)
                 );
         }
 
@@ -103,12 +104,16 @@ namespace NetcodeTest.Server
             OutgoingPool.GetHandleByObject(entity).State = SyncHandle.SyncState.Deleted;
             entity.DestroyBody();
         }
-
+        
 
         float syncCounter = 0;
         
-        public void Update(float delta)
+        public void Update()
         {
+            double seconds = NetTime.Seconds();
+            float delta = (float)(seconds - LastTimestamp);
+            LastTimestamp = seconds;
+
             UDPFeed feed = Server.RecieveConnection();
             if (feed != null)
             {
