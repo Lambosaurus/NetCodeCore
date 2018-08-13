@@ -1,0 +1,61 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+
+using NetcodeTest.Util;
+
+namespace NetcodeTest.Entities
+{
+    public class Projectile : Entity
+    {
+        public Ship Creator;
+
+        const float Speed = 500f;
+        double Duration = 3.0f;
+        double Damage = 20;
+
+        float Recoil = 500f;
+        float Force = 1000f;
+
+        public Projectile()
+        {
+        }
+        
+        public Projectile(Ship creator)
+        {
+            Position = creator.Position;
+            Angle = creator.Angle;
+            Velocity = creator.Velocity + Fmath.CosSin(Angle, Speed);
+            AngularVelocity = 0f;
+            
+            Creator = creator;
+
+            Creator.Push(Fmath.CosSin(-Angle, Recoil));
+        }
+
+        public override void Update(float delta)
+        {
+            Duration -= delta;
+            if (Duration <= 0) { IsDestroyed = true; }
+            base.Update(delta);
+        }
+
+        public override void Draw(SpriteBatch batch)
+        {
+            Drawing.DrawBullet(batch, Position, new Vector2(20, 4), Angle, Color.Lerp(Color.Yellow, Color.White, 0.5f));
+        }
+
+        public virtual void OnCollide( Physical phys )
+        {
+            phys.Hitpoints -= Damage;
+            IsDestroyed = true;
+
+            phys.Push(this.Velocity * this.Force / Speed, Position);
+        }
+    }
+}

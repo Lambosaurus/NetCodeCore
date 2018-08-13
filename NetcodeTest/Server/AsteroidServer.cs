@@ -1,24 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Diagnostics;
+
+using Microsoft.Xna.Framework;
 
 using NetCode;
 using NetCode.Connection;
 using NetCode.Connection.UDP;
 using NetCode.SyncPool;
-using Microsoft.Xna.Framework;
 using Volatile;
 
 using NetcodeTest.Entities;
 using NetcodeTest.Util;
 
 
+
+
 namespace NetcodeTest.Server
 {
     public class AsteroidServer
-    {
-        
+    {       
         public int MaxPlayers
         {
             get { return Server.IncomingConnectionLimit; }
@@ -36,33 +37,41 @@ namespace NetcodeTest.Server
         private float TransmitRate = 1f / 20;
         private List<RemoteClient> Clients;
         private OutgoingSyncPool OutgoingPool;
-        private NetCodeManager NetManager;
+        private NetDefinition NetDefs;
         private UDPServer Server;
         
         private Vector2 BoundaryMargin = new Vector2(20, 20);
         private Vector2 Boundary;
-        private List<Entity> Entities;
+        private List<Physical> Physicals;
+        private List<Projectile> Projectiles;
         private VoltWorld CollisionWorld;
         private double LastTimestamp;
 
-        public AsteroidServer(NetCodeManager manager, Vector2 boundary, int port )
+        private ContextToken Context;
+
+        public AsteroidServer(NetDefinition netdefs, Vector2 boundary, int port )
         {
-            NetManager = manager;
+            NetDefs = netdefs;
 
             Boundary = boundary;
             Server = new UDPServer(port);
             MaxPlayers = 8;
 
-            OutgoingPool = manager.GenerateOutgoingPool(0);
-            Entities = new List<Entity>();
+            OutgoingPool = netdefs.GenerateOutgoingPool(0);
+            Physicals = new List<Physical>();
+            Projectiles = new List<Projectile>();
             CollisionWorld = new VoltWorld(0,1.0f);
             
             Clients = new List<RemoteClient>();
 
-            for (int i = 0; i < 50; i++) { AddEntity(NewAsteroid(16)); }
-            for (int i = 0; i < 60; i++) { AddEntity(NewAsteroid(24)); }
-            for (int i = 0; i < 20; i++) { AddEntity(NewAsteroid(32)); }
-            for (int i = 0; i < 5; i++) { AddEntity(NewAsteroid(48)); }
+            Context = new ContextToken();
+
+            int k = 1;
+            for (int i = 0; i < 50*k; i++) { AddEntity(NewAsteroid(16)); }
+            for (int i = 0; i < 60*k; i++) { AddEntity(NewAsteroid(24)); }
+            for (int i = 0; i < 20*k; i++) { AddEntity(NewAsteroid(32)); }
+            for (int i = 0; i < 5*k; i++) { AddEntity(NewAsteroid(48)); }
+
 
             LastTimestamp = NetTime.Seconds();
         }
@@ -91,21 +100,45 @@ namespace NetcodeTest.Server
 
         private void AddEntity(Entity entity)
         {
-            entity.GenerateBody(CollisionWorld);
+            entity.SetContext(Context);
+
+            if (entity is Physical phys)
+            {
+                phys.GenerateBody(CollisionWorld);
+                Physicals.Add(phys);
+            }
+            else if (entity is Projectile proj)
+            {
+                Projectiles.Add(proj);
+            }
+            else
+            {
+                throw new ArgumentException();
+            }
+
             entity.UpdateMotion(NetTime.Now());
-            Entities.Add(entity);
-            
             OutgoingPool.RegisterEntity(entity);
         }
-
+        
         private void RemoveEntity(Entity entity)
         {
-            Entities.Remove(entity);
-            OutgoingPool.GetHandleByObject(entity).State = SyncHandle.SyncState.Deleted;
-            entity.DestroyBody();
-        }
-        
+            entity.OnDestroy();
 
+            if (entity is Physical phys)
+            {
+                Physicals.Remove(phys);
+            }
+            else if (entity is Projectile proj)
+            {
+                Projectiles.Remove(proj);
+            }
+            else
+            {
+                throw new ArgumentException();
+            }
+            
+            OutgoingPool.GetHandleByObject(entity).State = SyncHandle.SyncState.Deleted;
+        }
         float syncCounter = 0;
         
         public void Update()
@@ -120,7 +153,7 @@ namespace NetcodeTest.Server
                 NetworkClient client = new NetworkClient(feed);
                 client.SetState(NetworkClient.ConnectionState.Open);
                 client.Attach(OutgoingPool);
-                IncomingSyncPool incoming = NetManager.GenerateIncomingPool(0);
+                IncomingSyncPool incoming = NetDefs.GenerateIncomingPool(0);
                 client.Attach(incoming);
 
                 RemoteClient newClient = new RemoteClient() {
@@ -158,7 +191,7 @@ namespace NetcodeTest.Server
                                 AddEntity(client.Player);
                                 client.PlayerName = control.PlayerName;
                             }
-                            client.Player.Control(control.Thrust, control.Torque);
+                            client.Player.Control(control.Thrust, control.Torque, control.Firing);
                         }
 
                         break;
@@ -175,7 +208,7 @@ namespace NetcodeTest.Server
                     client.Client.Destroy();
                     if (client.Player != null)
                     {
-                        RemoveEntity(client.Player);
+                        AddEntity(client.Player);
                     }
                 }
             }
@@ -199,6 +232,30 @@ namespace NetcodeTest.Server
             return lines;
         }
         
+        private void UpdateEntity(Entity entity, float delta, long timestamp)
+        {
+            entity.Update(delta);
+            entity.Clamp(-BoundaryMargin, Boundary + BoundaryMargin);
+            if (entity.NeedsMotionReset)
+            {
+                entity.UpdateMotion(timestamp);
+            }
+        }
+
+        private void ProjectileCollision(Projectile proj)
+        {
+            foreach (VoltBody body in CollisionWorld.QueryPoint(proj.Position))
+            {
+                Physical phys = (Physical)body.UserData;
+                if (phys != proj.Creator)
+                {
+                    proj.OnCollide((Physical)body.UserData);
+                    break;
+                }
+            }
+        }
+        
+        
         private void UpdateEntitites(float delta)
         {
             long timestamp = NetTime.Now();
@@ -207,17 +264,31 @@ namespace NetcodeTest.Server
             CollisionWorld.Update();
 
 
-            Vector2 MarginLow = - BoundaryMargin;
-            Vector2 MarginHigh = Boundary + BoundaryMargin;
-
-            foreach (Entity entity in Entities)
+            foreach (Projectile proj in Projectiles)
             {
-                entity.Update(delta);
-                entity.Clamp(MarginLow, MarginHigh);
+                UpdateEntity(proj, delta, timestamp);
+                ProjectileCollision(proj);
+            }
+            foreach (Physical phys in Physicals)
+            {
+                UpdateEntity(phys, delta, timestamp);
+            }
 
-                if (entity.MotionRequestRequired)
+            for (int i = Projectiles.Count - 1; i >= 0; i--)
+            {
+                if (Projectiles[i].IsDestroyed) { RemoveEntity(Projectiles[i]); }
+            }
+            for (int i = Physicals.Count - 1; i >= 0; i--)
+            {
+                if (Physicals[i].IsDestroyed) { RemoveEntity(Physicals[i]); }
+            }
+            
+            List<Entity> spawned = Context.GetEntities();
+            if (spawned != null)
+            {
+                foreach (Entity entity in spawned)
                 {
-                    entity.UpdateMotion(timestamp);
+                    AddEntity(entity);
                 }
             }
         }

@@ -13,7 +13,7 @@ namespace NetcodeTest.Util
 
     public static class NetcodeFields
     {
-        public static void RegisterCustomFields(NetCodeManager netcode)
+        public static void RegisterCustomFields(NetDefinition netcode)
         {
             netcode.RegisterField(typeof(SynchronisableVector2), typeof(Vector2));
             netcode.RegisterField(typeof(SynchronisableHalfVector2), typeof(Vector2), SyncFlags.HalfPrecisionFloats);

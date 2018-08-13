@@ -11,10 +11,14 @@ using NetcodeTest.Util;
 
 namespace NetcodeTest.Entities
 {
-    public class Asteroid : Entity
+    public class Asteroid : Physical
     {
         [Synchronisable]
         public float Size { get; protected set; }
+
+        public const float MinimumSize = 8f;
+        public const float EjectionVelocity = 3f;
+        public const float EjectionRotation = 0.2f;
 
         public Asteroid()
         {
@@ -27,6 +31,7 @@ namespace NetcodeTest.Entities
             Velocity = velocity;
             Angle = angle;
             AngularVelocity = angleV;
+            Hitpoints = size * size / 4.0;
         }
         
         public override void Draw(SpriteBatch batch)
@@ -34,27 +39,40 @@ namespace NetcodeTest.Entities
             Drawing.DrawSquare(batch, Position, new Vector2(Size, Size), Angle, Color.LightGray);
         }
 
-        public override void GenerateBody(VoltWorld world)
+        protected override Vector2[] GetHitbox()
         {
             float half = Size / 2;
-            VoltPolygon polygon = world.CreatePolygonBodySpace(
-                new Vector2[]
+            return new Vector2[]
                 {
                     new Vector2(half, half),
                     new Vector2(half, -half),
                     new Vector2(-half, -half),
                     new Vector2(-half, half),
-                }
-                );
-
-            CollisionBody = world.CreateDynamicBody(Position, Angle, polygon);
-            CollisionBody.AngularVelocity = AngularVelocity;
-            CollisionBody.LinearVelocity = Velocity;
+                };
         }
 
-        public override void DestroyBody()
+        public override void OnDestroy()
         {
-            CollisionBody.World.RemoveBody(CollisionBody);
+            float subsize = Size / 2;
+            if (subsize > MinimumSize)
+            {
+                Vector2 ecc = Fmath.Rotate(new Vector2(Size/4, Size/4), Angle);
+
+                for (int i = 0; i < 4; i++)
+                {
+                    ecc = Fmath.RotatePos(ecc);
+
+                    Context.AddEntity(new Asteroid(
+                        Position + ecc,
+                        Velocity + ecc * EjectionVelocity / Size,
+                        subsize,
+                        Angle,
+                        AngularVelocity + EjectionRotation - Fmath.RandF(2 * EjectionRotation)
+                        ));
+                }
+            }
+
+            base.OnDestroy();
         }
     }
 }

@@ -21,5 +21,7 @@ namespace NetcodeTest
         public bool Ready = false;
         [Synchronisable]
         public string PlayerName = "";
+        [Synchronisable]
+        public bool Firing = false;
     }
 }

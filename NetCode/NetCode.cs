@@ -15,13 +15,13 @@ namespace NetCode
         public NetcodeOverloadedException(string message) : base(message) { }
     }
     
-    public class NetCodeManager
+    public class NetDefinition
     {
 
         internal SyncFieldGenerator fieldGenerator;
         internal SyncEntityGenerator entityGenerator;
 
-        public NetCodeManager()
+        public NetDefinition()
         {
             fieldGenerator = new SyncFieldGenerator();
             entityGenerator = new SyncEntityGenerator(fieldGenerator);

@@ -33,6 +33,9 @@
     <DefineConstants>TRACE;WINDOWS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
@@ -41,12 +44,15 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Entities\Projectile.cs" />
+    <Compile Include="Entities\Physical.cs" />
     <Compile Include="Server\AsteroidServer.cs" />
     <Compile Include="PlayerControl.cs" />
     <Compile Include="Drawing.cs" />
     <Compile Include="Entities\Ship.cs" />
     <Compile Include="Entities\Asteroid.cs" />
     <Compile Include="Entities\Entity.cs" />
+    <Compile Include="Entities\ContextToken.cs" />
     <Compile Include="TestGame.cs" />
     <Compile Include="Util\NetcodeFields.cs" />
     <Compile Include="Program.cs" />
@@ -71,8 +77,8 @@
     <Content Include="Content\tri.png" />
     <Content Include="Content\sq.png" />
     <Content Include="Icon.ico" />
+    <Content Include="lib\TimSort.dll" />
     <Content Include="lib\VolatilePhysics.dll" />
-    <Content Include="lib\VolatilePhysics.pdb" />
   </ItemGroup>
   <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb" />

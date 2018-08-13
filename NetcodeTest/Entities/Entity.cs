@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NetCode;
-using Volatile;
 
 using NetcodeTest.Util;
 
@@ -10,7 +9,6 @@ namespace NetcodeTest.Entities
 {
     public abstract class Entity
     {
-        public VoltBody CollisionBody { get; protected set; }
         public Vector2 Position { get; protected set; }
         public float Angle { get; protected set; }
 
@@ -25,9 +23,11 @@ namespace NetcodeTest.Entities
         protected float baseAngle { get; set; }
         [Synchronisable(SyncFlags.Timestamp)]
         protected long baseTimestamp { get; set; }
+        
+        public bool NeedsMotionReset { get; private set; } = false;
+        public bool IsDestroyed { get; protected set; } = false;
 
-        const float VelocityTolerance = 0.01f;
-        public bool MotionRequestRequired {get; private set; } = false;
+        protected ContextToken Context;
 
         public Entity()
         {
@@ -37,49 +37,17 @@ namespace NetcodeTest.Entities
             AngularVelocity = 0f;
         }
 
-        public virtual void Update(float delta)
-        {
-            Position = CollisionBody.Position;
-            Angle = CollisionBody.Angle;
-
-            if (Angle > MathHelper.TwoPi || Angle < MathHelper.TwoPi)
-            {
-                Angle = Fmath.Mod(Angle, MathHelper.TwoPi);
-            }
-
-            if ((CollisionBody.LinearVelocity - Velocity).LengthSquared() > VelocityTolerance * VelocityTolerance)
-            {
-                RequestMotionUpdate();
-            }
-        }
-
         protected void RequestMotionUpdate()
         {
-            MotionRequestRequired = true;
-        }
-
-        public virtual void Clamp( Vector2 low, Vector2 high)
-        {
-            if (Position.X < low.X || Position.X > high.X || Position.Y < low.Y || Position.Y > high.Y)
-            {
-                Position = new Vector2(Fmath.Mod(Position.X - low.X, high.X - low.X) + low.X,
-                                       Fmath.Mod(Position.Y - low.Y, high.Y - low.Y) + low.Y);
-
-                CollisionBody.Set(Position, Angle);
-
-                RequestMotionUpdate();
-            }
+            NeedsMotionReset = true;
         }
 
         public virtual void UpdateMotion(long timestamp)
         {
-            Velocity = CollisionBody.LinearVelocity;
-            AngularVelocity = CollisionBody.AngularVelocity;
-
             baseTimestamp = timestamp;
             basePosition = Position;
             baseAngle = Angle;
-            MotionRequestRequired = false;
+            NeedsMotionReset = false;
         }
 
         public virtual void Predict(long timestamp)
@@ -89,15 +57,46 @@ namespace NetcodeTest.Entities
             Angle = baseAngle + (AngularVelocity * (delta / 1000.0f));
         }
 
-        public virtual void DestroyBody()
+        public virtual void Update(float delta)
         {
-            if (CollisionBody != null && CollisionBody.World != null)
+            Position += Velocity * delta;
+            Angle += AngularVelocity * delta;
+
+            if (Angle > MathHelper.TwoPi || Angle < MathHelper.TwoPi)
             {
-                CollisionBody.World.RemoveBody(CollisionBody);
+                Angle = Fmath.Mod(Angle, MathHelper.TwoPi);
             }
         }
 
-        public abstract void GenerateBody(VoltWorld world);
+        public virtual void Set( Vector2 position, float angle )
+        {
+            Position = position;
+            Angle = angle;
+        }
+
+        public virtual void Clamp(Vector2 low, Vector2 high)
+        {
+            if (Position.X < low.X || Position.X > high.X || Position.Y < low.Y || Position.Y > high.Y)
+            {
+                Vector2 newPos = new Vector2(Fmath.Mod(Position.X - low.X, high.X - low.X) + low.X,
+                                       Fmath.Mod(Position.Y - low.Y, high.Y - low.Y) + low.Y);
+
+                Set(newPos, Angle);
+
+                RequestMotionUpdate();
+            }
+        }
+
+        public void SetContext(ContextToken context)
+        {
+            Context = context;
+        }
+
+        public virtual void OnDestroy()
+        {
+
+        }
+        
         public abstract void Draw(SpriteBatch batch);
     }
 }

@@ -25,8 +25,8 @@ namespace NetcodeTest
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        NetCodeManager netcode = new NetCodeManager();
-        AsteroidServer server;
+        NetDefinition netcode = new NetDefinition();
+        AsteroidServer server = null;
 
         NetworkClient client;
         IncomingSyncPool incomingPool;
@@ -37,7 +37,6 @@ namespace NetcodeTest
         
         Point Resolution = new Point(1200, 800);
         
-
         public TestGame()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -62,11 +61,15 @@ namespace NetcodeTest
             netcode.RegisterType(typeof(Asteroid));
             netcode.RegisterType(typeof(Ship));
             netcode.RegisterType(typeof(PlayerControl));
+            netcode.RegisterType(typeof(Projectile));
 
             server = new AsteroidServer(netcode, Resolution.ToVector2(), 11002);
-
-            string address = (server != null) ? "127.0.0.1" : "192.168.1.151";
-            client = new NetworkClient(new UDPConnection(System.Net.IPAddress.Parse(address), 11002, 11003));
+            
+            client = new NetworkClient( new UDPConnection(
+                System.Net.IPAddress.Parse( (server != null) ? "127.0.0.1" : "122.58.86.5"),
+                11002,
+                (server != null) ? 11003 : 11002
+                ));
 
             incomingPool = netcode.GenerateIncomingPool(0);
             outgoingPool = netcode.GenerateOutgoingPool(0);
@@ -74,9 +77,9 @@ namespace NetcodeTest
             client.Attach(outgoingPool);
             controlVector = new PlayerControl()
             {
-                ShipColor = Color.Yellow,
+                ShipColor = Color.Red,
                 Ready = true,
-                PlayerName = "Some Moron"
+                PlayerName = "Lambosaurus"
             };
             outgoingPool.RegisterEntity(controlVector);
 
@@ -124,6 +127,7 @@ namespace NetcodeTest
 
             controlVector.Thrust = (keys.IsKeyDown(Keys.W) ? 1.0f : 0f);
             controlVector.Torque = (keys.IsKeyDown(Keys.A) ? 1.0f : 0f) + (keys.IsKeyDown(Keys.D) ? -1.0f : 0f);
+            controlVector.Firing = keys.IsKeyDown(Keys.Space); // Should be done as events.
             
             tickCounter += delta;
             if (tickCounter >= 1f / 20)
@@ -155,7 +159,7 @@ namespace NetcodeTest
                 );
             return text;
         }
-
+        
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Black);
@@ -163,7 +167,6 @@ namespace NetcodeTest
             spriteBatch.Begin(samplerState:SamplerState.LinearClamp);
 
             long timestamp = NetTime.Now();
-
             
             foreach ( SyncHandle handle in incomingPool.Handles )
             {
@@ -180,7 +183,7 @@ namespace NetcodeTest
                 string packed = string.Join("\n", clients);
                 spriteBatch.DrawString(font, packed, new Vector2(0, 200), Color.White);
             }
-
+            
             /*
             foreach ( Entity entity in server.Entities )
             {
