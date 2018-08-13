@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
+using NetCode;
 using NetcodeTest.Util;
 
 namespace NetcodeTest.Entities
@@ -22,6 +23,9 @@ namespace NetcodeTest.Entities
         float Recoil = 250;
         float Force = 1000f;
 
+        [Synchronisable]
+        Color Color;
+
         public Projectile()
         {
         }
@@ -36,6 +40,7 @@ namespace NetcodeTest.Entities
             Position += Fmath.CosSin(Angle) * creator.Size.X / 2;
 
             Creator = creator;
+            Color = Color.Lerp(Creator.Color, Color.White, 0.5f);
 
             Creator.Push(-Fmath.CosSin(Angle, Recoil));
         }
@@ -49,7 +54,7 @@ namespace NetcodeTest.Entities
 
         public override void Draw(SpriteBatch batch)
         {
-            Drawing.DrawBullet(batch, Position, new Vector2(20, 4), Angle, Color.Lerp(Color.Yellow, Color.White, 0.5f));
+            Drawing.DrawBullet(batch, Position, new Vector2(20, 4), Angle, Color);
         }
 
         public virtual void OnCollide( Physical phys )

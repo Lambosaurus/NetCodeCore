@@ -24,7 +24,7 @@ namespace NetcodeTest.Entities
         [Synchronisable(SyncFlags.Timestamp)]
         protected long baseTimestamp { get; set; }
         
-        public bool NeedsMotionReset { get; private set; } = false;
+        public bool NeedsMotionReset { get; private set; } = true;
         public bool IsDestroyed { get; protected set; } = false;
 
         protected ContextToken Context;
