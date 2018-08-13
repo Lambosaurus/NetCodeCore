@@ -19,7 +19,7 @@ namespace NetcodeTest.Entities
         double Duration = 3.0f;
         double Damage = 20;
 
-        float Recoil = 500f;
+        float Recoil = 250;
         float Force = 1000f;
 
         public Projectile()
@@ -32,10 +32,12 @@ namespace NetcodeTest.Entities
             Angle = creator.Angle;
             Velocity = creator.Velocity + Fmath.CosSin(Angle, Speed);
             AngularVelocity = 0f;
-            
+
+            Position += Fmath.CosSin(Angle) * creator.Size.X / 2;
+
             Creator = creator;
 
-            Creator.Push(Fmath.CosSin(-Angle, Recoil));
+            Creator.Push(-Fmath.CosSin(Angle, Recoil));
         }
 
         public override void Update(float delta)

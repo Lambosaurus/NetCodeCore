@@ -40,7 +40,7 @@ namespace NetcodeTest.Server
         private NetDefinition NetDefs;
         private UDPServer Server;
         
-        private Vector2 BoundaryMargin = new Vector2(20, 20);
+        private Vector2 BoundaryMargin = new Vector2(30, 30);
         private Vector2 Boundary;
         private List<Physical> Physicals;
         private List<Projectile> Projectiles;
@@ -66,11 +66,11 @@ namespace NetcodeTest.Server
 
             Context = new ContextToken();
 
-            int k = 1;
-            for (int i = 0; i < 50*k; i++) { AddEntity(NewAsteroid(16)); }
+            int k = 2;
+            //for (int i = 0; i < 50*k; i++) { AddEntity(NewAsteroid(16)); }
             for (int i = 0; i < 60*k; i++) { AddEntity(NewAsteroid(24)); }
-            for (int i = 0; i < 20*k; i++) { AddEntity(NewAsteroid(32)); }
-            for (int i = 0; i < 5*k; i++) { AddEntity(NewAsteroid(48)); }
+            for (int i = 0; i < 40*k; i++) { AddEntity(NewAsteroid(32)); }
+            for (int i = 0; i < 20*k; i++) { AddEntity(NewAsteroid(48)); }
 
 
             LastTimestamp = NetTime.Seconds();
