@@ -12,11 +12,12 @@ namespace NetCode.SyncPool
         public ushort PoolID { get; private set; }
         protected uint Revision { get; set; }
         
-        private const double POOL_REALLOCATION_THRESHOLD = 0.8;
-        public const int MAX_SYNCHANDLE_COUNT = ushort.MaxValue + 1;
-        private const int DEFAULT_SYNCHANDLE_COUNT = 32; // This should be a power of two
+        private const double PoolReallocationThreshold = 0.8;
+        private const int DefaultEntityCount = 32; // This should be a power of two
 
+        public const int MaximumEntityCount = ushort.MaxValue + 1;
         
+
         protected struct SyncSlot
         {
             public SyncHandle Handle;
@@ -34,7 +35,7 @@ namespace NetCode.SyncPool
             PoolID = poolID;
 
             SyncHandles = new List<SyncHandle>();
-            SyncSlots = new SyncSlot[DEFAULT_SYNCHANDLE_COUNT];
+            SyncSlots = new SyncSlot[DefaultEntityCount];
             Revision = 0;
         }
 
@@ -46,7 +47,7 @@ namespace NetCode.SyncPool
             }
 
             SyncHandles.Clear();
-            SyncSlots = new SyncSlot[DEFAULT_SYNCHANDLE_COUNT];
+            SyncSlots = new SyncSlot[DefaultEntityCount];
             Revision = 0;
         }
 
@@ -61,7 +62,7 @@ namespace NetCode.SyncPool
             }
             return null;
         }
-
+        
         protected void AddHandle(SyncHandle handle)
         {
             SyncSlots[handle.EntityID].Handle = handle;
@@ -94,16 +95,16 @@ namespace NetCode.SyncPool
         
         protected bool ResizeSyncHandleArrayReccommended()
         {
-            return     SyncHandles.Count < MAX_SYNCHANDLE_COUNT
-                    && SyncHandles.Count > SyncSlots.Length * POOL_REALLOCATION_THRESHOLD;
+            return     SyncHandles.Count < MaximumEntityCount
+                    && SyncHandles.Count > SyncSlots.Length * PoolReallocationThreshold;
         }
 
         protected void ResizeSyncHandleArray()
         {
             int newsize = SyncSlots.Length * 2;
-            if (newsize > MAX_SYNCHANDLE_COUNT)
+            if (newsize > MaximumEntityCount)
             {
-                throw new NetcodeOverloadedException(string.Format("May not increase SyncHandleArray to more than {0}", MAX_SYNCHANDLE_COUNT));
+                throw new NetcodeItemcountException(string.Format("May not increase SyncHandleArray to more than {0}", MaximumEntityCount));
             }
             Array.Resize(ref SyncSlots, newsize);
         }

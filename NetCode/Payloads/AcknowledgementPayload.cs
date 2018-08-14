@@ -27,7 +27,7 @@ namespace NetCode.Payloads
             if (packetIDs.Count() > MAX_PACKET_IDS)
             {
                 //TODO: Potentially remove this, as the packets are being validated correctly.
-                throw new NetcodeOverloadedException(string.Format("May not acknowledge more than {0} packets in one payload", MAX_PACKET_IDS));
+                throw new NetcodeItemcountException(string.Format("May not acknowledge more than {0} packets in one payload", MAX_PACKET_IDS));
             }
             AcknowledgementPayload payload = new AcknowledgementPayload()
             {

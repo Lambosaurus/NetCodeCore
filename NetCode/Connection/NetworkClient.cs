@@ -162,7 +162,7 @@ namespace NetCode.Connection
         {
             if (IncomingPools.ContainsKey(syncPool.PoolID))
             {
-                throw new NetcodeOverloadedException(string.Format("An IncomingSyncPool with PoolID of {0} has already been attached to this NetworkClient", syncPool.PoolID));
+                throw new NetcodeItemcountException(string.Format("An IncomingSyncPool with PoolID of {0} has already been attached to this NetworkClient", syncPool.PoolID));
             }
             IncomingPools[syncPool.PoolID] = syncPool;
         }
@@ -176,7 +176,7 @@ namespace NetCode.Connection
         {
             if (OutgoingPools.ContainsKey(syncPool.PoolID))
             {
-                throw new NetcodeOverloadedException(string.Format("An OutgoingSyncPool with PoolID of {0} has already been attached to this NetworkClient", syncPool.PoolID));
+                throw new NetcodeItemcountException(string.Format("An OutgoingSyncPool with PoolID of {0} has already been attached to this NetworkClient", syncPool.PoolID));
             }
             syncPool.Subscribe(this);
             OutgoingPools[syncPool.PoolID] = syncPool;

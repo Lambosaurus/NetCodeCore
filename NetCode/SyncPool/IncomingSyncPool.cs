@@ -9,13 +9,20 @@ namespace NetCode.SyncPool
 {
     public class IncomingSyncPool : SynchronisablePool
     {
+        /// <summary>
+        /// A list of handles that have been added during the last Synchronise() call
+        /// </summary>
+        public IEnumerable<SyncHandle> NewHandles { get { return newHandles; } }
+
+        private List<SyncHandle> newHandles = new List<SyncHandle>();
+
         internal IncomingSyncPool(SyncEntityGenerator generator, ushort poolID) : base(generator, poolID)
         {
-
         }
         
         public void Synchronise()
         {
+            newHandles.Clear();
             foreach (SyncHandle handle in SyncHandles)
             {
                 if (!handle.Sync.Synchronised)
@@ -44,6 +51,7 @@ namespace NetCode.SyncPool
                 descriptor.ConstructObject()
                 );
 
+            newHandles.Add(handle);
             AddHandle(handle);
         }
         
@@ -53,9 +61,7 @@ namespace NetCode.SyncPool
             int end = index + count;
             while (index < end)
             {
-                ushort entityID;
-                ushort typeID;
-                SynchronisableEntity.ReadHeader(data, ref index, out entityID, out typeID);
+                SynchronisableEntity.ReadHeader(data, ref index, out ushort entityID, out ushort typeID);
 
                 bool skipUpdate = false;
                 

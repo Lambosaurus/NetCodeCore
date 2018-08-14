@@ -48,6 +48,7 @@
     <Compile Include="Connection\UDP\UDPFeed.cs" />
     <Compile Include="Connection\UDP\UDPServer.cs" />
     <Compile Include="Connection\VirtualConnection.cs" />
+    <Compile Include="Exceptions.cs" />
     <Compile Include="Payloads\HandshakePayload.cs" />
     <Compile Include="Payloads\PoolDeletionPayload.cs" />
     <Compile Include="Util\Aggregators\IAggregator.cs" />

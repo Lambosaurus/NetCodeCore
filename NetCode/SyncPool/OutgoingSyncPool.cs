@@ -11,8 +11,8 @@ namespace NetCode.SyncPool
 {
     public class OutgoingSyncPool : SynchronisablePool
     {
-
         private List<NetworkClient> Subscribers = new List<NetworkClient>();
+        private ushort lastEntityID = 0;
 
         internal OutgoingSyncPool(SyncEntityGenerator generator, ushort poolID) : base(generator, poolID)
         {
@@ -32,7 +32,6 @@ namespace NetCode.SyncPool
         /// <summary>
         /// Gets the next free object ID
         /// </summary>
-        private ushort lastEntityID = 0;
         private ushort GetNextEntityID()
         {
             if (ResizeSyncHandleArrayReccommended())
@@ -61,14 +60,13 @@ namespace NetCode.SyncPool
                 // We hit the starting point of our search. We must be out of ID's. Time to throw an exeption.
                 if (potentialEntityID == lastEntityID)
                 {
-                    throw new NetcodeOverloadedException(string.Format("Sync pool has been filled. The pool should not contain more than {0} entities.", MAX_SYNCHANDLE_COUNT));
+                    throw new NetcodeItemcountException(string.Format("Sync pool has been filled. The pool should not contain more than {0} entities.", MaximumEntityCount));
                 }
             }
             
             lastEntityID = potentialEntityID;
             return potentialEntityID;
         }
-        
         
         public SyncHandle RegisterEntity(object instance)
         {

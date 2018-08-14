@@ -48,7 +48,7 @@ namespace NetCode.SyncEntity
             }
 
             FieldCount = fieldDescriptors.Count;
-            if (FieldCount >= byte.MaxValue) { throw new NetcodeOverloadedException(string.Format("Type {0} contains more than {1} synchronisable fields.", entityType.Name, byte.MaxValue)); }
+            if (FieldCount >= byte.MaxValue) { throw new NetcodeItemcountException(string.Format("Type {0} contains more than {1} synchronisable fields.", entityType.Name, byte.MaxValue)); }
 
             StaticFields = GenerateFields();
         }

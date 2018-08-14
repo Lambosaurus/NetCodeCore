@@ -30,7 +30,7 @@ namespace NetCode.Payloads
             //TODO: Potentially remove this once packing is properly abstracted.
             if (entityIDs.Count() > MAX_ENTITY_IDS)
             {
-                throw new NetcodeOverloadedException(string.Format("May not delete more than {0} entities in one payload", MAX_ENTITY_IDS));
+                throw new NetcodeItemcountException(string.Format("May not delete more than {0} entities in one payload", MAX_ENTITY_IDS));
             }
 
             PoolDeletionPayload payload = new PoolDeletionPayload()

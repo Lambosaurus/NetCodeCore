@@ -21,3 +21,5 @@ Version.cpp
 *.lock
 *.cachefile
 *.dtbcache
+
+\.vs/NetcodeCore/v15/

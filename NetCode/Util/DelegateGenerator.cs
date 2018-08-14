@@ -16,7 +16,7 @@ namespace NetCode.Util
             ConstructorInfo constructor = type.GetConstructor(Type.EmptyTypes);
             if (constructor == null)
             {
-                throw new NotSupportedException(string.Format("Type {0} does not provide a constructor with zero arguments.", type.Name));
+                throw new NetcodeGenerationException(string.Format("Type {0} does not provide a constructor with zero arguments.", type.Name));
             }
             
             DynamicMethod method =
@@ -92,7 +92,7 @@ namespace NetCode.Util
             MethodInfo getter = property.GetGetMethod(FIND_NONPUBLIC_ACCESSORS);
             if (getter == null)
             {
-                throw new NetcodeOverloadedException(string.Format("Property {0}.{1} does not provide a getter.", property.DeclaringType.Name, property.Name));
+                throw new NetcodeGenerationException(string.Format("Property {0}.{1} does not provide a getter.", property.DeclaringType.Name, property.Name));
             }
 
             DynamicMethod method = new DynamicMethod(
@@ -124,7 +124,7 @@ namespace NetCode.Util
             MethodInfo setter = property.GetSetMethod(FIND_NONPUBLIC_ACCESSORS);
             if (setter == null)
             {
-                throw new NetcodeOverloadedException(string.Format("Property {0}.{1} does not provide a setter.", property.DeclaringType.Name, property.Name));
+                throw new NetcodeGenerationException(string.Format("Property {0}.{1} does not provide a setter.", property.DeclaringType.Name, property.Name));
             }
 
             DynamicMethod method = new DynamicMethod(

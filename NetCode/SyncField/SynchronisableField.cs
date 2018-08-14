@@ -48,7 +48,7 @@ namespace NetCode.SyncField
         /// <param name="value"></param>
         public virtual void AddTimestamp(long offset)
         {
-            throw new NotImplementedException();
+            throw new NetcodeGenerationException("This SyncField does not support being cast as a Timestamp. Long is the default type for Timestamps.");
         }
 
         /// <summary>
