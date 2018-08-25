@@ -23,3 +23,5 @@ Version.cpp
 *.dtbcache
 
 \.vs/NetcodeCore/v15/
+
+\.vs/NetcodeCore/DesignTimeBuild/

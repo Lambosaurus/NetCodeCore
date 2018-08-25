@@ -4,11 +4,11 @@ using System.Linq;
 
 using NetCode.Util;
 
-namespace NetCode.SyncField
+namespace NetCode.SyncField.Implementations
 {
     public class SynchronisableEnum : SynchronisableField
     {
-        private byte value;
+        protected byte value;
         public override void SetValue(object new_value) { value = (byte)(int)new_value; }
         public override object GetValue() { return (int)value; }
         public override bool ValueEqual(object new_value) { return (byte)(int)new_value == value; }
@@ -20,7 +20,7 @@ namespace NetCode.SyncField
 
     public class SynchronisableBool : SynchronisableField
     {
-        private bool value;
+        protected bool value;
         public override void SetValue(object new_value) { value = (bool)new_value; }
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (bool)new_value == value; }
@@ -32,7 +32,7 @@ namespace NetCode.SyncField
 
     public class SynchronisableByte : SynchronisableField
     {
-        private byte value;
+        protected byte value;
         public override void SetValue(object new_value) { value = (byte)new_value; }
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (byte)new_value == value; }
@@ -44,7 +44,7 @@ namespace NetCode.SyncField
 
     public class SynchronisableShort : SynchronisableField
     {
-        private short value;
+        protected short value;
         public override void SetValue(object new_value) { value = (short)new_value; }
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (short)new_value == value; }
@@ -56,7 +56,7 @@ namespace NetCode.SyncField
 
     public class SynchronisableUShort : SynchronisableField
     {
-        private ushort value;
+        protected ushort value;
         public override void SetValue(object new_value) { value = (ushort)new_value; }
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (ushort)new_value == value; }
@@ -68,7 +68,7 @@ namespace NetCode.SyncField
 
     public class SynchronisableInt : SynchronisableField
     {
-        private int value;
+        protected int value;
         public override void SetValue(object new_value) { value = (int)new_value; }
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (int)new_value == value; }
@@ -80,7 +80,7 @@ namespace NetCode.SyncField
 
     public class SynchronisableUInt : SynchronisableField
     {
-        private uint value;
+        protected uint value;
         public override void SetValue(object new_value) { value = (uint)new_value; }
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (uint)new_value == value; }
@@ -92,7 +92,7 @@ namespace NetCode.SyncField
 
     public class SynchronisableLong : SynchronisableField
     {
-        private long value;
+        protected long value;
         public override void SetValue(object new_value) { value = (long)new_value; }
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (long)new_value == value; }
@@ -100,12 +100,11 @@ namespace NetCode.SyncField
         public override void Write(byte[] data, ref int index) { Primitive.WriteLong(data, ref index, value); }
         public override void Read(byte[] data, ref int index) { value = Primitive.ReadLong(data, ref index); }
         public override void Skip(byte[] data, ref int index) { index += sizeof(long); }
-        public override void AddTimestamp(long offset) { value += offset; }
     }
 
     public class SynchronisableULong : SynchronisableField
     {
-        private ulong value;
+        protected ulong value;
         public override void SetValue(object new_value) { value = (ulong)new_value; }
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (ulong)new_value == value; }
@@ -117,7 +116,7 @@ namespace NetCode.SyncField
 
     public class SynchronisableFloat : SynchronisableField
     {
-        private float value;
+        protected float value;
         public override void SetValue(object new_value) { value = (float)new_value; }
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (float)new_value == value; }
@@ -129,7 +128,7 @@ namespace NetCode.SyncField
 
     public class SynchronisableDouble : SynchronisableField
     {
-        private double value;
+        protected double value;
         public override void SetValue(object new_value) { value = (double)new_value; }
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (double)new_value == value; }
@@ -141,7 +140,7 @@ namespace NetCode.SyncField
 
     public class SynchronisableString : SynchronisableField
     {
-        private string value;
+        protected string value;
         public override void SetValue(object new_value) { value = (string)new_value; }
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (string)new_value == value; }
@@ -161,7 +160,7 @@ namespace NetCode.SyncField
 
     public class SynchronisableHalf : SynchronisableField
     {
-        private Half value;
+        protected Half value;
         public override void SetValue(object new_value) { value = (Half)((float)new_value); }
         public override object GetValue() { return (float)value; }
         public override bool ValueEqual(object new_value) { return (Half)((float)new_value) == value; }
@@ -173,7 +172,7 @@ namespace NetCode.SyncField
 
     public class SynchronisableByteArray : SynchronisableField
     {
-        private byte[] value;
+        protected byte[] value;
         public override void SetValue(object new_value) { value = (byte[])((byte[])new_value).Clone(); }
         public override object GetValue() { return value.Clone(); }
         public override bool ValueEqual(object new_value) {  return value.SequenceEqual((byte[])new_value); }

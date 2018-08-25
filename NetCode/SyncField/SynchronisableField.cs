@@ -9,6 +9,7 @@ namespace NetCode.SyncField
         public uint Revision { get; private set; } = 0;
         public bool Synchronised { get; set; } = false;
         public SyncFlags Flags { get; set; }
+        public Type FieldType { get; set; }
         
         internal bool TrackChanges(object newValue, SyncContext context)
         {
@@ -16,6 +17,7 @@ namespace NetCode.SyncField
             {
                 Revision = context.Revision;
                 SetValue(newValue);
+                PreProcess(context);
                 return true;
             }
             return false;
@@ -27,11 +29,7 @@ namespace NetCode.SyncField
             {
                 Read(data, ref index);
 
-                if ((Flags & SyncFlags.Timestamp) != 0)
-                {
-                    // Adjust times from their frame to ours.
-                    AddTimestamp(-context.TimestampOffset);
-                }
+                PostProcess(context);
 
                 Revision = context.Revision;
                 Synchronised = false;
@@ -42,13 +40,12 @@ namespace NetCode.SyncField
             }
         }
 
-        /// <summary>
-        /// This is used for when the type is a Timestamp, and a network offset should be applied
-        /// </summary>
-        /// <param name="value"></param>
-        public virtual void AddTimestamp(long offset)
+        protected virtual void PostProcess(SyncContext context)
         {
-            throw new NetcodeGenerationException("This SyncField does not support being cast as a Timestamp. Long is the default type for Timestamps.");
+        }
+
+        protected virtual void PreProcess(SyncContext context)
+        {
         }
 
         /// <summary>

@@ -20,5 +20,15 @@ namespace NetCode.SyncField
             Revision = revision;
             TimestampOffset = timestampOffset;
         }
+
+        public SyncHandle GetHandleByObject(object obj)
+        {
+            return Pool.GetHandleByObject(obj);
+        }
+
+        public SyncHandle GetHandleByEntityID(ushort entityID)
+        {
+            return Pool.GetHandle(entityID);
+        }
     }
 }

@@ -89,7 +89,7 @@ namespace NetCode.SyncPool
         public void Synchronise()
         {
             uint candidateRevision = Revision + 1;
-
+            
             SyncContext context = new SyncContext(this, candidateRevision, 0);
             bool changesFound = TrackChanges(context, out List<ushort> deletedEntityIDs);
 

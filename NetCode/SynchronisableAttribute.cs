@@ -13,13 +13,19 @@ namespace NetCode
         /// Indicates the specified variable precisions can be downgraded for transport.
         /// Ie, doubles will be cast to floats, and floats cast to halfs.
         /// </summary>
-        HalfPrecisionFloats,
+        HalfPrecisionFloats = (1 << 0),
 
         /// <summary>
         /// The synchronised value is a timestamp derived from the local NetTime.
         /// The value will be translated into a local NetTime by the endpoint.
         /// </summary>
-        Timestamp
+        Timestamp = (1 << 1),
+
+        /// <summary>
+        /// The synchronised value is a reference type, and may point to a value in the syncpool
+        /// If so, the endpoint will match this reference to its appropriate local reference
+        /// </summary>
+        Reference = (1 << 2),
     };
 
     /// <summary>
