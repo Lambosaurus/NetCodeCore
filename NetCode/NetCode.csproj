@@ -51,6 +51,8 @@
     <Compile Include="Exceptions.cs" />
     <Compile Include="Payloads\HandshakePayload.cs" />
     <Compile Include="Payloads\PoolDeletionPayload.cs" />
+    <Compile Include="SyncField\SyncContext.cs" />
+    <Compile Include="SyncField\SynchronisableEntityReference.cs" />
     <Compile Include="Util\Aggregators\IAggregator.cs" />
     <Compile Include="Util\Aggregators\PeriodAggregator.cs" />
     <Compile Include="Util\EventMarker.cs" />

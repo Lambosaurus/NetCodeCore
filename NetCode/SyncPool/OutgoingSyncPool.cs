@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using NetCode.SyncField;
 using NetCode.Connection;
 using NetCode.SyncEntity;
 using NetCode.Payloads;
@@ -40,7 +41,11 @@ namespace NetCode.SyncPool
             }
 
             ushort potentialEntityID = (ushort)(lastEntityID + 1);
-            if (potentialEntityID >= SyncSlots.Length) { potentialEntityID = 0; }
+            if (potentialEntityID >= SyncSlots.Length)
+            {
+                // This is not zero, to respect SyncHandle.NullEntityID = 0
+                potentialEntityID = 1;
+            }
             
             //TODO: This search will start to choke when the dict is nearly full of keys.
             //      Somone should be informed when this happens.
@@ -84,12 +89,14 @@ namespace NetCode.SyncPool
         public void Synchronise()
         {
             uint candidateRevision = Revision + 1;
-            bool changesFound = TrackChanges(candidateRevision, out List<ushort> deletedEntityIDs);
+
+            SyncContext context = new SyncContext(this, candidateRevision, 0);
+            bool changesFound = TrackChanges(context, out List<ushort> deletedEntityIDs);
 
             if (changesFound)
             {
                 Revision = candidateRevision;
-                Payload payload = GenerateRevisionPayload(Revision);
+                Payload payload = GenerateRevisionPayload(context.Revision);
                 BroadcastPayload(payload);
             }
 
@@ -112,7 +119,7 @@ namespace NetCode.SyncPool
             }
         }
         
-        private bool TrackChanges(uint revision, out List<ushort> deletedEntities)
+        private bool TrackChanges(SyncContext context, out List<ushort> deletedEntities)
         {
             bool changesFound = false;
             deletedEntities = new List<ushort>();
@@ -121,7 +128,7 @@ namespace NetCode.SyncPool
             {
                 if (handle.State == SyncHandle.SyncState.Live)
                 {
-                    bool entityChanged = handle.Sync.TrackChanges(handle.Obj, revision);
+                    bool entityChanged = handle.Sync.TrackChanges(handle.Obj, context);
                     if (entityChanged)
                     {
                         changesFound = true;
@@ -136,7 +143,7 @@ namespace NetCode.SyncPool
             
             foreach (ushort entityID in deletedEntities)
             {
-                RemoveHandle(entityID, revision);
+                RemoveHandle(entityID, context.Revision);
             }
 
             return changesFound;

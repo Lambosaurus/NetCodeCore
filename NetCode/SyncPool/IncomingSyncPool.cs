@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using NetCode.SyncField;
 using NetCode.SyncEntity;
-using NetCode.Connection;
 using NetCode.Payloads;
 
 namespace NetCode.SyncPool
@@ -58,6 +59,9 @@ namespace NetCode.SyncPool
         internal void UnpackRevisionDatagram(PoolRevisionPayload payload, long offsetMilliseconds)
         {
             payload.GetRevisionContentBuffer(out byte[] data, out int index, out int count);
+
+            SyncContext context = new SyncContext(this, payload.Revision, offsetMilliseconds);
+
             int end = index + count;
             while (index < end)
             {
@@ -73,25 +77,25 @@ namespace NetCode.SyncPool
                 SyncHandle handle = GetHandle(entityID);
                 if ( handle == null )
                 {
-                    if (SyncSlots[entityID].Revision > payload.Revision)
+                    if (SyncSlots[entityID].Revision > context.Revision)
                     {
                         skipUpdate = true;
                     }
                     else
                     {
-                        SpawnEntity(entityID, typeID, payload.Revision);
+                        SpawnEntity(entityID, typeID, context.Revision);
                     }
                 }
                 else
                 {
                     if (handle.Sync.TypeID != typeID)
                     {
-                        if (handle.Sync.Revision < payload.Revision)
+                        if (handle.Sync.Revision < context.Revision)
                         {
                             // Entity already exists, but is incorrect type and wrong revision
                             // Assume it should have been deleted and recreate it.
-                            RemoveHandle(entityID, payload.Revision);
-                            SpawnEntity(entityID, typeID, payload.Revision);
+                            RemoveHandle(entityID, context.Revision);
+                            SpawnEntity(entityID, typeID, context.Revision);
                         }
                         else
                         {
@@ -109,7 +113,7 @@ namespace NetCode.SyncPool
                 else
                 {
                     SynchronisableEntity entity = SyncSlots[entityID].Handle.Sync;
-                    entity.ReadRevisionFromBuffer(data, ref index, payload.Revision, offsetMilliseconds);
+                    entity.ReadRevisionFromBuffer(data, ref index, context);
                 }
             }
         }

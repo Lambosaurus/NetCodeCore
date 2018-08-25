@@ -122,7 +122,7 @@ namespace NetCode.SyncEntity
             }
         }
         
-        public void ReadRevisionFromBuffer(byte[] data, ref int index, uint revision, long offsetMilliseconds)
+        public void ReadRevisionFromBuffer(byte[] data, ref int index, SyncContext context)
         {
             byte fieldCount = Primitive.ReadByte(data, ref index);
 
@@ -132,14 +132,14 @@ namespace NetCode.SyncEntity
                 //      may be insufficient data remaining to call .PullFromBuffer with
                 byte fieldID = Primitive.ReadByte(data, ref index);
                 SynchronisableField field = fields[fieldID];
-                field.ReadChanges(data, ref index, revision, offsetMilliseconds);
+                field.ReadChanges(data, ref index, context);
                 
                 if (!field.Synchronised) { Synchronised = false; }
             }
 
-            if (revision > Revision)
+            if (context.Revision > Revision)
             {
-                Revision = revision;
+                Revision = context.Revision;
             }
         }
         
@@ -162,20 +162,20 @@ namespace NetCode.SyncEntity
             }
         }
 
-        public bool TrackChanges(object obj, uint revision)
+        public bool TrackChanges(object obj, SyncContext context)
         {
             bool changesFound = false;
             for (int i = 0; i < descriptor.FieldCount; i++)
             {
                 object value = descriptor.GetField(obj, i);
-                if (fields[i].TrackChanges(value, revision))
+                if (fields[i].TrackChanges(value, context))
                 {
                     changesFound = true;
                 }
             }
             if (changesFound)
             {
-                Revision = revision;
+                Revision = context.Revision;
             }
             return changesFound;
         }

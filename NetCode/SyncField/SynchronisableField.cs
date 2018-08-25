@@ -10,30 +10,30 @@ namespace NetCode.SyncField
         public bool Synchronised { get; set; } = false;
         public SyncFlags Flags { get; set; }
         
-        internal bool TrackChanges(object newValue, uint revision)
+        internal bool TrackChanges(object newValue, SyncContext context)
         {
             if (!ValueEqual(newValue))
             {
-                Revision = revision;
+                Revision = context.Revision;
                 SetValue(newValue);
                 return true;
             }
             return false;
         }
 
-        internal void ReadChanges(byte[] data, ref int index, uint revision, long offsetMilliseconds)
+        internal void ReadChanges(byte[] data, ref int index, SyncContext context)
         {
-            if (revision > Revision)
+            if (context.Revision > Revision)
             {
                 Read(data, ref index);
 
                 if ((Flags & SyncFlags.Timestamp) != 0)
                 {
                     // Adjust times from their frame to ours.
-                    AddTimestamp(-offsetMilliseconds);
+                    AddTimestamp(-context.TimestampOffset);
                 }
 
-                Revision = revision;
+                Revision = context.Revision;
                 Synchronised = false;
             }
             else
@@ -96,4 +96,10 @@ namespace NetCode.SyncField
         /// <param name="index"> The index to begin reading at. The index shall be incremented by the number of bytes read </param>
         public abstract void Skip(byte[] data, ref int index);
     }
+
+    public abstract class SynchronisableValue : SynchronisableField
+    {
+
+    }
+
 }
