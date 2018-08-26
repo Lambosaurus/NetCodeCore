@@ -29,6 +29,8 @@ namespace NetCode.SyncPool
         public SyncState State { get; set; }
         public ushort EntityID { get { return Sync.EntityID; } }
 
+        public const ushort NullEntityID = 0;
+
         internal SyncHandle(SynchronisableEntity syncEntity, Object syncObject)
         {
             Sync = syncEntity;

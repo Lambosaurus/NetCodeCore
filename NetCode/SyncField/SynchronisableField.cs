@@ -2,38 +2,39 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using NetCode.SyncPool;
+
 namespace NetCode.SyncField
 {
     public abstract class SynchronisableField
     {
         public uint Revision { get; private set; } = 0;
         public bool Synchronised { get; set; } = false;
+        public bool PollingRequired { get; set; } = false;
         public SyncFlags Flags { get; set; }
+        public Type FieldType { get; set; }
         
-        internal bool TrackChanges(object newValue, uint revision)
+        internal bool TrackChanges(object newValue, SyncContext context)
         {
             if (!ValueEqual(newValue))
             {
-                Revision = revision;
+                Revision = context.Revision;
                 SetValue(newValue);
+                PreProcess(context);
                 return true;
             }
             return false;
         }
 
-        internal void ReadChanges(byte[] data, ref int index, uint revision, long offsetMilliseconds)
+        internal void ReadChanges(byte[] data, ref int index, SyncContext context)
         {
-            if (revision > Revision)
+            if (context.Revision > Revision)
             {
                 Read(data, ref index);
 
-                if ((Flags & SyncFlags.Timestamp) != 0)
-                {
-                    // Adjust times from their frame to ours.
-                    AddTimestamp(-offsetMilliseconds);
-                }
+                PostProcess(context);
 
-                Revision = revision;
+                Revision = context.Revision;
                 Synchronised = false;
             }
             else
@@ -43,12 +44,20 @@ namespace NetCode.SyncField
         }
 
         /// <summary>
-        /// This is used for when the type is a Timestamp, and a network offset should be applied
+        /// Will be called while PollingRequired is true.
         /// </summary>
-        /// <param name="value"></param>
-        public virtual void AddTimestamp(long offset)
+        /// <param name="context"></param>
+        public virtual void PeriodicProcess(SyncContext context)
         {
-            throw new NetcodeGenerationException("This SyncField does not support being cast as a Timestamp. Long is the default type for Timestamps.");
+            throw new NotImplementedException();
+        }
+
+        public virtual void PostProcess(SyncContext context)
+        {
+        }
+
+        public virtual void PreProcess(SyncContext context)
+        {
         }
 
         /// <summary>
@@ -86,8 +95,7 @@ namespace NetCode.SyncField
         /// <param name="data"> The packet to read from </param>
         /// <param name="index"> The index to begin reading at. The index shall be incremented by the number of bytes read </param>
         public abstract void Read(byte[] data, ref int index);
-
-
+        
         /// <summary>
         /// Must increment the index by the number of bytes that would be read,
         /// without updating the internal state.
@@ -96,4 +104,5 @@ namespace NetCode.SyncField
         /// <param name="index"> The index to begin reading at. The index shall be incremented by the number of bytes read </param>
         public abstract void Skip(byte[] data, ref int index);
     }
+
 }

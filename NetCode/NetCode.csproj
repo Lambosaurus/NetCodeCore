@@ -51,6 +51,9 @@
     <Compile Include="Exceptions.cs" />
     <Compile Include="Payloads\HandshakePayload.cs" />
     <Compile Include="Payloads\PoolDeletionPayload.cs" />
+    <Compile Include="SyncField\Implementations\SyncFieldTimestamp.cs" />
+    <Compile Include="SyncPool\SyncContext.cs" />
+    <Compile Include="SyncField\Implementations\SynchronisableReference.cs" />
     <Compile Include="Util\Aggregators\IAggregator.cs" />
     <Compile Include="Util\Aggregators\PeriodAggregator.cs" />
     <Compile Include="Util\EventMarker.cs" />
@@ -66,7 +69,7 @@
     <Compile Include="SyncField\SyncFieldDescriptor.cs" />
     <Compile Include="SyncEntity\SynchronisableEntity.cs" />
     <Compile Include="SyncField\SyncFieldGenerator.cs" />
-    <Compile Include="SyncField\SyncFieldImplementations.cs" />
+    <Compile Include="SyncField\Implementations\SyncFieldGenerics.cs" />
     <Compile Include="SynchronisableAttribute.cs" />
     <Compile Include="SyncField\SynchronisableField.cs" />
     <Compile Include="Payloads\PoolRevisionPayload.cs" />

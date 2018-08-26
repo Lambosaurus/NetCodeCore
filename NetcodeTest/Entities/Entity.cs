@@ -37,7 +37,7 @@ namespace NetcodeTest.Entities
             AngularVelocity = 0f;
         }
 
-        protected void RequestMotionUpdate()
+        public void RequestMotionUpdate()
         {
             NeedsMotionReset = true;
         }

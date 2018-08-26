@@ -16,7 +16,6 @@ namespace NetCode.SyncPool
         private const int DefaultEntityCount = 32; // This should be a power of two
 
         public const int MaximumEntityCount = ushort.MaxValue + 1;
-        
 
         protected struct SyncSlot
         {
@@ -29,6 +28,8 @@ namespace NetCode.SyncPool
         
         internal SyncEntityGenerator entityGenerator;
 
+        protected SyncContext Context;
+        
         internal SynchronisablePool(SyncEntityGenerator generator, ushort poolID)
         {
             entityGenerator = generator;
@@ -37,6 +38,8 @@ namespace NetCode.SyncPool
             SyncHandles = new List<SyncHandle>();
             SyncSlots = new SyncSlot[DefaultEntityCount];
             Revision = 0;
+
+            Context = new SyncContext(this, 0, 0);
         }
 
         public void Clear()
@@ -68,7 +71,7 @@ namespace NetCode.SyncPool
             SyncSlots[handle.EntityID].Handle = handle;
             SyncHandles.Add(handle);
         }
-
+        
         protected void RemoveHandle(ushort entityID, uint revision)
         {
             SyncHandle handle = SyncSlots[entityID].Handle;
@@ -80,6 +83,7 @@ namespace NetCode.SyncPool
         
         public SyncHandle GetHandle(ushort entityID)
         {
+            //if (entityID == SyncHandle.NullEntityID) { return null; }
             if (entityID < SyncSlots.Length && SyncSlots[entityID].Handle != null)
             {
                 return SyncSlots[entityID].Handle;

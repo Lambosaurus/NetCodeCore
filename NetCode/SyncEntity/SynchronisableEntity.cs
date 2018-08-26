@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using NetCode.SyncPool;
 using NetCode.SyncField;
 using NetCode.Util;
 
@@ -19,6 +20,7 @@ namespace NetCode.SyncEntity
         public ushort EntityID { get; private set; }
         public ushort TypeID { get { return descriptor.TypeID; } }
         public bool Synchronised { get; protected set; } = false;
+        public bool PollingRequired { get; protected set; } = false;
         
         internal SynchronisableEntity(SyncEntityDescriptor _descriptor, ushort entityID, uint revision = 0)
         {
@@ -122,7 +124,7 @@ namespace NetCode.SyncEntity
             }
         }
         
-        public void ReadRevisionFromBuffer(byte[] data, ref int index, uint revision, long offsetMilliseconds)
+        public void ReadRevisionFromBuffer(byte[] data, ref int index, SyncContext context)
         {
             byte fieldCount = Primitive.ReadByte(data, ref index);
 
@@ -132,14 +134,36 @@ namespace NetCode.SyncEntity
                 //      may be insufficient data remaining to call .PullFromBuffer with
                 byte fieldID = Primitive.ReadByte(data, ref index);
                 SynchronisableField field = fields[fieldID];
-                field.ReadChanges(data, ref index, revision, offsetMilliseconds);
+                field.ReadChanges(data, ref index, context);
                 
                 if (!field.Synchronised) { Synchronised = false; }
+                if (field.PollingRequired) { PollingRequired = true; }
             }
 
-            if (revision > Revision)
+            if (context.Revision > Revision)
             {
-                Revision = revision;
+                Revision = context.Revision;
+            }
+        }
+
+
+        public void PollFields(SyncContext context)
+        {
+            PollingRequired = false;
+            foreach (SynchronisableField field in fields)
+            {
+                if (field.PollingRequired)
+                {
+                    field.PeriodicProcess(context);
+                    if (field.PollingRequired)
+                    {
+                        PollingRequired = true;
+                    }
+                }
+                if (!field.Synchronised)
+                {
+                    Synchronised = false;
+                }
             }
         }
         
@@ -162,20 +186,20 @@ namespace NetCode.SyncEntity
             }
         }
 
-        public bool TrackChanges(object obj, uint revision)
+        public bool TrackChanges(object obj, SyncContext context)
         {
             bool changesFound = false;
             for (int i = 0; i < descriptor.FieldCount; i++)
             {
                 object value = descriptor.GetField(obj, i);
-                if (fields[i].TrackChanges(value, revision))
+                if (fields[i].TrackChanges(value, context))
                 {
                     changesFound = true;
                 }
             }
             if (changesFound)
             {
-                Revision = revision;
+                Revision = context.Revision;
             }
             return changesFound;
         }

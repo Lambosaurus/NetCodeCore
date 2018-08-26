@@ -48,7 +48,7 @@ namespace NetCode.Payloads
         {
             PoolID = Primitive.ReadUShort(Data, ref DataIndex);
             Revision = Primitive.ReadUInt(Data, ref DataIndex);
-            RevisionSize = Size - DataIndex;
+            RevisionSize = Size - (HeaderSize + sizeof(ushort) + sizeof(uint));
         }
 
         public override int ContentSize()

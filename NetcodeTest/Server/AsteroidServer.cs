@@ -71,8 +71,7 @@ namespace NetcodeTest.Server
             for (int i = 0; i < 40*k; i++) { AddEntity(NewAsteroid(32)); }
             for (int i = 0; i < 20*k; i++) { AddEntity(NewAsteroid(48)); }
 
-
-            LastTimestamp = NetTime.Seconds();
+            LastTimestamp = 0;
         }
 
         private Asteroid NewAsteroid(float scale)
@@ -142,6 +141,17 @@ namespace NetcodeTest.Server
         
         public void Update()
         {
+            
+            if (LastTimestamp == 0)
+            {
+                LastTimestamp = NetTime.Seconds() - 0.016;
+                foreach (Physical phys in Physicals)
+                {
+                    phys.RequestMotionUpdate();
+                }
+            }
+            
+            
             double seconds = NetTime.Seconds();
             float delta = (float)(seconds - LastTimestamp);
             LastTimestamp = seconds;
