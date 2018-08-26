@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using NetCode.SyncPool;
 
-namespace NetCode.SyncField
+namespace NetCode.SyncPool
 {
     public class SyncContext
     {
-        public long TimestampOffset { get; private set; }
-        public uint Revision { get; private set; }
+        public long TimestampOffset { get; set; }
+        public uint Revision { get; set; }
 
         private SynchronisablePool Pool;
 

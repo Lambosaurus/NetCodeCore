@@ -90,13 +90,13 @@ namespace NetCode.SyncPool
         {
             uint candidateRevision = Revision + 1;
             
-            SyncContext context = new SyncContext(this, candidateRevision, 0);
-            bool changesFound = TrackChanges(context, out List<ushort> deletedEntityIDs);
+            Context.Revision = candidateRevision;
+            bool changesFound = TrackChanges(Context, out List<ushort> deletedEntityIDs);
 
             if (changesFound)
             {
                 Revision = candidateRevision;
-                Payload payload = GenerateRevisionPayload(context.Revision);
+                Payload payload = GenerateRevisionPayload(Context.Revision);
                 BroadcastPayload(payload);
             }
 

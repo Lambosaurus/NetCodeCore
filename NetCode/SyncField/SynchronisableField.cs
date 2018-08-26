@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using NetCode.SyncPool;
+
 namespace NetCode.SyncField
 {
     public abstract class SynchronisableField
     {
         public uint Revision { get; private set; } = 0;
         public bool Synchronised { get; set; } = false;
+        public bool PollingRequired { get; set; } = false;
         public SyncFlags Flags { get; set; }
         public Type FieldType { get; set; }
         
@@ -40,11 +43,20 @@ namespace NetCode.SyncField
             }
         }
 
-        protected virtual void PostProcess(SyncContext context)
+        /// <summary>
+        /// Will be called while PollingRequired is true.
+        /// </summary>
+        /// <param name="context"></param>
+        public virtual void PeriodicProcess(SyncContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual void PostProcess(SyncContext context)
         {
         }
 
-        protected virtual void PreProcess(SyncContext context)
+        public virtual void PreProcess(SyncContext context)
         {
         }
 
@@ -83,8 +95,7 @@ namespace NetCode.SyncField
         /// <param name="data"> The packet to read from </param>
         /// <param name="index"> The index to begin reading at. The index shall be incremented by the number of bytes read </param>
         public abstract void Read(byte[] data, ref int index);
-
-
+        
         /// <summary>
         /// Must increment the index by the number of bytes that would be read,
         /// without updating the internal state.
@@ -92,11 +103,6 @@ namespace NetCode.SyncField
         /// <param name="data"> The packet to read from </param>
         /// <param name="index"> The index to begin reading at. The index shall be incremented by the number of bytes read </param>
         public abstract void Skip(byte[] data, ref int index);
-    }
-
-    public abstract class SynchronisableValue : SynchronisableField
-    {
-
     }
 
 }

@@ -26,6 +26,7 @@ namespace NetCode.SyncPool
             newHandles.Clear();
             foreach (SyncHandle handle in SyncHandles)
             {
+                if (handle.Sync.PollingRequired) { handle.Sync.PollFields(Context); }
                 if (!handle.Sync.Synchronised)
                 {
                     handle.Sync.PushChanges(handle.Obj);
@@ -51,7 +52,7 @@ namespace NetCode.SyncPool
                 new SynchronisableEntity(descriptor, entityID, revision),
                 descriptor.ConstructObject()
                 );
-
+            
             newHandles.Add(handle);
             AddHandle(handle);
         }
@@ -60,7 +61,8 @@ namespace NetCode.SyncPool
         {
             payload.GetRevisionContentBuffer(out byte[] data, out int index, out int count);
 
-            SyncContext context = new SyncContext(this, payload.Revision, offsetMilliseconds);
+            Context.Revision = payload.Revision;
+            Context.TimestampOffset = offsetMilliseconds;
 
             int end = index + count;
             while (index < end)
@@ -77,25 +79,25 @@ namespace NetCode.SyncPool
                 SyncHandle handle = GetHandle(entityID);
                 if ( handle == null )
                 {
-                    if (SyncSlots[entityID].Revision > context.Revision)
+                    if (SyncSlots[entityID].Revision > Context.Revision)
                     {
                         skipUpdate = true;
                     }
                     else
                     {
-                        SpawnEntity(entityID, typeID, context.Revision);
+                        SpawnEntity(entityID, typeID, Context.Revision);
                     }
                 }
                 else
                 {
                     if (handle.Sync.TypeID != typeID)
                     {
-                        if (handle.Sync.Revision < context.Revision)
+                        if (handle.Sync.Revision < Context.Revision)
                         {
                             // Entity already exists, but is incorrect type and wrong revision
                             // Assume it should have been deleted and recreate it.
-                            RemoveHandle(entityID, context.Revision);
-                            SpawnEntity(entityID, typeID, context.Revision);
+                            RemoveHandle(entityID, Context.Revision);
+                            SpawnEntity(entityID, typeID, Context.Revision);
                         }
                         else
                         {
@@ -113,7 +115,7 @@ namespace NetCode.SyncPool
                 else
                 {
                     SynchronisableEntity entity = SyncSlots[entityID].Handle.Sync;
-                    entity.ReadRevisionFromBuffer(data, ref index, context);
+                    entity.ReadRevisionFromBuffer(data, ref index, Context);
                 }
             }
         }

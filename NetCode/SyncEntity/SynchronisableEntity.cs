@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using NetCode.SyncPool;
 using NetCode.SyncField;
 using NetCode.Util;
 
@@ -19,6 +20,7 @@ namespace NetCode.SyncEntity
         public ushort EntityID { get; private set; }
         public ushort TypeID { get { return descriptor.TypeID; } }
         public bool Synchronised { get; protected set; } = false;
+        public bool PollingRequired { get; protected set; } = false;
         
         internal SynchronisableEntity(SyncEntityDescriptor _descriptor, ushort entityID, uint revision = 0)
         {
@@ -135,11 +137,33 @@ namespace NetCode.SyncEntity
                 field.ReadChanges(data, ref index, context);
                 
                 if (!field.Synchronised) { Synchronised = false; }
+                if (field.PollingRequired) { PollingRequired = true; }
             }
 
             if (context.Revision > Revision)
             {
                 Revision = context.Revision;
+            }
+        }
+
+
+        public void PollFields(SyncContext context)
+        {
+            PollingRequired = false;
+            foreach (SynchronisableField field in fields)
+            {
+                if (field.PollingRequired)
+                {
+                    field.PeriodicProcess(context);
+                    if (field.PollingRequired)
+                    {
+                        PollingRequired = true;
+                    }
+                }
+                if (!field.Synchronised)
+                {
+                    Synchronised = false;
+                }
             }
         }
         

@@ -27,6 +27,8 @@ namespace NetCode.SyncPool
         protected List<SyncHandle> SyncHandles { get; private set; }
         
         internal SyncEntityGenerator entityGenerator;
+
+        protected SyncContext Context;
         
         internal SynchronisablePool(SyncEntityGenerator generator, ushort poolID)
         {
@@ -36,6 +38,8 @@ namespace NetCode.SyncPool
             SyncHandles = new List<SyncHandle>();
             SyncSlots = new SyncSlot[DefaultEntityCount];
             Revision = 0;
+
+            Context = new SyncContext(this, 0, 0);
         }
 
         public void Clear()
@@ -67,7 +71,7 @@ namespace NetCode.SyncPool
             SyncSlots[handle.EntityID].Handle = handle;
             SyncHandles.Add(handle);
         }
-
+        
         protected void RemoveHandle(ushort entityID, uint revision)
         {
             SyncHandle handle = SyncSlots[entityID].Handle;

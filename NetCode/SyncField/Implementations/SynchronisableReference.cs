@@ -24,10 +24,10 @@ namespace NetCode.SyncField.Implementations
             return new_value == value;
         }
 
-        protected override void PostProcess(SyncContext context)
+        public override void PostProcess(SyncContext context)
         {
             value = null;
-            SyncHandle handle = context.GetHandleByEntityID((ushort)(entityID));
+            SyncHandle handle = context.GetHandleByEntityID(entityID);
             if (handle != null)
             {
                 if (FieldType.IsAssignableFrom(handle.Obj.GetType()))
@@ -35,9 +35,13 @@ namespace NetCode.SyncField.Implementations
                     value = handle.Obj;
                 }
             }
+            else
+            {
+                PollingRequired = true;
+            }
         }
 
-        protected override void PreProcess(SyncContext context)
+        public override void PreProcess(SyncContext context)
         {
             if (value == null) { entityID = SyncHandle.NullEntityID; }
             else
@@ -47,9 +51,37 @@ namespace NetCode.SyncField.Implementations
             }
         }
 
-        public override int WriteToBufferSize() { return sizeof(ushort); }
-        public override void Write(byte[] data, ref int index) { Primitive.WriteUShort(data, ref index, entityID); }
-        public override void Read(byte[] data, ref int index) { entityID = Primitive.ReadUShort(data, ref index); }
-        public override void Skip(byte[] data, ref int index) { Primitive.ReadUShort(data, ref index); }
+        public override void PeriodicProcess(SyncContext context)
+        {
+            SyncHandle handle = context.GetHandleByEntityID(entityID);
+            if (handle != null)
+            {
+                if (FieldType.IsAssignableFrom(handle.Obj.GetType()))
+                {
+                    value = handle.Obj;
+                }
+                PollingRequired = false;
+            }
+        }
+
+        public override int WriteToBufferSize()
+        {
+            return sizeof(ushort);
+        }
+
+        public override void Write(byte[] data, ref int index)
+        {
+            Primitive.WriteUShort(data, ref index, entityID);
+        }
+
+        public override void Read(byte[] data, ref int index)
+        {
+            entityID = Primitive.ReadUShort(data, ref index);
+        }
+
+        public override void Skip(byte[] data, ref int index)
+        {
+            Primitive.ReadUShort(data, ref index);
+        }   
     }
 }

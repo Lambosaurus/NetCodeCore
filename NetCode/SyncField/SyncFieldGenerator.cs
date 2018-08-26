@@ -12,12 +12,13 @@ namespace NetCode.SyncField
     {
         Dictionary<SyncFlags, Dictionary<RuntimeTypeHandle, Func<object>>> ConstructorLookups = new Dictionary<SyncFlags, Dictionary<RuntimeTypeHandle, Func<object>>>();
 
+        // These are flags that represent a unique constructor definition
         private SyncFlags[] ConstructorFlags = new SyncFlags[]
         {
             SyncFlags.Reference,
             SyncFlags.Timestamp,
             SyncFlags.HalfPrecisionFloats,
-            SyncFlags.None,
+            SyncFlags.None, // None functions as a fallback.
         };
 
         internal SyncFieldGenerator()
