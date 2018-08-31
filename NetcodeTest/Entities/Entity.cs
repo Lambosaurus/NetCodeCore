@@ -94,7 +94,6 @@ namespace NetcodeTest.Entities
 
         public virtual void OnDestroy()
         {
-
         }
         
         public abstract void Draw(SpriteBatch batch);

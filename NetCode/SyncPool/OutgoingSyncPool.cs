@@ -86,6 +86,20 @@ namespace NetCode.SyncPool
             return handle;
         }
 
+        public void RegisterEvent(object instance, bool acknowledgementRequired = true, bool immediateTransmitRequired = true)
+        {
+            SyncEntityDescriptor descriptor = entityGenerator.GetEntityDescriptor(instance.GetType().TypeHandle);
+            SynchronisableEntity sync = new SynchronisableEntity(descriptor, 0);
+
+            sync.TrackChanges(instance, Context);
+            int size = sync.WriteAllToBufferSize();
+            PoolEventPayload payload = PoolEventPayload.Generate(PoolID, NetTime.Now(), size, acknowledgementRequired, immediateTransmitRequired);
+            payload.GetEventContentBuffer(out byte[] data, out int index, out int count);
+            sync.WriteAllToBuffer(data, ref index);
+
+            BroadcastPayload(payload);
+        }
+
         public void Synchronise()
         {
             uint candidateRevision = Revision + 1;

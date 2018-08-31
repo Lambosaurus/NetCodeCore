@@ -25,7 +25,7 @@ namespace NetCode.SyncPool
         };
 
         internal SynchronisableEntity Sync;
-        public Object Obj { get; internal set; }
+        public object Obj { get; internal set; }
         public SyncState State { get; set; }
         public ushort EntityID { get { return Sync.EntityID; } }
 

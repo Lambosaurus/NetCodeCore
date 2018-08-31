@@ -44,6 +44,8 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Events\Event.cs" />
+    <Compile Include="Events\Explosion.cs" />
     <Compile Include="Entities\Projectile.cs" />
     <Compile Include="Entities\Physical.cs" />
     <Compile Include="Server\AsteroidServer.cs" />
@@ -74,6 +76,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\cir.png" />
     <Content Include="Content\tri.png" />
     <Content Include="Content\sq.png" />
     <Content Include="Icon.ico" />

@@ -5,13 +5,15 @@ using System.Text;
 using System.Threading.Tasks;
 
 using NetcodeTest.Entities;
+using NetcodeTest.Events;
 
 namespace NetcodeTest.Entities
 {
     public class ContextToken
     {
         List<Entity> Entities = new List<Entity>();
-        
+        List<Event> Events = new List<Event>();
+
         public void AddEntity(Entity entity)
         {
             Entities.Add(entity);
@@ -28,5 +30,20 @@ namespace NetcodeTest.Entities
             return null;
         }
 
+        public void AddEvent(Event evt)
+        {
+            Events.Add(evt);
+        }
+
+        public List<Event> GetEvents()
+        {
+            if (Events.Count > 0)
+            {
+                List<Event> tmp = Events;
+                Events = new List<Event>();
+                return tmp;
+            }
+            return null;
+        }
     }
 }

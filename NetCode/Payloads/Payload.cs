@@ -13,7 +13,15 @@ namespace NetCode.Payloads
 {
     public abstract class Payload
     {
-        public enum PayloadType { None, Handshake, Acknowledgement, PoolRevision, PoolDeletion, UDPConnectionRequest }
+        public enum PayloadType {
+            None,
+            Handshake,
+            Acknowledgement,
+            PoolRevision,
+            PoolDeletion,
+            PoolEvent,
+            UDPConnectionRequest
+        }
         public abstract PayloadType Type { get; }
 
         public int Size { get; protected set; }
@@ -125,6 +133,8 @@ namespace NetCode.Payloads
                     return new PoolRevisionPayload();
                 case (PayloadType.PoolDeletion):
                     return new PoolDeletionPayload();
+                case (PayloadType.PoolEvent):
+                    return new PoolEventPayload();
                 case (PayloadType.UDPConnectionRequest):
                     return new UDPConnectionRequestPayload();
                 default:

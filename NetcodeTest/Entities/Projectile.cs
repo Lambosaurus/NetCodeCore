@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 using NetCode;
 using NetcodeTest.Util;
+using NetcodeTest.Events;
 
 namespace NetcodeTest.Entities
 {
@@ -61,6 +62,8 @@ namespace NetcodeTest.Entities
             IsDestroyed = true;
 
             phys.Push(this.Velocity * this.Force / Speed, Position);
+
+            Context.AddEvent(new Explosion(Position, 16f, 0.4f));
         }
     }
 }

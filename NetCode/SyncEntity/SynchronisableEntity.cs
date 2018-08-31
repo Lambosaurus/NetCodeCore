@@ -8,7 +8,7 @@ using NetCode.Util;
 
 namespace NetCode.SyncEntity
 {
-    internal class SynchronisableEntity
+    public class SynchronisableEntity
     {
         internal const int HeaderSize = sizeof(ushort) + sizeof(ushort) + sizeof(byte);
         internal const int FieldHeaderSize = sizeof(byte);

@@ -14,8 +14,23 @@ namespace NetCode.SyncPool
         /// A list of handles that have been added during the last Synchronise() call
         /// </summary>
         public IEnumerable<SyncHandle> NewHandles { get { return newHandles; } }
-
         private List<SyncHandle> newHandles = new List<SyncHandle>();
+
+        /// <summary>
+        /// A list of events that have been recieved.
+        /// This does not require Synchronise() to be called
+        /// </summary>
+        public IEnumerable<SyncEvent> PopEvents()
+        {
+            List<SyncEvent> events = RecievedEvents;
+            if (RecievedEvents.Count > 0)
+            {
+                RecievedEvents = new List<SyncEvent>();
+            }
+            return events;
+        }
+        private List<SyncEvent> RecievedEvents = new List<SyncEvent>();
+
 
         internal IncomingSyncPool(SyncEntityGenerator generator, ushort poolID) : base(generator, poolID)
         {
@@ -56,7 +71,24 @@ namespace NetCode.SyncPool
             newHandles.Add(handle);
             AddHandle(handle);
         }
-        
+
+        internal void UnpackEventDatagram(PoolEventPayload payload)
+        {
+            payload.GetEventContentBuffer(out byte[] data, out int index, out int count);
+
+            SynchronisableEntity.ReadHeader(data, ref index, out ushort entityID, out ushort typeID);
+            SyncEntityDescriptor descriptor = entityGenerator.GetEntityDescriptor(typeID);
+            SynchronisableEntity sync = new SynchronisableEntity(descriptor, entityID, 0);
+            object obj = descriptor.ConstructObject();
+            sync.ReadRevisionFromBuffer(data, ref index, Context);
+            sync.PushChanges(obj);
+            
+            RecievedEvents.Add(new SyncEvent(
+                obj,
+                payload.Timestamp
+                ));
+        }
+
         internal void UnpackRevisionDatagram(PoolRevisionPayload payload, long offsetMilliseconds)
         {
             payload.GetRevisionContentBuffer(out byte[] data, out int index, out int count);

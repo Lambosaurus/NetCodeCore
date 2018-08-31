@@ -8,6 +8,7 @@ using Volatile;
 
 using NetCode;
 using NetcodeTest.Util;
+using NetcodeTest.Events;
 
 namespace NetcodeTest.Entities
 {
@@ -19,6 +20,8 @@ namespace NetcodeTest.Entities
         public const float MinimumSize = 8f;
         public const float EjectionVelocity = 3f;
         public const float EjectionRotation = 0.2f;
+
+        public static Color Color = new Color(0.7f, 0.7f, 0.7f);
 
         public Asteroid()
         {
@@ -36,7 +39,7 @@ namespace NetcodeTest.Entities
         
         public override void Draw(SpriteBatch batch)
         {
-            Drawing.DrawSquare(batch, Position, new Vector2(Size, Size), Angle, Color.LightGray);
+            Drawing.DrawSquare(batch, Position, new Vector2(Size, Size), Angle, Color);
         }
 
         protected override Vector2[] GetHitbox()
@@ -70,6 +73,10 @@ namespace NetcodeTest.Entities
                         AngularVelocity + EjectionRotation - Fmath.RandF(2 * EjectionRotation)
                         ));
                 }
+            }
+            else
+            {
+                Context.AddEvent(new Explosion(Position, Size * 1.5f, 1f));
             }
 
             base.OnDestroy();
