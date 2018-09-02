@@ -10,8 +10,19 @@ namespace NetCode.SyncPool
     {
         public enum SyncState
         {
+            /// <summary>
+            /// The event object has not been fully synchronised because some reference fields do not match valid entities.
+            /// </summary>
             PendingReferences,
-            Ready,            
+
+            /// <summary>
+            /// The event object is successfully synchronised.
+            /// </summary>
+            Ready,
+
+            /// <summary>
+            /// This event has been cleared by the user, and will no longer maintained by the SyncPool
+            /// </summary>
             Cleared,
         };
         
