@@ -1,21 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
+using NetCode.SyncEntity;
 
 namespace NetCode.SyncPool
 {
     public class SyncEvent
     {
-        public long Timestamp { get; protected set; }
-        public object Obj { get; protected set; }
+        public enum SyncState
+        {
+            PendingReferences,
+            Ready,            
+            Cleared,
+        };
         
-        public SyncEvent(object obj, long timestamp)
+        public object Obj { get; protected set; }
+        internal SynchronisableEntity Sync { get; private set; }
+        public SyncState State { get; internal set; }
+
+        public SyncEvent(SynchronisableEntity sync, object obj)
         {
             Obj = obj;
-            Timestamp = timestamp;
+            Sync = sync;
+            State = sync.PollingRequired ? SyncState.PendingReferences : SyncState.Ready;
         }
-        
+
+        public void Clear()
+        {
+            State = SyncState.Cleared;
+        }
     }
 }

@@ -20,15 +20,8 @@ namespace NetCode.SyncPool
         /// A list of events that have been recieved.
         /// This does not require Synchronise() to be called
         /// </summary>
-        public IEnumerable<SyncEvent> PopEvents()
-        {
-            List<SyncEvent> events = RecievedEvents;
-            if (RecievedEvents.Count > 0)
-            {
-                RecievedEvents = new List<SyncEvent>();
-            }
-            return events;
-        }
+        public IEnumerable<SyncEvent> Events { get { return RecievedEvents; } }
+
         private List<SyncEvent> RecievedEvents = new List<SyncEvent>();
 
 
@@ -45,6 +38,21 @@ namespace NetCode.SyncPool
                 if (!handle.Sync.Synchronised)
                 {
                     handle.Sync.PushChanges(handle.Obj);
+                }
+            }
+            
+            for (int i = RecievedEvents.Count - 1; i >= 0; i--)
+            {
+                SyncEvent evt = RecievedEvents[i];
+                switch (evt.State)
+                {
+                    case SyncEvent.SyncState.Cleared:
+                        RecievedEvents.RemoveAt(i);
+                        break;
+                    case SyncEvent.SyncState.PendingReferences:
+                        evt.Sync.PollFields(Context);
+                        if (!evt.Sync.PollingRequired) { evt.State = SyncEvent.SyncState.Ready; }
+                        break;
                 }
             }
         }
@@ -84,8 +92,8 @@ namespace NetCode.SyncPool
             sync.PushChanges(obj);
             
             RecievedEvents.Add(new SyncEvent(
-                obj,
-                payload.Timestamp
+                sync,
+                obj
                 ));
         }
 

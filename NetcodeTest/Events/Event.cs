@@ -13,8 +13,9 @@ namespace NetcodeTest.Events
 {
     public abstract class Event
     {
-        public long Timestamp { get; set; }
-        
+        [Synchronisable(SyncFlags.Timestamp)]
+        public long Timestamp { get; protected set; }
+                
         public abstract bool Expired();
         public abstract void Predict(long timestamp);
         public abstract void Draw(SpriteBatch batch);

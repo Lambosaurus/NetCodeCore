@@ -93,7 +93,7 @@ namespace NetCode.SyncPool
 
             sync.TrackChanges(instance, Context);
             int size = sync.WriteAllToBufferSize();
-            PoolEventPayload payload = PoolEventPayload.Generate(PoolID, NetTime.Now(), size, acknowledgementRequired, immediateTransmitRequired);
+            PoolEventPayload payload = PoolEventPayload.Generate(PoolID, size, acknowledgementRequired, immediateTransmitRequired);
             payload.GetEventContentBuffer(out byte[] data, out int index, out int count);
             sync.WriteAllToBuffer(data, ref index);
 

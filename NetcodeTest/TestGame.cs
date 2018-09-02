@@ -142,15 +142,7 @@ namespace NetcodeTest
 
             client.Update();
             incomingPool.Synchronise();
-
-            foreach (SyncEvent syncEvent in incomingPool.PopEvents())
-            {
-                if (syncEvent.Obj is Event evt)
-                {
-                    evt.Timestamp = syncEvent.Timestamp;
-                    events.Add(evt);
-                }
-            }
+            
 
             lastKeys = keys;
             lastMouse = mouse;
@@ -190,12 +182,26 @@ namespace NetcodeTest
                 }
             }
 
-            foreach ( Event evt in events )
+
+            foreach (SyncEvent syncEvent in incomingPool.Events)
             {
-                evt.Predict(timestamp);
-                if (!evt.Expired()) { evt.Draw(spriteBatch); }
+                if (syncEvent.Obj is Event evt)
+                {
+                    evt.Predict(timestamp);
+                    if (evt.Expired())
+                    {
+                        syncEvent.Clear();
+                    }
+                    else
+                    {
+                        evt.Draw(spriteBatch);
+                    }
+                }
+                else
+                {
+                    syncEvent.Clear();
+                }
             }
-            events.RemoveAll(e => e.Expired());
 
             if (server != null)
             {
