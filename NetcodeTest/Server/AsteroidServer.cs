@@ -12,6 +12,7 @@ using Volatile;
 
 using NetcodeTest.Entities;
 using NetcodeTest.Util;
+using NetcodeTest.Events;
 
 
 
@@ -67,9 +68,9 @@ namespace NetcodeTest.Server
             Context = new ContextToken();
 
             int k = 2;
-            for (int i = 0; i < 60*k; i++) { AddEntity(NewAsteroid(24)); }
-            for (int i = 0; i < 40*k; i++) { AddEntity(NewAsteroid(32)); }
-            for (int i = 0; i < 20*k; i++) { AddEntity(NewAsteroid(48)); }
+            for (int i = 0; i < 30*k; i++) { AddEntity(NewAsteroid(32)); }
+            for (int i = 0; i < 40*k; i++) { AddEntity(NewAsteroid(48)); }
+            for (int i = 0; i < 10*k; i++) { AddEntity(NewAsteroid(56)); }
 
             LastTimestamp = 0;
         }
@@ -117,6 +118,11 @@ namespace NetcodeTest.Server
             entity.UpdateMotion(NetTime.Now());
             OutgoingPool.RegisterEntity(entity);
         }
+
+        private void AddEvent(Event evt)
+        {
+            OutgoingPool.RegisterEvent(evt);
+        }
         
         private void RemoveEntity(Entity entity)
         {
@@ -150,7 +156,6 @@ namespace NetcodeTest.Server
                     phys.RequestMotionUpdate();
                 }
             }
-            
             
             double seconds = NetTime.Seconds();
             float delta = (float)(seconds - LastTimestamp);
@@ -282,7 +287,6 @@ namespace NetcodeTest.Server
             {
                 UpdateEntity(phys, delta, timestamp);
             }
-
             for (int i = Projectiles.Count - 1; i >= 0; i--)
             {
                 if (Projectiles[i].IsDestroyed) { RemoveEntity(Projectiles[i]); }
@@ -298,6 +302,15 @@ namespace NetcodeTest.Server
                 foreach (Entity entity in spawned)
                 {
                     AddEntity(entity);
+                }
+            }
+
+            List<Event> events = Context.GetEvents();
+            if (events != null)
+            {
+                foreach (Event evt in events)
+                {
+                    AddEvent(evt);
                 }
             }
         }

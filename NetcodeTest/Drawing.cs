@@ -15,11 +15,13 @@ namespace NetcodeTest
         static Texture2D Square;
         static Texture2D Triangle;
         static Texture2D Bullet;
+        static Texture2D Circle;
 
         public static void Load(ContentManager content)
         {
             Square = content.Load<Texture2D>("sq");
             Triangle = content.Load<Texture2D>("tri");
+            Circle = content.Load<Texture2D>("cir");
             Bullet = content.Load<Texture2D>("bullet");
         }
 
@@ -31,6 +33,11 @@ namespace NetcodeTest
         public static void DrawTriangle( SpriteBatch batch, Vector2 position, Vector2 scale, float angle, Color color )
         {
             batch.Draw(Triangle, position, null, color, angle, new Vector2(7.667f, 11f), scale / 20f, SpriteEffects.None, 0);
+        }
+
+        public static void DrawCircle(SpriteBatch batch, Vector2 position, Vector2 scale, float angle, Color color)
+        {
+            batch.Draw(Circle, position, null, color, angle, new Vector2(15f, 15f), scale / 28f, SpriteEffects.None, 0);
         }
 
         public static void DrawBullet(SpriteBatch batch, Vector2 position, Vector2 scale, float angle, Color color)

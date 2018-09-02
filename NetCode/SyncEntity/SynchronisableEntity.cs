@@ -8,10 +8,11 @@ using NetCode.Util;
 
 namespace NetCode.SyncEntity
 {
-    internal class SynchronisableEntity
+    public class SynchronisableEntity
     {
         internal const int HeaderSize = sizeof(ushort) + sizeof(ushort) + sizeof(byte);
         internal const int FieldHeaderSize = sizeof(byte);
+        internal const byte FieldHeaderAll = 0x00;
 
         private SyncEntityDescriptor descriptor;
         private SynchronisableField[] fields;
@@ -21,6 +22,7 @@ namespace NetCode.SyncEntity
         public ushort TypeID { get { return descriptor.TypeID; } }
         public bool Synchronised { get; protected set; } = false;
         public bool PollingRequired { get; protected set; } = false;
+        
         
         internal SynchronisableEntity(SyncEntityDescriptor _descriptor, ushort entityID, uint revision = 0)
         {
@@ -64,13 +66,20 @@ namespace NetCode.SyncEntity
 
         public int WriteRevisionToBufferSize(uint revision)
         {
+            byte updatedFields = 0;
             int size = HeaderSize;
             foreach (SynchronisableField field in fields)
             {
                 if (field.Revision == revision)
                 {
-                    size += FieldHeaderSize + field.WriteToBufferSize();
+                    updatedFields++;
+                    size += field.WriteToBufferSize();
                 }
+            }
+            if (updatedFields != fields.Length)
+            {
+                // If we cannot write all fields at once, then we need to include field headers.
+                size += FieldHeaderSize * updatedFields;
             }
             return size;
         }
@@ -80,7 +89,7 @@ namespace NetCode.SyncEntity
             int size = HeaderSize;
             foreach (SynchronisableField field in fields)
             {
-                size += FieldHeaderSize + field.WriteToBufferSize();
+                size += field.WriteToBufferSize();
             }
             return size;
         }
@@ -97,16 +106,22 @@ namespace NetCode.SyncEntity
                 }
             }
 
-            Primitive.WriteUShort(data, ref index, EntityID);
-            Primitive.WriteUShort(data, ref index, descriptor.TypeID);
-
-            Primitive.WriteByte(data, ref index, (byte)updatedFieldIDs.Count);
-
-            foreach (byte fieldID in updatedFieldIDs)
+            if (updatedFieldIDs.Count == fields.Length)
             {
-                SynchronisableField field = fields[fieldID];
-                Primitive.WriteByte(data, ref index, fieldID);
-                field.Write(data, ref index);
+                WriteAllToBuffer(data, ref index);
+            }
+            else
+            {
+                Primitive.WriteUShort(data, ref index, EntityID);
+                Primitive.WriteUShort(data, ref index, descriptor.TypeID);
+                Primitive.WriteByte(data, ref index, (byte)updatedFieldIDs.Count);
+
+                foreach (byte fieldID in updatedFieldIDs)
+                {
+                    SynchronisableField field = fields[fieldID];
+                    Primitive.WriteByte(data, ref index, fieldID);
+                    field.Write(data, ref index);
+                }
             }
         }
 
@@ -114,12 +129,11 @@ namespace NetCode.SyncEntity
         {
             Primitive.WriteUShort(data, ref index, EntityID);
             Primitive.WriteUShort(data, ref index, descriptor.TypeID);
-            Primitive.WriteByte(data, ref index, (byte)fields.Length );
+            Primitive.WriteByte(data, ref index, FieldHeaderAll );
 
             for (byte fieldID = 0; fieldID < fields.Length; fieldID++)
             {
                 SynchronisableField field = fields[fieldID];
-                Primitive.WriteByte(data, ref index, fieldID);
                 field.Write(data, ref index);
             }
         }
@@ -127,12 +141,20 @@ namespace NetCode.SyncEntity
         public void ReadRevisionFromBuffer(byte[] data, ref int index, SyncContext context)
         {
             byte fieldCount = Primitive.ReadByte(data, ref index);
+            bool skipHeader = false;
 
-            for (int i = 0; i < fieldCount; i++)
+            if (fieldCount == FieldHeaderAll)
+            {
+                fieldCount = (byte)fields.Length;
+                skipHeader = true;
+            }
+            
+            for (byte i = 0; i < fieldCount; i++)
             {
                 //TODO: This is unsafe. The field ID may be out or range, and there
                 //      may be insufficient data remaining to call .PullFromBuffer with
-                byte fieldID = Primitive.ReadByte(data, ref index);
+
+                byte fieldID = (skipHeader) ? i : Primitive.ReadByte(data, ref index);
                 SynchronisableField field = fields[fieldID];
                 field.ReadChanges(data, ref index, context);
                 

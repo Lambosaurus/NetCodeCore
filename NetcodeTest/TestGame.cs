@@ -17,6 +17,7 @@ using NetCode.Connection.UDP;
 using NetcodeTest.Entities;
 using NetcodeTest.Server;
 using NetcodeTest.Util;
+using NetcodeTest.Events;
 
 namespace NetcodeTest
 {
@@ -32,7 +33,9 @@ namespace NetcodeTest
         IncomingSyncPool incomingPool;
         OutgoingSyncPool outgoingPool;
         PlayerControl controlVector;
-        
+
+        List<Event> events = new List<Event>();
+
         SpriteFont font;
         
         Point Resolution = new Point(1200, 800);
@@ -62,11 +65,12 @@ namespace NetcodeTest
             netcode.RegisterType(typeof(Ship));
             netcode.RegisterType(typeof(PlayerControl));
             netcode.RegisterType(typeof(Projectile));
+            netcode.RegisterType(typeof(Explosion));
 
             server = new AsteroidServer(netcode, Resolution.ToVector2(), 11002);
             
             client = new NetworkClient( new UDPConnection(
-                System.Net.IPAddress.Parse( (server != null) ? "127.0.0.1" : "122.58.86.5"),
+                System.Net.IPAddress.Parse( (server != null) ? "127.0.0.1" : "122.61.155.237"),
                 11002,
                 (server != null) ? 11003 : 11002
                 ));
@@ -138,6 +142,7 @@ namespace NetcodeTest
 
             client.Update();
             incomingPool.Synchronise();
+            
 
             lastKeys = keys;
             lastMouse = mouse;
@@ -176,7 +181,28 @@ namespace NetcodeTest
                     entity.Draw(spriteBatch);
                 }
             }
-            
+
+
+            foreach (SyncEvent syncEvent in incomingPool.Events)
+            {
+                if (syncEvent.Obj is Event evt)
+                {
+                    evt.Predict(timestamp);
+                    if (evt.Expired())
+                    {
+                        syncEvent.Clear();
+                    }
+                    else
+                    {
+                        evt.Draw(spriteBatch);
+                    }
+                }
+                else
+                {
+                    syncEvent.Clear();
+                }
+            }
+
             if (server != null)
             {
                 string[] clients = server.GetClientInfo();

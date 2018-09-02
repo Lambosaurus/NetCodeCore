@@ -8,6 +8,7 @@ using Volatile;
 using NetCode;
 
 using NetcodeTest.Util;
+using NetcodeTest.Events;
 
 namespace NetcodeTest.Entities
 {
@@ -52,6 +53,12 @@ namespace NetcodeTest.Entities
             base.Update(delta);
         }
 
+        public override void OnDestroy()
+        {
+            Context.AddEvent(new Explosion(Position, 32f, 2f));
+            base.OnDestroy();
+        }
+
         public override void Draw(SpriteBatch batch)
         {
             Drawing.DrawTriangle(batch, Position, Size, Angle, Color);
@@ -64,8 +71,20 @@ namespace NetcodeTest.Entities
             thrust = Fmath.Clamp(thrust, 0.0f, 1.0f);
             torque = Fmath.Clamp(torque, -1.0f, 1.0f);
 
+            
+            /*
+            float epsilon = 0.001f;
+            if (torque < epsilon && torque > -epsilon)
+            {
+                float dt = (CollisionBody.AngularVelocity > epsilon) ? 1f : ((CollisionBody.AngularVelocity < -epsilon) ? -1f : 0f);
+                torque = dt;
+            }
+            */
+
+
             CollisionBody.AddForce(Fmath.CosSin(Angle, Thrust * thrust));
             CollisionBody.AddTorque(Torque * torque);
+            
 
             RequestMotionUpdate();
         }

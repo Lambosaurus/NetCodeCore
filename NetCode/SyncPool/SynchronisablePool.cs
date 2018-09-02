@@ -8,7 +8,7 @@ namespace NetCode.SyncPool
 {
     public abstract class SynchronisablePool
     {
-        public IEnumerable<SyncHandle> Handles  { get {  return SyncHandles; } }
+        public IEnumerable<SyncHandle> Handles  { get { return SyncHandles; } }
         public ushort PoolID { get; private set; }
         protected uint Revision { get; set; }
         
