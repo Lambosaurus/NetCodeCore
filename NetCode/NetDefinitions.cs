@@ -8,13 +8,13 @@ using NetCode.SyncPool;
 
 namespace NetCode
 {
-    public class NetDefinition
+    public class NetDefinitions
     {
 
         internal SyncFieldGenerator fieldGenerator;
         internal SyncEntityGenerator entityGenerator;
 
-        public NetDefinition()
+        public NetDefinitions()
         {
             fieldGenerator = new SyncFieldGenerator();
             entityGenerator = new SyncEntityGenerator(fieldGenerator);

@@ -34,7 +34,7 @@ namespace NetcodeTest.Entities
             Velocity = velocity;
             Angle = angle;
             AngularVelocity = angleV;
-            Hitpoints = size * size / 4.0;
+            Hitpoints = size * size / 12.0;
         }
         
         public override void Draw(SpriteBatch batch)

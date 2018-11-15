@@ -52,10 +52,18 @@ namespace NetCode.SyncField
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Performed a value has been read from a payload
+        /// </summary>
+        /// <param name="context">The destination SyncPool context</param>
         public virtual void PostProcess(SyncContext context)
         {
         }
 
+        /// <summary>
+        /// Performed a value has been read from the entity
+        /// </summary>
+        /// <param name="context">The source SyncPool context</param>
         public virtual void PreProcess(SyncContext context)
         {
         }

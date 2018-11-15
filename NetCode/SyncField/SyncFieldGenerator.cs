@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,29 +11,19 @@ namespace NetCode.SyncField
 {
     internal class SyncFieldGenerator
     {
-        Dictionary<SyncFlags, Dictionary<RuntimeTypeHandle, Func<object>>> ConstructorLookups = new Dictionary<SyncFlags, Dictionary<RuntimeTypeHandle, Func<object>>>();
-
-        // These are flags that represent a unique constructor definition
-        private SyncFlags[] ConstructorFlags = new SyncFlags[]
-        {
-            SyncFlags.Reference,
-            SyncFlags.Timestamp,
-            SyncFlags.HalfPrecisionFloats,
-            SyncFlags.None, // None functions as a fallback.
-        };
-
+        private Dictionary<RuntimeTypeHandle, Func<object>> HalfConstructorLookups = new Dictionary<RuntimeTypeHandle, Func<object>>();
+        private Dictionary<RuntimeTypeHandle, Func<object>> ConstructorLookups = new Dictionary<RuntimeTypeHandle, Func<object>>();
+        private Func<object> TimestampFieldConstructor;
+        private Func<object> ReferenceFieldConstructor;
+        private Func<object> ListFieldConstructor;
+        
         internal SyncFieldGenerator()
         {
             RegisterDefaultFieldTypes();
         }
 
         private void RegisterDefaultFieldTypes()
-        {
-            foreach (SyncFlags flag in ConstructorFlags)
-            {
-                ConstructorLookups[flag] = new Dictionary<RuntimeTypeHandle, Func<object>>();
-            }
-            
+        {  
             RegisterFieldType(typeof(SynchronisableEnum), typeof(System.Enum));
             RegisterFieldType(typeof(SynchronisableBool), typeof(bool));
             RegisterFieldType(typeof(SynchronisableByte), typeof(byte));
@@ -45,47 +36,79 @@ namespace NetCode.SyncField
             RegisterFieldType(typeof(SynchronisableFloat), typeof(float));
             RegisterFieldType(typeof(SynchronisableDouble), typeof(double));
             RegisterFieldType(typeof(SynchronisableString), typeof(string));
-            RegisterFieldType(typeof(SynchronisableHalf), typeof(float), SyncFlags.HalfPrecisionFloats);
-            RegisterFieldType(typeof(SynchronisableFloat), typeof(double), SyncFlags.HalfPrecisionFloats);
-            RegisterFieldType(typeof(SynchronisableTimestamp), typeof(long), SyncFlags.Timestamp);
-            RegisterFieldType(typeof(SynchronisableReference), typeof(object), SyncFlags.Reference);
+            RegisterFieldType(typeof(SynchronisableHalf), typeof(float), SyncFlags.HalfPrecision);
+            RegisterFieldType(typeof(SynchronisableFloat), typeof(double), SyncFlags.HalfPrecision);
+
+            TimestampFieldConstructor = DelegateGenerator.GenerateConstructor(typeof(SynchronisableTimestamp));
+            ReferenceFieldConstructor = DelegateGenerator.GenerateConstructor(typeof(SynchronisableReference));
+            ListFieldConstructor = DelegateGenerator.GenerateConstructor(typeof(SynchronisableList));
         }
 
-        internal Func<object> LookupConstructorForSyncField(Type type, SyncFlags syncFlags)
+        internal Func<object> LookupSyncFieldConstructor(Type type, SyncFlags syncFlags)
         {
-            if (type.BaseType == typeof(System.Enum)) { type = typeof(System.Enum); }
-            else if ((syncFlags & SyncFlags.Reference) != 0 && !type.IsValueType)
+            RuntimeTypeHandle typeHandle;
+
+            if (type.IsEnum) // type.BaseType == typeof(System.Enum))
             {
-                type = typeof(object);
+                // Each enum is its own type derived from System.Enum
+                typeHandle = typeof(System.Enum).TypeHandle;
+            }
+            else if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
+            {
+                return ListFieldConstructor;
+            }
+            else if ((syncFlags & SyncFlags.Reference) != 0)
+            {
+                if (type.IsValueType)
+                {
+                    throw new NotSupportedException(string.Format("{0}.{1} can not be used on ValueType", typeof(SyncFlags).Name, SyncFlags.Reference));
+                }
+                return ReferenceFieldConstructor;
+            }
+            else if ((syncFlags & SyncFlags.Timestamp) != 0)
+            {
+                if (type != typeof(long))
+                {
+                    throw new NotSupportedException(string.Format("{0}.{1} must be used on type long", typeof(SyncFlags).Name, SyncFlags.Timestamp));
+                }
+                return TimestampFieldConstructor;
+            }
+            else
+            {
+                typeHandle = type.TypeHandle;
             }
 
-            RuntimeTypeHandle typeHandle = type.TypeHandle;
-
-            foreach (SyncFlags flag in ConstructorFlags)
+            if ((syncFlags & SyncFlags.HalfPrecision) != 0)
             {
-                if ((syncFlags & flag) == flag)
+                if (HalfConstructorLookups.Keys.Contains(typeHandle))
                 {
-                    if ( ConstructorLookups[flag].Keys.Contains(typeHandle) )
-                    {
-                        return ConstructorLookups[flag][typeHandle];
-                    }
-                    else
-                    {
-                        throw new NotSupportedException(string.Format(
-                            "Type {0} not compatible with {1}.{2}.",
-                            type.Name, typeof(SyncFlags).Name, flag
-                            ));
-                    }
+                    return HalfConstructorLookups[typeHandle];
+                }
+                else
+                {
+                    throw new NotSupportedException(string.Format(
+                        "No SyncField registered for type {0} with {1}.{2}",
+                        type.Name, typeof(SyncFlags).Name, SyncFlags.HalfPrecision
+                        ));
                 }
             }
-
-            return null; // Control should never reach this.
+            else
+            {
+                if (ConstructorLookups.Keys.Contains(typeHandle))
+                {
+                    return ConstructorLookups[typeHandle];
+                }
+                else
+                {
+                    throw new NotSupportedException(string.Format("No SyncField registered for type {0}",type.Name));
+                }
+            }
         }
 
         internal SyncFieldDescriptor GenerateFieldDescriptor(FieldInfo fieldInfo, SyncFlags syncFlags)
         {
             return new SyncFieldDescriptor( 
-                LookupConstructorForSyncField(fieldInfo.FieldType, syncFlags),
+                LookupSyncFieldConstructor(fieldInfo.FieldType, syncFlags),
                 DelegateGenerator.GenerateGetter(fieldInfo),
                 DelegateGenerator.GenerateSetter(fieldInfo),
                 syncFlags,
@@ -97,7 +120,7 @@ namespace NetCode.SyncField
         internal SyncFieldDescriptor GenerateFieldDescriptor(PropertyInfo propertyInfo, SyncFlags syncFlags)
         {
             return new SyncFieldDescriptor(
-                LookupConstructorForSyncField(propertyInfo.PropertyType, syncFlags),
+                LookupSyncFieldConstructor(propertyInfo.PropertyType, syncFlags),
                 DelegateGenerator.GenerateGetter(propertyInfo),
                 DelegateGenerator.GenerateSetter(propertyInfo),
                 syncFlags,
@@ -121,20 +144,12 @@ namespace NetCode.SyncField
             
             Func<object> constructor = DelegateGenerator.GenerateConstructor(syncFieldType);
             
-            Dictionary<RuntimeTypeHandle, Func<object>> constructorLookup = null;
-            foreach (SyncFlags flag in ConstructorFlags)
-            {
-                // The equality check to flag will always pass for SyncFlags.None
-                if ((syncFlags & flag) == flag)
-                {
-                    constructorLookup = ConstructorLookups[flag];
-                    break;
-                }
-            }
-            
+            Dictionary<RuntimeTypeHandle, Func<object>> lookup = ((syncFlags & SyncFlags.HalfPrecision) != 0)
+                                                               ? HalfConstructorLookups : ConstructorLookups;
+
             if (!overrideExistingFieldTypes)
             {
-                if (constructorLookup.ContainsKey(fieldTypeHandle))
+                if (lookup.ContainsKey(fieldTypeHandle))
                 {
                     throw new NotSupportedException(string.Format(
                         "A SynchronisableField has already been registered against {0} with flags {1}",
@@ -143,7 +158,7 @@ namespace NetCode.SyncField
                 }
             }
 
-            constructorLookup[fieldTypeHandle] = constructor;
+            lookup[fieldTypeHandle] = constructor;
         }
     }
 }

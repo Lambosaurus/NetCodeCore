@@ -13,11 +13,11 @@ namespace NetcodeTest.Util
 
     public static class NetcodeFields
     {
-        public static void RegisterCustomFields(NetDefinition netcode)
+        public static void RegisterCustomFields(NetDefinitions netDefs)
         {
-            netcode.RegisterField(typeof(SynchronisableVector2), typeof(Vector2));
-            netcode.RegisterField(typeof(SynchronisableHalfVector2), typeof(Vector2), SyncFlags.HalfPrecisionFloats);
-            netcode.RegisterField(typeof(SynchronisableColor), typeof(Color));
+            netDefs.RegisterField(typeof(SynchronisableVector2), typeof(Vector2));
+            netDefs.RegisterField(typeof(SynchronisableHalfVector2), typeof(Vector2), SyncFlags.HalfPrecision);
+            netDefs.RegisterField(typeof(SynchronisableColor), typeof(Color));
         }
     }
 

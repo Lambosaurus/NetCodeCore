@@ -12,11 +12,11 @@ namespace NetcodeTest.Events
 {
     public class Explosion : Event
     {
-        [Synchronisable(SyncFlags.HalfPrecisionFloats)]
+        [Synchronisable(SyncFlags.HalfPrecision)]
         public Vector2 Position { get; protected set; }
-        [Synchronisable(SyncFlags.HalfPrecisionFloats)]
+        [Synchronisable(SyncFlags.HalfPrecision)]
         public float Scale { get; protected set; }
-        [Synchronisable(SyncFlags.HalfPrecisionFloats)]
+        [Synchronisable(SyncFlags.HalfPrecision)]
         public float Duration { get; protected set; }
        
         public float Alpha { get; protected set; }

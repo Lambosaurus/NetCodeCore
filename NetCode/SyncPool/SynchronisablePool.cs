@@ -12,7 +12,7 @@ namespace NetCode.SyncPool
         public ushort PoolID { get; private set; }
         protected uint Revision { get; set; }
         
-        private const double PoolReallocationThreshold = 0.8;
+        private const double PoolReallocationThreshold = 0.7;
         private const int DefaultEntityCount = 32; // This should be a power of two
 
         public const int MaximumEntityCount = ushort.MaxValue + 1;
@@ -84,7 +84,7 @@ namespace NetCode.SyncPool
         public SyncHandle GetHandle(ushort entityID)
         {
             //if (entityID == SyncHandle.NullEntityID) { return null; }
-            if (entityID < SyncSlots.Length && SyncSlots[entityID].Handle != null)
+            if (entityID < SyncSlots.Length ) // && SyncSlots[entityID].Handle != null) // If this is null, then we return null anyway.
             {
                 return SyncSlots[entityID].Handle;
             }

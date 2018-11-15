@@ -53,7 +53,7 @@
     <Compile Include="Payloads\PoolDeletionPayload.cs" />
     <Compile Include="Payloads\PoolEventPayload.cs" />
     <Compile Include="SyncField\Implementations\SyncFieldTimestamp.cs" />
-    <Compile Include="SyncField\SyncFieldList.cs" />
+    <Compile Include="SyncField\Implementations\SyncFieldList.cs" />
     <Compile Include="SyncPool\SyncEvent.cs" />
     <Compile Include="SyncPool\SyncContext.cs" />
     <Compile Include="SyncField\Implementations\SynchronisableReference.cs" />
@@ -62,7 +62,7 @@
     <Compile Include="Util\EventMarker.cs" />
     <Compile Include="Util\ListExtentions.cs" />
     <Compile Include="Util\DelegateGenerator.cs" />
-    <Compile Include="NetCode.cs" />
+    <Compile Include="NetDefinitions.cs" />
     <Compile Include="Payloads\Payload.cs" />
     <Compile Include="Payloads\Packet.cs" />
     <Compile Include="Payloads\AcknowledgementPayload.cs" />

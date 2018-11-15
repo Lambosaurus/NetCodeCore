@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-
-using Microsoft.Xna.Framework;
-
+﻿using Microsoft.Xna.Framework;
 using NetCode;
 using NetCode.Connection;
 using NetCode.Connection.UDP;
 using NetCode.SyncPool;
-using Volatile;
-
 using NetcodeTest.Entities;
-using NetcodeTest.Util;
 using NetcodeTest.Events;
+using NetcodeTest.Util;
+using System;
+using System.Collections.Generic;
+using Volatile;
 
 
 
@@ -38,7 +34,7 @@ namespace NetcodeTest.Server
         private float TransmitRate = 1f / 20;
         private List<RemoteClient> Clients;
         private OutgoingSyncPool OutgoingPool;
-        private NetDefinition NetDefs;
+        private NetDefinitions NetDefs;
         private UDPServer Server;
         
         private Vector2 BoundaryMargin = new Vector2(30, 30);
@@ -50,7 +46,9 @@ namespace NetcodeTest.Server
 
         private ContextToken Context;
 
-        public AsteroidServer(NetDefinition netdefs, Vector2 boundary, int port )
+        private ServerReport serverReport = new ServerReport();
+
+        public AsteroidServer(NetDefinitions netdefs, Vector2 boundary, int port )
         {
             NetDefs = netdefs;
 
@@ -71,6 +69,8 @@ namespace NetcodeTest.Server
             for (int i = 0; i < 30*k; i++) { AddEntity(NewAsteroid(32)); }
             for (int i = 0; i < 40*k; i++) { AddEntity(NewAsteroid(48)); }
             for (int i = 0; i < 10*k; i++) { AddEntity(NewAsteroid(56)); }
+
+            OutgoingPool.RegisterEntity(serverReport);
 
             LastTimestamp = 0;
         }
@@ -204,6 +204,7 @@ namespace NetcodeTest.Server
                                 client.Player = NewPlayer(control.ShipColor);
                                 AddEntity(client.Player);
                                 client.PlayerName = control.PlayerName;
+                                serverReport.Clients.Add(control.PlayerName);
                             }
                             client.Player.Control(control.Thrust, control.Torque, control.Firing);
                         }
