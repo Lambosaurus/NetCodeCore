@@ -11,8 +11,27 @@ namespace NetCode.Util
     {
         private const bool FIND_NONPUBLIC_ACCESSORS = true;
 
+        private static Dictionary<RuntimeTypeHandle, Func<object>> CashedConstructors = new Dictionary<RuntimeTypeHandle, Func<object>>();
+
+        public static Func<object> GetCachedConstructor(RuntimeTypeHandle type)
+        {
+            return CashedConstructors[type];
+        }
+
+        /// <summary>
+        /// This generates a constructor of the given type.
+        /// It will also cashe the constructor to prevent duplicates.
+        /// The cashed constructors can be cheaply looked up using GetCachedConstructor
+        /// </summary>
+        /// <param name="type">A type with a zero argument constructor</param>
+        /// <returns>A function that returns a new instance of the given type</returns>
         public static Func<object> GenerateConstructor(Type type)
         {
+            if ( CashedConstructors.Keys.Contains(type.TypeHandle))
+            {
+                return CashedConstructors[type.TypeHandle];
+            }
+
             ConstructorInfo constructor = type.GetConstructor(Type.EmptyTypes);
             if (constructor == null)
             {

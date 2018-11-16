@@ -31,7 +31,8 @@ namespace NetCode
         }
         
         private static Stopwatch stopwatch;
-        private static long baseTimestamp = 0;
+        private static double timeOffsetFloating = 0;
+        private static long timeOffset = 0;
 
         static NetTime()
         {
@@ -42,19 +43,20 @@ namespace NetCode
 
         public static long Now()
         {
-            return baseTimestamp + stopwatch.ElapsedMilliseconds;
+            return timeOffset + stopwatch.ElapsedMilliseconds;
         }
 
         public static double Seconds()
         {
-            return (baseTimestamp / 1000.0) + stopwatch.Elapsed.TotalSeconds;
+            return (timeOffsetFloating / 1000.0) + stopwatch.Elapsed.TotalSeconds;
         }
         
-        public static void Advance(int ms)
+        public static void Advance(double ms)
         {
             if (!Realtime)
             {
-                baseTimestamp += ms;
+                timeOffsetFloating += ms;
+                timeOffset = (long)timeOffsetFloating;
             }
         }
     }

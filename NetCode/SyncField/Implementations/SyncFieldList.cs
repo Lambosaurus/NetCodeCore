@@ -3,99 +3,130 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NetCode.SyncPool;
+using NetCode.Util;
 
 using System.Reflection;
 
 namespace NetCode.SyncField.Implementations
-{
-    public abstract class Boxer
+{   
+    public class SynchronisableList<T> : SynchronisableField
     {
-        public abstract List<object> Unbox( object ob );
-        public abstract object Box(List<object> ob);
-    }
-
-    public class BoxerTyped<T> : Boxer
-    {
-        public override List<object> Unbox( object ob )
-        {
-            List<T> items = (List<T>)(ob);
-            List<object> objs = new List<object>();
-            foreach(T item in items)
-            {
-                objs.Add(item);
-            }
-            return objs;
-        }
-
-        public override object Box(List<object> objs)
-        {
-            List<T> items = new List<T>();
-            foreach( object ob in objs )
-            {
-                items.Add((T)ob);
-            }
-            return items;
-        }
-    }
-    
-    public class SynchronisableList : SynchronisableField
-    {
-        private List<SynchronisableField> SyncFields;
-        private List<object> values;
-
-        private Boxer boxer;
-
-        public void GetType( Type t )
-        {
-            Type subtype = t.GetGenericArguments()[0];
-            Type boxertype = typeof(BoxerTyped<>).MakeGenericType(new Type[] { subtype });
-            boxer = (Boxer)Activator.CreateInstance(boxertype);
-
-
-            /*
-            Type t = typeof(List<int>);
-            PropertyInfo pi = t.GetProperty("Item");
-            MethodInfo method = pi.GetGetMethod();
-            object[] pars = new object[1]
-            {
-                0
-            };
-            object valOut = method.Invoke(list, pars);
-            */
-        }
+        private List<SynchronisableField> elements = new List<SynchronisableField>();
 
         public override object GetValue()
         {
-            return null;
-        }
-
-        public override void SetValue(object newValue)
-        {
-        }
-        
-        public override void Read(byte[] data, ref int index)
-        {
-            Skip(data, ref index);
-        }
-        
-        public override void Skip(byte[] data, ref int index)
-        {
-            index += sizeof(byte);
+            List<T> items = new List<T>(elements.Count);
+            foreach (SynchronisableField element in elements)
+            {
+                items.Add((T)element.GetValue());
+            }
+            return items;
         }
 
         public override bool ValueEqual(object newValue)
         {
+            List<T> items = (List<T>)newValue;
+            if (items.Count != elements.Count)
+            {
+                return false;
+            }
+            for (int i = 0; i < elements.Count; i++)
+            {
+                if (!elements[i].ValueEqual(items[i]))
+                {
+                    return false;
+                }
+            }
             return true;
         }
 
+        private void SetElementLength(int count)
+        {
+            if (count > elements.Count)
+            {
+                byte childDepth = (byte)(ElementDepth + 1);
+                for (int i = elements.Count; i < count; i++)
+                {
+                    elements.Add(Descriptor.GenerateField(childDepth));
+                }
+            }
+            else
+            {
+                elements.RemoveRange(count, elements.Count - count);
+            }
+        }
+
+        public override void SetValue(object newValue)
+        {
+            List<T> items = (List<T>)newValue;
+            if (items.Count != elements.Count) { SetElementLength(items.Count); }
+            for (int i = 0; i < items.Count; i++)
+            {
+                elements[i].SetValue(items[i]);
+            }
+        }
+        
+        public override void Read(byte[] data, ref int index)
+        {
+            byte count = Primitive.ReadByte(data, ref index);
+            if (count != elements.Count) { SetElementLength(count); }
+            foreach (SynchronisableField element in elements)
+            {
+                element.Read(data, ref index);
+            }
+        }
+        
+        public override void Skip(byte[] data, ref int index)
+        {
+            byte count = Primitive.ReadByte(data, ref index);
+            throw new NotImplementedException();
+        }
+        
         public override void Write(byte[] data, ref int index)
         {
-            Skip(data, ref index);
+            Primitive.WriteByte(data, ref index, (byte)elements.Count);
+            foreach ( SynchronisableField element in elements )
+            {
+                element.Write(data, ref index);
+            }
         }
 
         public override int WriteToBufferSize()
         {
-            return sizeof(byte);
+            int count = sizeof(byte);
+            foreach (SynchronisableField element in elements)
+            {
+                count += element.WriteToBufferSize();
+            }
+            return count;
+        }
+
+        public override void PeriodicProcess(SyncContext context)
+        {
+            PollingRequired = false;
+            foreach (SynchronisableField element in elements)
+            {
+                element.PeriodicProcess(context);
+                if (element.PollingRequired) { PollingRequired = true; }
+            }
+        }
+
+        public override void PostProcess(SyncContext context)
+        {
+            PollingRequired = false;
+            foreach (SynchronisableField element in elements)
+            {
+                element.PostProcess(context);
+                if (element.PollingRequired) { PollingRequired = true; }
+            }
+        }
+
+        public override void PreProcess(SyncContext context)
+        {
+            foreach (SynchronisableField element in elements)
+            {
+                element.PreProcess(context);
+            }
         }
     }
 }

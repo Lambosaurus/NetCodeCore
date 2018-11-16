@@ -205,6 +205,7 @@ namespace NetcodeTest.Server
                                 AddEntity(client.Player);
                                 client.PlayerName = control.PlayerName;
                                 serverReport.Clients.Add(control.PlayerName);
+                                serverReport.Ships.Add(client.Player);
                             }
                             client.Player.Control(control.Thrust, control.Torque, control.Firing);
                         }
@@ -223,8 +224,12 @@ namespace NetcodeTest.Server
                     client.Client.Destroy();
                     if (client.Player != null)
                     {
-                        AddEntity(client.Player);
+                        RemoveEntity(client.Player);
                     }
+
+                    int k = serverReport.Ships.IndexOf(client.Player);
+                    serverReport.Ships.RemoveAt(k);
+                    serverReport.Clients.RemoveAt(k);
                 }
             }
         }

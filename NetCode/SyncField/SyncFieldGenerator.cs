@@ -15,13 +15,11 @@ namespace NetCode.SyncField
         private Dictionary<RuntimeTypeHandle, Func<object>> ConstructorLookups = new Dictionary<RuntimeTypeHandle, Func<object>>();
         private static Func<object> TimestampFieldConstructor;
         private static Func<object> ReferenceFieldConstructor;
-        private static Func<object> ListFieldConstructor;
 
         static SyncFieldGenerator()
         {
             TimestampFieldConstructor = DelegateGenerator.GenerateConstructor(typeof(SynchronisableTimestamp));
             ReferenceFieldConstructor = DelegateGenerator.GenerateConstructor(typeof(SynchronisableReference));
-            ListFieldConstructor = DelegateGenerator.GenerateConstructor(typeof(SynchronisableList));
         }
         
         internal SyncFieldGenerator()
@@ -30,7 +28,7 @@ namespace NetCode.SyncField
         }
 
         private void RegisterDefaultFieldTypes()
-        {  
+        {
             RegisterFieldType(typeof(SynchronisableEnum), typeof(System.Enum));
             RegisterFieldType(typeof(SynchronisableBool), typeof(bool));
             RegisterFieldType(typeof(SynchronisableByte), typeof(byte));
@@ -47,7 +45,7 @@ namespace NetCode.SyncField
             RegisterFieldType(typeof(SynchronisableFloat), typeof(double), SyncFlags.HalfPrecision);
         }
 
-        internal Func<object> LookupSyncFieldConstructor(Type type, SyncFlags syncFlags)
+        internal Func<object>[] LookupSyncFieldConstructor(Type type, SyncFlags syncFlags)
         {
             RuntimeTypeHandle typeHandle;
 
@@ -58,8 +56,15 @@ namespace NetCode.SyncField
             }
             else if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
             {
-                Type baseType = type.GetGenericArguments()[0];
-                return ListFieldConstructor;
+                Type elementType = type.GetGenericArguments()[0];
+                Type syncListType = typeof(SynchronisableList<>).MakeGenericType(new Type[] { elementType });
+                
+                Func<object>[] elementCtors = LookupSyncFieldConstructor(elementType, syncFlags);
+                Func<object>[] ctors = new Func<object>[elementCtors.Length + 1];
+                ctors[0] = DelegateGenerator.GenerateConstructor(syncListType);
+                elementCtors.CopyTo(ctors, 1);
+
+                return ctors;
             }
             else if ((syncFlags & SyncFlags.Reference) != 0)
             {
@@ -67,7 +72,7 @@ namespace NetCode.SyncField
                 {
                     throw new NotSupportedException(string.Format("{0}.{1} can not be used on ValueType", typeof(SyncFlags).Name, SyncFlags.Reference));
                 }
-                return ReferenceFieldConstructor;
+                return new Func<object>[] { ReferenceFieldConstructor };
             }
             else if ((syncFlags & SyncFlags.Timestamp) != 0)
             {
@@ -75,7 +80,7 @@ namespace NetCode.SyncField
                 {
                     throw new NotSupportedException(string.Format("{0}.{1} must be used on type long", typeof(SyncFlags).Name, SyncFlags.Timestamp));
                 }
-                return TimestampFieldConstructor;
+                return new Func<object>[] { TimestampFieldConstructor };
             }
             else
             {
@@ -86,7 +91,7 @@ namespace NetCode.SyncField
             {
                 if (HalfConstructorLookups.Keys.Contains(typeHandle))
                 {
-                    return HalfConstructorLookups[typeHandle];
+                    return new Func<object>[] { HalfConstructorLookups[typeHandle] };
                 }
                 else
                 {
@@ -100,7 +105,7 @@ namespace NetCode.SyncField
             {
                 if (ConstructorLookups.Keys.Contains(typeHandle))
                 {
-                    return ConstructorLookups[typeHandle];
+                    return new Func<object>[] { ConstructorLookups[typeHandle] };
                 }
                 else
                 {

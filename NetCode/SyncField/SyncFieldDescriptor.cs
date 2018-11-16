@@ -6,14 +6,15 @@ namespace NetCode.SyncField
 {
     internal class SyncFieldDescriptor
     {
-        SyncFlags flags;
+        protected SyncFlags flags;
 
-        Func<object> constructor;
         public Type FieldType;
         public Func<object, object> Getter;
         public Action<object, object> Setter;
         
-        public SyncFieldDescriptor(Func<object> fieldConstructor, Func<object, object> fieldGetter, Action<object, object> fieldSetter, SyncFlags syncFlags, Type fieldType)
+        private Func<object>[] constructor;
+
+        public SyncFieldDescriptor(Func<object>[] fieldConstructor, Func<object, object> fieldGetter, Action<object, object> fieldSetter, SyncFlags syncFlags, Type fieldType)
         {
             constructor = fieldConstructor;
             Getter = fieldGetter;
@@ -22,11 +23,12 @@ namespace NetCode.SyncField
             FieldType = fieldType;
         }
 
-        public SynchronisableField GenerateField()
+        public SynchronisableField GenerateField(byte elementDepth = 0)
         {
-            SynchronisableField field = (SynchronisableField)(constructor.Invoke());
+            SynchronisableField field = (SynchronisableField)(constructor[elementDepth].Invoke());
             field.Flags = flags;
-            field.FieldType = FieldType;
+            field.Descriptor = this;
+            field.ElementDepth = elementDepth;
             return field;
         }
     }

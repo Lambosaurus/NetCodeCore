@@ -114,6 +114,9 @@ namespace NetcodeTest
 
         protected override void Update(GameTime gameTime)
         {
+            NetTime.Realtime = false;
+            NetTime.Advance(1000/60);
+
             float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
             
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
@@ -183,7 +186,14 @@ namespace NetcodeTest
                 }
                 if (handle.Obj is ServerReport report)
                 {
-
+                    for (int i = 0; i < report.Clients.Count; i++)
+                    {
+                        Color color = Color.White;
+                        if (report.Ships[i] != null) { color = report.Ships[i].Color; }
+                        spriteBatch.DrawString(font, report.Clients[i], new Vector2(0, 200), color);
+                    }
+                    string packed = string.Join("\n", report.Clients);
+                    spriteBatch.DrawString(font, packed, new Vector2(0, 200), Color.White);
                 }
             }
 
@@ -206,13 +216,6 @@ namespace NetcodeTest
                 {
                     syncEvent.Clear();
                 }
-            }
-
-            if (server != null)
-            {
-                string[] clients = server.GetClientInfo();
-                string packed = string.Join("\n", clients);
-                spriteBatch.DrawString(font, packed, new Vector2(0, 200), Color.White);
             }
             
             /*
