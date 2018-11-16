@@ -13,9 +13,16 @@ namespace NetCode.SyncField
     {
         private Dictionary<RuntimeTypeHandle, Func<object>> HalfConstructorLookups = new Dictionary<RuntimeTypeHandle, Func<object>>();
         private Dictionary<RuntimeTypeHandle, Func<object>> ConstructorLookups = new Dictionary<RuntimeTypeHandle, Func<object>>();
-        private Func<object> TimestampFieldConstructor;
-        private Func<object> ReferenceFieldConstructor;
-        private Func<object> ListFieldConstructor;
+        private static Func<object> TimestampFieldConstructor;
+        private static Func<object> ReferenceFieldConstructor;
+        private static Func<object> ListFieldConstructor;
+
+        static SyncFieldGenerator()
+        {
+            TimestampFieldConstructor = DelegateGenerator.GenerateConstructor(typeof(SynchronisableTimestamp));
+            ReferenceFieldConstructor = DelegateGenerator.GenerateConstructor(typeof(SynchronisableReference));
+            ListFieldConstructor = DelegateGenerator.GenerateConstructor(typeof(SynchronisableList));
+        }
         
         internal SyncFieldGenerator()
         {
@@ -38,10 +45,6 @@ namespace NetCode.SyncField
             RegisterFieldType(typeof(SynchronisableString), typeof(string));
             RegisterFieldType(typeof(SynchronisableHalf), typeof(float), SyncFlags.HalfPrecision);
             RegisterFieldType(typeof(SynchronisableFloat), typeof(double), SyncFlags.HalfPrecision);
-
-            TimestampFieldConstructor = DelegateGenerator.GenerateConstructor(typeof(SynchronisableTimestamp));
-            ReferenceFieldConstructor = DelegateGenerator.GenerateConstructor(typeof(SynchronisableReference));
-            ListFieldConstructor = DelegateGenerator.GenerateConstructor(typeof(SynchronisableList));
         }
 
         internal Func<object> LookupSyncFieldConstructor(Type type, SyncFlags syncFlags)
@@ -55,6 +58,7 @@ namespace NetCode.SyncField
             }
             else if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
             {
+                Type baseType = type.GetGenericArguments()[0];
                 return ListFieldConstructor;
             }
             else if ((syncFlags & SyncFlags.Reference) != 0)
