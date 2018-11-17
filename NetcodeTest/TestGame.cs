@@ -190,10 +190,8 @@ namespace NetcodeTest
                     {
                         Color color = Color.White;
                         if (report.Ships[i] != null) { color = report.Ships[i].Color; }
-                        spriteBatch.DrawString(font, report.Clients[i], new Vector2(0, 200), color);
+                        spriteBatch.DrawString(font, report.Clients[i], new Vector2(0, 200 + i * 12), color);
                     }
-                    string packed = string.Join("\n", report.Clients);
-                    spriteBatch.DrawString(font, packed, new Vector2(0, 200), Color.White);
                 }
             }
 

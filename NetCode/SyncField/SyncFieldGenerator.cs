@@ -45,7 +45,27 @@ namespace NetCode.SyncField
             RegisterFieldType(typeof(SynchronisableFloat), typeof(double), SyncFlags.HalfPrecision);
         }
 
-        internal Func<object>[] LookupSyncFieldConstructor(Type type, SyncFlags syncFlags)
+        private struct FieldConstructorLookupContent {
+            
+            public FieldConstructorLookupContent( Func<object> ctor, Type resolvingType = null )
+            {
+                Constructors = new Func<object>[] { ctor };
+                ResolvingType = resolvingType;
+            }
+
+            public void InsertConstructor(Func<object> ctor)
+            {
+                Func<object>[] ctors = new Func<object>[Constructors.Length + 1];
+                ctors[0] = ctor;
+                Constructors.CopyTo(ctors, 1);
+                Constructors = ctors;
+            }
+
+            public Func<object>[] Constructors;
+            public Type ResolvingType;
+        }
+
+        private FieldConstructorLookupContent LookupSyncFieldConstructor(Type type, SyncFlags syncFlags)
         {
             RuntimeTypeHandle typeHandle;
 
@@ -58,13 +78,10 @@ namespace NetCode.SyncField
             {
                 Type elementType = type.GetGenericArguments()[0];
                 Type syncListType = typeof(SynchronisableList<>).MakeGenericType(new Type[] { elementType });
-                
-                Func<object>[] elementCtors = LookupSyncFieldConstructor(elementType, syncFlags);
-                Func<object>[] ctors = new Func<object>[elementCtors.Length + 1];
-                ctors[0] = DelegateGenerator.GenerateConstructor(syncListType);
-                elementCtors.CopyTo(ctors, 1);
 
-                return ctors;
+                FieldConstructorLookupContent elementcontent = LookupSyncFieldConstructor(elementType, syncFlags);
+                elementcontent.InsertConstructor(DelegateGenerator.GenerateConstructor(syncListType));
+                return elementcontent;
             }
             else if ((syncFlags & SyncFlags.Reference) != 0)
             {
@@ -72,7 +89,7 @@ namespace NetCode.SyncField
                 {
                     throw new NotSupportedException(string.Format("{0}.{1} can not be used on ValueType", typeof(SyncFlags).Name, SyncFlags.Reference));
                 }
-                return new Func<object>[] { ReferenceFieldConstructor };
+                return new FieldConstructorLookupContent(ReferenceFieldConstructor, type);
             }
             else if ((syncFlags & SyncFlags.Timestamp) != 0)
             {
@@ -80,7 +97,7 @@ namespace NetCode.SyncField
                 {
                     throw new NotSupportedException(string.Format("{0}.{1} must be used on type long", typeof(SyncFlags).Name, SyncFlags.Timestamp));
                 }
-                return new Func<object>[] { TimestampFieldConstructor };
+                return new FieldConstructorLookupContent(TimestampFieldConstructor);
             }
             else
             {
@@ -91,7 +108,7 @@ namespace NetCode.SyncField
             {
                 if (HalfConstructorLookups.Keys.Contains(typeHandle))
                 {
-                    return new Func<object>[] { HalfConstructorLookups[typeHandle] };
+                    return new FieldConstructorLookupContent(HalfConstructorLookups[typeHandle]);
                 }
                 else
                 {
@@ -105,7 +122,7 @@ namespace NetCode.SyncField
             {
                 if (ConstructorLookups.Keys.Contains(typeHandle))
                 {
-                    return new Func<object>[] { ConstructorLookups[typeHandle] };
+                    return new FieldConstructorLookupContent(ConstructorLookups[typeHandle]);
                 }
                 else
                 {
@@ -116,24 +133,26 @@ namespace NetCode.SyncField
 
         internal SyncFieldDescriptor GenerateFieldDescriptor(FieldInfo fieldInfo, SyncFlags syncFlags)
         {
-            return new SyncFieldDescriptor( 
-                LookupSyncFieldConstructor(fieldInfo.FieldType, syncFlags),
+            FieldConstructorLookupContent fieldContent = LookupSyncFieldConstructor(fieldInfo.FieldType, syncFlags);
+            return new SyncFieldDescriptor(
+                fieldContent.Constructors,
                 DelegateGenerator.GenerateGetter(fieldInfo),
                 DelegateGenerator.GenerateSetter(fieldInfo),
                 syncFlags,
-                fieldInfo.FieldType
+                fieldContent.ResolvingType
                 );
         }
 
 
         internal SyncFieldDescriptor GenerateFieldDescriptor(PropertyInfo propertyInfo, SyncFlags syncFlags)
         {
+            FieldConstructorLookupContent fieldContent = LookupSyncFieldConstructor(propertyInfo.PropertyType, syncFlags);
             return new SyncFieldDescriptor(
-                LookupSyncFieldConstructor(propertyInfo.PropertyType, syncFlags),
+                fieldContent.Constructors,
                 DelegateGenerator.GenerateGetter(propertyInfo),
                 DelegateGenerator.GenerateSetter(propertyInfo),
                 syncFlags,
-                propertyInfo.PropertyType
+                fieldContent.ResolvingType
                 );
         }
 
