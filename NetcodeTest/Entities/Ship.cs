@@ -18,7 +18,7 @@ namespace NetcodeTest.Entities
         public Color Color { get; protected set; }
         [Synchronisable]
         public Vector2 Size { get; protected set; }
-
+        
         float Thrust = 300;
         float Torque = 500;
         float FireRate = 10f;

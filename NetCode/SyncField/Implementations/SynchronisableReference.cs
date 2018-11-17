@@ -30,7 +30,7 @@ namespace NetCode.SyncField.Implementations
             SyncHandle handle = context.GetHandleByEntityID(entityID);
             if (handle != null)
             {
-                if (FieldType.IsAssignableFrom(handle.Obj.GetType()))
+                if (Descriptor.ReferenceType.IsAssignableFrom(handle.Obj.GetType()))
                 {
                     value = handle.Obj;
                 }
@@ -56,7 +56,7 @@ namespace NetCode.SyncField.Implementations
             SyncHandle handle = context.GetHandleByEntityID(entityID);
             if (handle != null)
             {
-                if (FieldType.IsAssignableFrom(handle.Obj.GetType()))
+                if (Descriptor.ReferenceType.IsAssignableFrom(handle.Obj.GetType()))
                 {
                     value = handle.Obj;
                 }

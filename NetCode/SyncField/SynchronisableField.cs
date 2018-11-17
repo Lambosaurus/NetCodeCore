@@ -10,9 +10,11 @@ namespace NetCode.SyncField
     {
         public uint Revision { get; private set; } = 0;
         public bool Synchronised { get; set; } = false;
-        public bool PollingRequired { get; set; } = false;
+        public bool PollingRequired { get; protected set; } = false;
         public SyncFlags Flags { get; set; }
-        public Type FieldType { get; set; }
+        internal byte ElementDepth { get; set; }
+
+        internal SyncFieldDescriptor Descriptor { get; set; }
         
         internal bool TrackChanges(object newValue, SyncContext context)
         {
@@ -52,10 +54,18 @@ namespace NetCode.SyncField
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Performed a value has been read from a payload
+        /// </summary>
+        /// <param name="context">The destination SyncPool context</param>
         public virtual void PostProcess(SyncContext context)
         {
         }
 
+        /// <summary>
+        /// Performed a value has been read from the entity
+        /// </summary>
+        /// <param name="context">The source SyncPool context</param>
         public virtual void PreProcess(SyncContext context)
         {
         }

@@ -13,9 +13,9 @@ namespace NetcodeTest
     {
         [Synchronisable]
         public Color ShipColor;
-        [Synchronisable(SyncFlags.HalfPrecisionFloats)]
+        [Synchronisable(SyncFlags.HalfPrecision)]
         public float Torque;
-        [Synchronisable(SyncFlags.HalfPrecisionFloats)]
+        [Synchronisable(SyncFlags.HalfPrecision)]
         public float Thrust;
         [Synchronisable]
         public bool Ready = false;

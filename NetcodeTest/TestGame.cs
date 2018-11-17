@@ -26,7 +26,7 @@ namespace NetcodeTest
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        NetDefinition netcode = new NetDefinition();
+        NetDefinitions netDefs = new NetDefinitions();
         AsteroidServer server = null;
 
         NetworkClient client;
@@ -59,15 +59,16 @@ namespace NetcodeTest
 
         private void SetupNetwork()
         {
-            NetcodeFields.RegisterCustomFields(netcode);
+            NetcodeFields.RegisterCustomFields(netDefs);
 
-            netcode.RegisterType(typeof(Asteroid));
-            netcode.RegisterType(typeof(Ship));
-            netcode.RegisterType(typeof(PlayerControl));
-            netcode.RegisterType(typeof(Projectile));
-            netcode.RegisterType(typeof(Explosion));
+            netDefs.RegisterType(typeof(Asteroid));
+            netDefs.RegisterType(typeof(Ship));
+            netDefs.RegisterType(typeof(PlayerControl));
+            netDefs.RegisterType(typeof(Projectile));
+            netDefs.RegisterType(typeof(Explosion));
+            netDefs.RegisterType(typeof(ServerReport));
 
-            server = new AsteroidServer(netcode, Resolution.ToVector2(), 11002);
+            server = new AsteroidServer(netDefs, Resolution.ToVector2(), 11002);
             
             client = new NetworkClient( new UDPConnection(
                 System.Net.IPAddress.Parse( (server != null) ? "127.0.0.1" : "122.61.155.237"),
@@ -75,8 +76,8 @@ namespace NetcodeTest
                 (server != null) ? 11003 : 11002
                 ));
 
-            incomingPool = netcode.GenerateIncomingPool(0);
-            outgoingPool = netcode.GenerateOutgoingPool(0);
+            incomingPool = netDefs.GenerateIncomingPool(0);
+            outgoingPool = netDefs.GenerateOutgoingPool(0);
             client.Attach(incomingPool);
             client.Attach(outgoingPool);
             controlVector = new PlayerControl()
@@ -113,6 +114,9 @@ namespace NetcodeTest
 
         protected override void Update(GameTime gameTime)
         {
+            NetTime.Realtime = false;
+            NetTime.Advance(1000/60);
+
             float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
             
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
@@ -180,6 +184,15 @@ namespace NetcodeTest
                     entity.Predict(timestamp);
                     entity.Draw(spriteBatch);
                 }
+                if (handle.Obj is ServerReport report)
+                {
+                    for (int i = 0; i < report.Clients.Count; i++)
+                    {
+                        Color color = Color.White;
+                        if (report.Ships[i] != null) { color = report.Ships[i].Color; }
+                        spriteBatch.DrawString(font, report.Clients[i], new Vector2(0, 200 + i * 12), color);
+                    }
+                }
             }
 
 
@@ -201,13 +214,6 @@ namespace NetcodeTest
                 {
                     syncEvent.Clear();
                 }
-            }
-
-            if (server != null)
-            {
-                string[] clients = server.GetClientInfo();
-                string packed = string.Join("\n", clients);
-                spriteBatch.DrawString(font, packed, new Vector2(0, 200), Color.White);
             }
             
             /*

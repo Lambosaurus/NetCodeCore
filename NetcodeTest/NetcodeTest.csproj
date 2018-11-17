@@ -55,6 +55,7 @@
     <Compile Include="Entities\Asteroid.cs" />
     <Compile Include="Entities\Entity.cs" />
     <Compile Include="Entities\ContextToken.cs" />
+    <Compile Include="Server\ServerReport.cs" />
     <Compile Include="TestGame.cs" />
     <Compile Include="Util\NetcodeFields.cs" />
     <Compile Include="Program.cs" />
