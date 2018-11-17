@@ -24,11 +24,10 @@ namespace NetCode.SyncPool
 
         private List<SyncEvent> RecievedEvents = new List<SyncEvent>();
 
-
-        internal IncomingSyncPool(SyncEntityGenerator generator, ushort poolID) : base(generator, poolID)
+        public IncomingSyncPool(NetDefinitions netDefs, ushort poolID) : base(netDefs, poolID)
         {
         }
-        
+
         public void Synchronise()
         {
             newHandles.Clear();

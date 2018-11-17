@@ -56,7 +56,7 @@ namespace NetcodeTest.Server
             Server = new UDPServer(port);
             MaxPlayers = 8;
 
-            OutgoingPool = netdefs.GenerateOutgoingPool(0);
+            OutgoingPool = new OutgoingSyncPool(netdefs, 0);
             Physicals = new List<Physical>();
             Projectiles = new List<Projectile>();
             CollisionWorld = new VoltWorld(0,1.0f);
@@ -167,7 +167,7 @@ namespace NetcodeTest.Server
                 NetworkClient client = new NetworkClient(feed);
                 client.SetState(NetworkClient.ConnectionState.Open);
                 client.Attach(OutgoingPool);
-                IncomingSyncPool incoming = NetDefs.GenerateIncomingPool(0);
+                IncomingSyncPool incoming = new IncomingSyncPool(NetDefs, 0);
                 client.Attach(incoming);
 
                 RemoteClient newClient = new RemoteClient() {

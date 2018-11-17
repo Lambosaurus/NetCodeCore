@@ -49,18 +49,5 @@ namespace NetCode
         {
             fieldGenerator.RegisterFieldType(synchronisableType, fieldType, flags);
         }
-
-        public OutgoingSyncPool GenerateOutgoingPool( ushort poolID )
-        {
-            OutgoingSyncPool outgoingPool = new OutgoingSyncPool(entityGenerator, poolID);
-            return outgoingPool;
-        }
-
-        public IncomingSyncPool GenerateIncomingPool(ushort poolID)
-        {
-            IncomingSyncPool incomingPool = new IncomingSyncPool(entityGenerator, poolID);
-            return incomingPool;
-        }
-
     }
 }

@@ -15,9 +15,8 @@ namespace NetCode.SyncPool
         private List<NetworkClient> Subscribers = new List<NetworkClient>();
         private ushort lastEntityID = 0;
 
-        internal OutgoingSyncPool(SyncEntityGenerator generator, ushort poolID) : base(generator, poolID)
+        public OutgoingSyncPool(NetDefinitions netDefs, ushort poolID) : base(netDefs, poolID)
         {
-
         }
         
         internal void Subscribe(NetworkClient destination)

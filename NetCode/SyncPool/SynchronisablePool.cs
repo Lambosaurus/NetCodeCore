@@ -30,9 +30,9 @@ namespace NetCode.SyncPool
 
         protected SyncContext Context;
         
-        internal SynchronisablePool(SyncEntityGenerator generator, ushort poolID)
+        internal SynchronisablePool(NetDefinitions netDefs, ushort poolID)
         {
-            entityGenerator = generator;
+            entityGenerator = netDefs.entityGenerator;
             PoolID = poolID;
 
             SyncHandles = new List<SyncHandle>();

@@ -76,8 +76,8 @@ namespace NetcodeTest
                 (server != null) ? 11003 : 11002
                 ));
 
-            incomingPool = netDefs.GenerateIncomingPool(0);
-            outgoingPool = netDefs.GenerateOutgoingPool(0);
+            incomingPool = new IncomingSyncPool(netDefs, 0);
+            outgoingPool = new OutgoingSyncPool(netDefs, 0);
             client.Attach(incomingPool);
             client.Attach(outgoingPool);
             controlVector = new PlayerControl()
