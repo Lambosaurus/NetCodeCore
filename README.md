@@ -8,6 +8,7 @@ A list of planned improvements include:
   - Partial updates for Lists and Arrays
   - Allow references to objects in other SyncPools
 - Automatic registration of Synchronisers and Entities using Attributes.
+- System for automatically breaking large payloads into many small payloads.
 - Client/Connection improvements:
   - Light security for authenticating clients.
   - Fingerprinting of NetDefinitions so that versions issues can be detected.
