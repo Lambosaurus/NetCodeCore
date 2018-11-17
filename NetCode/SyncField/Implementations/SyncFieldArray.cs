@@ -9,22 +9,22 @@ using System.Reflection;
 
 namespace NetCode.SyncField.Implementations
 {   
-    public class SynchronisableList<T> : SynchronisableContainer<T>
+    public class SynchronisableArray<T> : SynchronisableContainer<T>
     {
         public override object GetValue()
         {
-            List<T> items = new List<T>(elements.Count);
-            foreach (SynchronisableField element in elements)
+            T[] items = new T[elements.Count];
+            for (int i = 0; i < elements.Count; i++)
             {
-                items.Add((T)element.GetValue());
+                items[i] = (T)elements[i].GetValue();
             }
             return items;
         }
 
         public override bool ValueEqual(object newValue)
         {
-            List<T> items = (List<T>)newValue;
-            if (items.Count != elements.Count)
+            T[] items = (T[])newValue;
+            if (items.Length != elements.Count)
             {
                 return false;
             }
@@ -37,12 +37,12 @@ namespace NetCode.SyncField.Implementations
             }
             return true;
         }
-
+        
         public override void SetValue(object newValue)
         {
-            List<T> items = (List<T>)newValue;
-            if (items.Count != elements.Count) { SetElementLength(items.Count); }
-            for (int i = 0; i < items.Count; i++)
+            T[] items = (T[])newValue;
+            if (items.Length != elements.Count) { SetElementLength(items.Length); }
+            for (int i = 0; i < items.Length; i++)
             {
                 elements[i].SetValue(items[i]);
             }

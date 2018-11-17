@@ -52,8 +52,11 @@
     <Compile Include="Payloads\HandshakePayload.cs" />
     <Compile Include="Payloads\PoolDeletionPayload.cs" />
     <Compile Include="Payloads\PoolEventPayload.cs" />
+    <Compile Include="SyncField\Implementations\SyncFieldArray.cs" />
+    <Compile Include="SyncField\Implementations\SyncFieldContainer.cs" />
     <Compile Include="SyncField\Implementations\SyncFieldTimestamp.cs" />
     <Compile Include="SyncField\Implementations\SyncFieldList.cs" />
+    <Compile Include="SyncField\Implementations\SynchronisableString.cs" />
     <Compile Include="SyncPool\SyncEvent.cs" />
     <Compile Include="SyncPool\SyncContext.cs" />
     <Compile Include="SyncField\Implementations\SynchronisableReference.cs" />
@@ -72,7 +75,7 @@
     <Compile Include="SyncField\SyncFieldDescriptor.cs" />
     <Compile Include="SyncEntity\SynchronisableEntity.cs" />
     <Compile Include="SyncField\SyncFieldGenerator.cs" />
-    <Compile Include="SyncField\Implementations\SyncFieldGenerics.cs" />
+    <Compile Include="SyncField\Implementations\SyncFieldNumerics.cs" />
     <Compile Include="SynchronisableAttribute.cs" />
     <Compile Include="SyncField\SynchronisableField.cs" />
     <Compile Include="Payloads\PoolRevisionPayload.cs" />

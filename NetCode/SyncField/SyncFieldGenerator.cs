@@ -69,7 +69,7 @@ namespace NetCode.SyncField
         {
             RuntimeTypeHandle typeHandle;
 
-            if (type.IsEnum) // type.BaseType == typeof(System.Enum))
+            if (type.IsEnum)
             {
                 // Each enum is its own type derived from System.Enum
                 typeHandle = typeof(System.Enum).TypeHandle;
@@ -78,7 +78,14 @@ namespace NetCode.SyncField
             {
                 Type elementType = type.GetGenericArguments()[0];
                 Type syncListType = typeof(SynchronisableList<>).MakeGenericType(new Type[] { elementType });
-
+                FieldConstructorLookupContent elementcontent = LookupSyncFieldConstructor(elementType, syncFlags);
+                elementcontent.InsertConstructor(DelegateGenerator.GenerateConstructor(syncListType));
+                return elementcontent;
+            }
+            else if (type.IsArray)
+            {
+                Type elementType = type.GetElementType();
+                Type syncListType = typeof(SynchronisableArray<>).MakeGenericType(new Type[] { elementType });
                 FieldConstructorLookupContent elementcontent = LookupSyncFieldConstructor(elementType, syncFlags);
                 elementcontent.InsertConstructor(DelegateGenerator.GenerateConstructor(syncListType));
                 return elementcontent;

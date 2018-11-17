@@ -8,19 +8,19 @@ namespace NetCode.SyncField
     {
         protected SyncFlags flags;
 
-        public Type FieldType;
+        public Type ReferenceType;
         public Func<object, object> Getter;
         public Action<object, object> Setter;
         
         private Func<object>[] constructor;
 
-        public SyncFieldDescriptor(Func<object>[] fieldConstructor, Func<object, object> fieldGetter, Action<object, object> fieldSetter, SyncFlags syncFlags, Type fieldType)
+        public SyncFieldDescriptor(Func<object>[] fieldConstructor, Func<object, object> fieldGetter, Action<object, object> fieldSetter, SyncFlags syncFlags, Type referenceType)
         {
             constructor = fieldConstructor;
             Getter = fieldGetter;
             Setter = fieldSetter;
             flags = syncFlags;
-            FieldType = fieldType;
+            ReferenceType = referenceType;
         }
 
         public SynchronisableField GenerateField(byte elementDepth = 0)

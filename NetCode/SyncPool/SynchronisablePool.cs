@@ -37,7 +37,7 @@ namespace NetCode.SyncPool
 
             SyncHandles = new List<SyncHandle>();
             SyncSlots = new SyncSlot[DefaultEntityCount];
-            Revision = 1; // TODO: There seems to be a zero revision bug causing skips. Fix this and reset starting revision to 0.
+            Revision = 0; // TODO: There seems to be a zero revision bug causing skips. Fix this and reset starting revision to 0.
 
             Context = new SyncContext(this, 0, 0);
         }
@@ -51,7 +51,7 @@ namespace NetCode.SyncPool
 
             SyncHandles.Clear();
             SyncSlots = new SyncSlot[DefaultEntityCount];
-            Revision = 1;
+            Revision = 0;
         }
 
         public SyncHandle GetHandleByObject(object obj)
