@@ -6,7 +6,7 @@ using NetCode.Util;
 
 namespace NetCode.SyncField.Implementations
 {
-    [FieldSynchroniser(typeof(Enum))]
+    [NetSynchronisableField(typeof(Enum))]
     public class SynchronisableEnum : SynchronisableField
     {
         protected byte value;
@@ -19,7 +19,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(byte); }
     }
 
-    [FieldSynchroniser(typeof(bool))]
+    [NetSynchronisableField(typeof(bool))]
     public class SynchronisableBool : SynchronisableField
     {
         protected bool value;
@@ -32,7 +32,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(byte); }
     }
 
-    [FieldSynchroniser(typeof(byte))]
+    [NetSynchronisableField(typeof(byte))]
     public class SynchronisableByte : SynchronisableField
     {
         protected byte value;
@@ -45,7 +45,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(byte); }
     }
 
-    [FieldSynchroniser(typeof(short))]
+    [NetSynchronisableField(typeof(short))]
     public class SynchronisableShort : SynchronisableField
     {
         protected short value;
@@ -58,7 +58,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(short); }
     }
 
-    [FieldSynchroniser(typeof(ushort))]
+    [NetSynchronisableField(typeof(ushort))]
     public class SynchronisableUShort : SynchronisableField
     {
         protected ushort value;
@@ -71,7 +71,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(ushort); }
     }
 
-    [FieldSynchroniser(typeof(int))]
+    [NetSynchronisableField(typeof(int))]
     public class SynchronisableInt : SynchronisableField
     {
         protected int value;
@@ -84,7 +84,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(int); }
     }
 
-    [FieldSynchroniser(typeof(uint))]
+    [NetSynchronisableField(typeof(uint))]
     public class SynchronisableUInt : SynchronisableField
     {
         protected uint value;
@@ -97,7 +97,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(uint); }
     }
 
-    [FieldSynchroniser(typeof(long))]
+    [NetSynchronisableField(typeof(long))]
     public class SynchronisableLong : SynchronisableField
     {
         protected long value;
@@ -110,7 +110,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(long); }
     }
 
-    [FieldSynchroniser(typeof(ulong))]
+    [NetSynchronisableField(typeof(ulong))]
     public class SynchronisableULong : SynchronisableField
     {
         protected ulong value;
@@ -123,7 +123,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(ulong); }
     }
 
-    [FieldSynchroniser(typeof(float))]
+    [NetSynchronisableField(typeof(float))]
     public class SynchronisableFloat : SynchronisableField
     {
         protected float value;
@@ -136,7 +136,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(float); }
     }
 
-    [FieldSynchroniser(typeof(double))]
+    [NetSynchronisableField(typeof(double))]
     public class SynchronisableDouble : SynchronisableField
     {
         protected double value;
@@ -149,7 +149,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(double); }
     }
 
-    [FieldSynchroniser(typeof(float), SyncFlags.HalfPrecision)]
+    [NetSynchronisableField(typeof(float), SyncFlags.HalfPrecision)]
     public class SynchronisableHalf : SynchronisableField
     {
         protected Half value;

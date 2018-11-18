@@ -59,13 +59,7 @@ namespace NetcodeTest
 
         private void SetupNetwork()
         {
-            netDefs.RegisterType(typeof(Asteroid));
-            netDefs.RegisterType(typeof(Ship));
-            netDefs.RegisterType(typeof(PlayerControl));
-            netDefs.RegisterType(typeof(Projectile));
-            netDefs.RegisterType(typeof(Explosion));
-            netDefs.RegisterType(typeof(ServerReport));
-
+            netDefs.LoadEntityTypes();
             server = new AsteroidServer(netDefs, Resolution.ToVector2(), 11002);
             
             client = new NetworkClient( new UDPConnection(

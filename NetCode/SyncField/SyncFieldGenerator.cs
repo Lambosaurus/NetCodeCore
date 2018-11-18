@@ -25,17 +25,17 @@ namespace NetCode.SyncField
 
         private static void LoadFieldTypes()
         {
-            string definedIn = typeof(FieldSynchroniserAttribute).Assembly.GetName().Name;
+            string definedIn = typeof(NetSynchronisableFieldAttribute).Assembly.GetName().Name;
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 if ((!assembly.GlobalAssemblyCache) && ((assembly.GetName().Name == definedIn) || assembly.GetReferencedAssemblies().Any(a => a.Name == definedIn)))
                 {
                     foreach (Type type in assembly.GetTypes())
                     {
-                        object[] attributes = type.GetCustomAttributes(typeof(FieldSynchroniserAttribute), false);
+                        object[] attributes = type.GetCustomAttributes(typeof(NetSynchronisableFieldAttribute), false);
                         if (attributes.Length > 0)
                         {
-                            FieldSynchroniserAttribute attribute = (FieldSynchroniserAttribute)attributes[0];
+                            NetSynchronisableFieldAttribute attribute = (NetSynchronisableFieldAttribute)attributes[0];
                             RegisterFieldType(type, attribute.FieldType, attribute.Flags);
                         }
                     }

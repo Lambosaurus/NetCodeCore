@@ -12,16 +12,16 @@ namespace NetcodeTest.Entities
         public Vector2 Position { get; protected set; }
         public float Angle { get; protected set; }
 
-        [Synchronisable(SyncFlags.HalfPrecision)]
+        [NetSynchronisable(SyncFlags.HalfPrecision)]
         public Vector2 Velocity { get; protected set; }
-        [Synchronisable(SyncFlags.HalfPrecision)]
+        [NetSynchronisable(SyncFlags.HalfPrecision)]
         public float AngularVelocity { get; protected set; }
 
-        [Synchronisable(SyncFlags.HalfPrecision)]
+        [NetSynchronisable(SyncFlags.HalfPrecision)]
         protected Vector2 basePosition { get; set; }
-        [Synchronisable(SyncFlags.HalfPrecision)]
+        [NetSynchronisable(SyncFlags.HalfPrecision)]
         protected float baseAngle { get; set; }
-        [Synchronisable(SyncFlags.Timestamp)]
+        [NetSynchronisable(SyncFlags.Timestamp)]
         protected long baseTimestamp { get; set; }
         
         public bool NeedsMotionReset { get; private set; } = true;

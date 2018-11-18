@@ -12,11 +12,12 @@ using NetcodeTest.Events;
 
 namespace NetcodeTest.Entities
 {
+    [NetSynchronisableEntity]
     public class Ship : Physical
     {
-        [Synchronisable]
+        [NetSynchronisable]
         public Color Color { get; protected set; }
-        [Synchronisable]
+        [NetSynchronisable]
         public Vector2 Size { get; protected set; }
         
         float Thrust = 300;

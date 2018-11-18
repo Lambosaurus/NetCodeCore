@@ -12,9 +12,10 @@ using NetcodeTest.Events;
 
 namespace NetcodeTest.Entities
 {
+    [NetSynchronisableEntity]
     public class Asteroid : Physical
     {
-        [Synchronisable]
+        [NetSynchronisable]
         public float Size { get; protected set; }
 
         public const float MinimumSize = 8f;

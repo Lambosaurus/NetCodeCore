@@ -10,13 +10,14 @@ using NetcodeTest.Util;
 
 namespace NetcodeTest.Events
 {
+    [NetSynchronisableEntity]
     public class Explosion : Event
     {
-        [Synchronisable(SyncFlags.HalfPrecision)]
+        [NetSynchronisable(SyncFlags.HalfPrecision)]
         public Vector2 Position { get; protected set; }
-        [Synchronisable(SyncFlags.HalfPrecision)]
+        [NetSynchronisable(SyncFlags.HalfPrecision)]
         public float Scale { get; protected set; }
-        [Synchronisable(SyncFlags.HalfPrecision)]
+        [NetSynchronisable(SyncFlags.HalfPrecision)]
         public float Duration { get; protected set; }
        
         public float Alpha { get; protected set; }

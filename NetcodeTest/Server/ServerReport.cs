@@ -9,12 +9,13 @@ using NetcodeTest.Entities;
 
 namespace NetcodeTest.Server
 {
+    [NetSynchronisableEntity]
     public class ServerReport
     {
-        [Synchronisable]
+        [NetSynchronisable]
         public List<string> Clients = new List<string>();
         
-        [Synchronisable(SyncFlags.Reference)]
+        [NetSynchronisable(SyncFlags.Reference)]
         public List<Ship> Ships = new List<Ship>();
     }
 }

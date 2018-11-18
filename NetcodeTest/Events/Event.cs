@@ -13,7 +13,7 @@ namespace NetcodeTest.Events
 {
     public abstract class Event
     {
-        [Synchronisable(SyncFlags.Timestamp)]
+        [NetSynchronisable(SyncFlags.Timestamp)]
         public long Timestamp { get; protected set; }
                 
         public abstract bool Expired();

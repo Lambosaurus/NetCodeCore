@@ -33,12 +33,26 @@ namespace NetCode
     /// For these variables to be synchronised, they must be visible to the class being synchronised.
     /// Ie, a private and inherted variable may not be synced.
     /// </summary>
-    public class SynchronisableAttribute : System.Attribute
+    public class NetSynchronisableAttribute : System.Attribute
     {
         public SyncFlags Flags { get; private set; }
-        public SynchronisableAttribute(SyncFlags flags = SyncFlags.None)
+        public NetSynchronisableAttribute(SyncFlags flags = SyncFlags.None)
         {
             Flags = flags;
+        }
+    }
+
+    /// <summary>
+    /// Delares a synchronisable field, and the target type to synchronised.
+    /// </summary>
+    public class NetSynchronisableEntityAttribute : System.Attribute
+    {
+        public string Tag { get; private set; }
+
+        /// <param name="tag">A tag that can be used to loading specific entities into NetDefinitions. Untagged items will always be loaded.</param>
+        public NetSynchronisableEntityAttribute(string tag = null)
+        {
+            Tag = tag;
         }
     }
 }

@@ -29,9 +29,9 @@ namespace NetCode.SyncEntity
 
             foreach (FieldInfo fieldInfo in entityType.GetFields(FIELD_SEARCH_FLAGS))
             {
-                foreach (object attribute in fieldInfo.GetCustomAttributes(true).Where( attr => attr is SynchronisableAttribute ))
+                foreach (object attribute in fieldInfo.GetCustomAttributes(true).Where( attr => attr is NetSynchronisableAttribute ))
                 {
-                    SyncFlags flags = ((SynchronisableAttribute)attribute).Flags;
+                    SyncFlags flags = ((NetSynchronisableAttribute)attribute).Flags;
                     SyncFieldDescriptor descriptor = SyncFieldGenerator.GenerateFieldDescriptor(fieldInfo, flags);
                     fieldDescriptors.Add(descriptor);
                 }
@@ -39,9 +39,9 @@ namespace NetCode.SyncEntity
 
             foreach (PropertyInfo propertyInfo in entityType.GetProperties(FIELD_SEARCH_FLAGS))
             {
-                foreach (object attribute in propertyInfo.GetCustomAttributes(true).Where(attr => attr is SynchronisableAttribute))
+                foreach (object attribute in propertyInfo.GetCustomAttributes(true).Where(attr => attr is NetSynchronisableAttribute))
                 {
-                    SyncFlags flags = ((SynchronisableAttribute)attribute).Flags;
+                    SyncFlags flags = ((NetSynchronisableAttribute)attribute).Flags;
                     SyncFieldDescriptor descriptor = SyncFieldGenerator.GenerateFieldDescriptor(propertyInfo, flags);
                     fieldDescriptors.Add(descriptor);
                 }
