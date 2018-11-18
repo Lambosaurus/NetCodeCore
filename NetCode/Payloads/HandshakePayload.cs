@@ -8,9 +8,9 @@ using NetCode.Util;
 
 namespace NetCode.Payloads
 {
+    [EnumeratePayload]
     public class HandshakePayload : Payload
     {
-        public override PayloadType Type { get { return PayloadType.Handshake; } }
         public override bool ImmediateTransmitRequired { get { return true; } }
 
         public override bool AcknowledgementRequired

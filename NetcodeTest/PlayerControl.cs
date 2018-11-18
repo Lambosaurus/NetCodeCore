@@ -9,6 +9,7 @@ using NetCode;
 
 namespace NetcodeTest
 {
+    [EnumerateSynchEntity]
     public class PlayerControl
     {
         [Synchronisable]

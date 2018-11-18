@@ -6,6 +6,7 @@ using NetCode.Util;
 
 namespace NetCode.SyncField.Implementations
 {
+    [EnumerateSyncField(typeof(Enum))]
     public class SynchronisableEnum : SynchronisableField
     {
         protected byte value;
@@ -18,6 +19,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(byte); }
     }
 
+    [EnumerateSyncField(typeof(bool))]
     public class SynchronisableBool : SynchronisableField
     {
         protected bool value;
@@ -30,6 +32,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(byte); }
     }
 
+    [EnumerateSyncField(typeof(byte))]
     public class SynchronisableByte : SynchronisableField
     {
         protected byte value;
@@ -42,6 +45,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(byte); }
     }
 
+    [EnumerateSyncField(typeof(short))]
     public class SynchronisableShort : SynchronisableField
     {
         protected short value;
@@ -54,6 +58,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(short); }
     }
 
+    [EnumerateSyncField(typeof(ushort))]
     public class SynchronisableUShort : SynchronisableField
     {
         protected ushort value;
@@ -66,6 +71,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(ushort); }
     }
 
+    [EnumerateSyncField(typeof(int))]
     public class SynchronisableInt : SynchronisableField
     {
         protected int value;
@@ -78,6 +84,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(int); }
     }
 
+    [EnumerateSyncField(typeof(uint))]
     public class SynchronisableUInt : SynchronisableField
     {
         protected uint value;
@@ -90,6 +97,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(uint); }
     }
 
+    [EnumerateSyncField(typeof(long))]
     public class SynchronisableLong : SynchronisableField
     {
         protected long value;
@@ -102,6 +110,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(long); }
     }
 
+    [EnumerateSyncField(typeof(ulong))]
     public class SynchronisableULong : SynchronisableField
     {
         protected ulong value;
@@ -114,6 +123,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(ulong); }
     }
 
+    [EnumerateSyncField(typeof(float))]
     public class SynchronisableFloat : SynchronisableField
     {
         protected float value;
@@ -126,6 +136,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(float); }
     }
 
+    [EnumerateSyncField(typeof(double))]
     public class SynchronisableDouble : SynchronisableField
     {
         protected double value;
@@ -138,13 +149,14 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(double); }
     }
 
+    [EnumerateSyncField(typeof(float), SyncFlags.HalfPrecision)]
     public class SynchronisableHalf : SynchronisableField
     {
         protected Half value;
         public override void SetValue(object new_value) { value = (Half)((float)new_value); }
         public override object GetValue() { return (float)value; }
         public override bool ValueEqual(object new_value) { return (Half)((float)new_value) == value; }
-        public override int WriteToBufferSize() { return 2; }
+        public override int WriteToBufferSize() { return Primitive.SizeofHalf; }
         public override void Write(byte[] data, ref int index) { Primitive.WriteHalf(data, ref index, value); }
         public override void Read(byte[] data, ref int index) { value = Primitive.ReadHalf(data, ref index); }
         public override void Skip(byte[] data, ref int index) { index += Primitive.SizeofHalf; }

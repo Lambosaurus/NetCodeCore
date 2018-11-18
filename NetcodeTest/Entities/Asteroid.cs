@@ -12,6 +12,7 @@ using NetcodeTest.Events;
 
 namespace NetcodeTest.Entities
 {
+    [EnumerateSynchEntity]
     public class Asteroid : Physical
     {
         [Synchronisable]

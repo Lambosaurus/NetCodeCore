@@ -12,18 +12,18 @@ namespace NetCode.SyncField
         public Func<object, object> Getter { get; private set; }
         public Action<object, object> Setter { get; private set; }
 
-        private Func<object>[] Constructors;
+        private Func<SynchronisableField>[] Constructors;
 
-        public SyncFieldDescriptor(Func<object> fieldConstructor, SyncFlags syncFlags, Type referenceType = null)
+        public SyncFieldDescriptor(Func<SynchronisableField> fieldConstructor, SyncFlags syncFlags, Type referenceType = null)
         {
-            Constructors = new Func<object>[] { fieldConstructor };
+            Constructors = new Func<SynchronisableField>[] { fieldConstructor };
             flags = syncFlags;
             ReferenceType = referenceType;
         }
         
-        public void InsertParentConstructor(Func<object> fieldConstructor)
+        public void InsertParentConstructor(Func<SynchronisableField> fieldConstructor)
         {
-            Func<object>[] newConstructors = new Func<object>[Constructors.Length + 1];
+            Func<SynchronisableField>[] newConstructors = new Func<SynchronisableField>[Constructors.Length + 1];
             newConstructors[0] = fieldConstructor;
             Constructors.CopyTo(newConstructors, 1);
             Constructors = newConstructors;
@@ -37,7 +37,7 @@ namespace NetCode.SyncField
 
         public SynchronisableField GenerateField(byte elementDepth = 0)
         {
-            SynchronisableField field = (SynchronisableField)(Constructors[elementDepth].Invoke());
+            SynchronisableField field = (Constructors[elementDepth].Invoke());
             field.Flags = flags;
             field.Descriptor = this;
             field.ElementDepth = elementDepth;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 using NetCode.SyncEntity;
 using NetCode.SyncField;
@@ -10,14 +11,11 @@ namespace NetCode
 {
     public class NetDefinitions
     {
-
-        internal SyncFieldGenerator fieldGenerator;
         internal SyncEntityGenerator entityGenerator;
 
         public NetDefinitions()
         {
-            fieldGenerator = new SyncFieldGenerator();
-            entityGenerator = new SyncEntityGenerator(fieldGenerator);
+            entityGenerator = new SyncEntityGenerator();
         }
         
         uint packetID = 0;
@@ -26,28 +24,27 @@ namespace NetCode
             packetID += 1;
             return packetID;
         }
-        
-        /// <summary>
-        /// Registers a new type of synchronisable entity to the manager.
-        /// This must be done before the entity is added to any SyncPools
-        /// Objects must be registered in the same order for any client Netcode
-        /// </summary>
-        /// <param name="sync_type">The synchronisable entity to register</param>
-        public void RegisterType(Type syncType)
-        {
-            entityGenerator.RegisterEntityType(syncType);
-        }
 
         /// <summary>
-        /// Registers a SynchronisableField implementation to enable custom type parsing
-        /// This action must be exactly mirrored on any client Netcode
+        /// Registers types to the NetDefinitions so that they may be used in any SyncPools this NetDefinitons is based on.
+        /// Any two linked SyncPools MUST have the same NetDefinitons. Any inconsistancy in class names, number, and load order WILL cause errors.
         /// </summary>
-        /// <param name="synchronisableType">The SynchronisableField implementation to register against the following type and flags</param>
-        /// <param name="fieldType">The type of field parsed by SynchronisableField</param>
-        /// <param name="flags">The field implentation may be registered against SyncFlags.HalfPrecision</param>
-        public void RegisterField(Type synchronisableType, Type fieldType, SyncFlags flags = SyncFlags.None)
+        /// <param name="tags">A list of tags to match NetSynchronisableEntityAttribtes by.</param>
+        public void LoadEntityTypes(string[] tags = null)
         {
-            fieldGenerator.RegisterFieldType(synchronisableType, fieldType, flags);
+            if (tags == null)
+            {
+                tags = new string[] { null };
+            }
+            else
+            {
+                string[] nTags = new string[tags.Length + 1];
+                nTags[0] = null;
+                tags.CopyTo(nTags, 1);
+                tags = nTags;
+            }
+
+            entityGenerator.LoadEntityTypes(tags);
         }
     }
 }

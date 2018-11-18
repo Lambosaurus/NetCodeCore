@@ -33,7 +33,7 @@ namespace NetCode
     /// For these variables to be synchronised, they must be visible to the class being synchronised.
     /// Ie, a private and inherted variable may not be synced.
     /// </summary>
-    public class SynchronisableAttribute : System.Attribute
+    public class SynchronisableAttribute : Attribute
     {
         public SyncFlags Flags { get; private set; }
         public SynchronisableAttribute(SyncFlags flags = SyncFlags.None)

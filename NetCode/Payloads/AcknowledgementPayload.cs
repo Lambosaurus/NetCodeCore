@@ -7,9 +7,9 @@ using NetCode.Util;
 
 namespace NetCode.Payloads
 {
+    [EnumeratePayload]
     public class AcknowledgementPayload : Payload
     {
-        public override PayloadType Type { get { return PayloadType.Acknowledgement; } }
         public override bool AcknowledgementRequired { get { return false; } }
         public override bool ImmediateTransmitRequired { get { return true; } }
 

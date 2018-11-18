@@ -10,6 +10,7 @@ using NetcodeTest.Util;
 
 namespace NetcodeTest.Events
 {
+    [EnumerateSynchEntity]
     public class Explosion : Event
     {
         [Synchronisable(SyncFlags.HalfPrecision)]

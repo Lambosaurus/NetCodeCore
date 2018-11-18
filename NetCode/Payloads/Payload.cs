@@ -13,17 +13,6 @@ namespace NetCode.Payloads
 {
     public abstract class Payload
     {
-        public enum PayloadType {
-            None,
-            Handshake,
-            Acknowledgement,
-            PoolRevision,
-            PoolDeletion,
-            PoolEvent,
-            UDPConnectionRequest
-        }
-        public abstract PayloadType Type { get; }
-
         public int Size { get; protected set; }
 
         protected byte[] Data;
@@ -66,13 +55,13 @@ namespace NetCode.Payloads
         
         private void WritePayloadHeader()
         {
-            Primitive.WriteByte(Data, ref DataIndex, (byte)Type);
+            Primitive.WriteByte(Data, ref DataIndex,  PayloadGenerator.GetPayloadID( this.GetType().TypeHandle));
             Primitive.WriteUShort(Data, ref DataIndex, (ushort)Size);
         }
         
-        private static void ReadPayloadHeader( byte[] data, ref int index, out PayloadType payloadType, out int size )
+        private static void ReadPayloadHeader( byte[] data, ref int index, out byte payloadType, out int size )
         {
-            payloadType = (PayloadType)Primitive.ReadByte(data, ref index);
+            payloadType = Primitive.ReadByte(data, ref index);
             size = Primitive.ReadUShort(data, ref index);
         }
         
@@ -100,9 +89,9 @@ namespace NetCode.Payloads
         public static Payload Decode(byte[] data, ref int index)
         {
             int tempIndex = index;
-            ReadPayloadHeader(data, ref tempIndex, out PayloadType payloadType, out int size);
+            ReadPayloadHeader(data, ref tempIndex, out byte payloadType, out int size);
 
-            Payload payload = GetPayloadByType(payloadType);
+            Payload payload = PayloadGenerator.GeneratePayload(payloadType);
 
             if (payload == null || index + size > data.Length)
             {
@@ -119,27 +108,6 @@ namespace NetCode.Payloads
         {
             Buffer.BlockCopy(Data, DataStart, data, index, Size);
             index += Size;
-        }
-        
-        public static Payload GetPayloadByType(PayloadType payloadType)
-        {
-            switch (payloadType)
-            {
-                case (PayloadType.Handshake):
-                    return new HandshakePayload();
-                case (PayloadType.Acknowledgement):
-                    return new AcknowledgementPayload();
-                case (PayloadType.PoolRevision):
-                    return new PoolRevisionPayload();
-                case (PayloadType.PoolDeletion):
-                    return new PoolDeletionPayload();
-                case (PayloadType.PoolEvent):
-                    return new PoolEventPayload();
-                case (PayloadType.UDPConnectionRequest):
-                    return new UDPConnectionRequestPayload();
-                default:
-                    return null;
-            }
         }
     }
 }

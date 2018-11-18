@@ -6,10 +6,10 @@ using NetCode.Payloads;
 
 namespace NetCode.Connection.UDP
 {
+    [EnumeratePayload]
     class UDPConnectionRequestPayload : Payload
     {
         public override bool AcknowledgementRequired { get { return false; } }
-        public override PayloadType Type { get { return PayloadType.UDPConnectionRequest; } }
         public override bool ImmediateTransmitRequired { get { return true; } }
 
         public UDPConnectionRequestPayload()

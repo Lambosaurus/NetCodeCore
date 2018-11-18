@@ -13,6 +13,7 @@ using NetcodeTest.Events;
 
 namespace NetcodeTest.Entities
 {
+    [EnumerateSynchEntity]
     public class Projectile : Entity
     {
         [Synchronisable(SyncFlags.Reference)]
