@@ -59,8 +59,6 @@ namespace NetcodeTest
 
         private void SetupNetwork()
         {
-            NetcodeFields.RegisterCustomFields(netDefs);
-
             netDefs.RegisterType(typeof(Asteroid));
             netDefs.RegisterType(typeof(Ship));
             netDefs.RegisterType(typeof(PlayerControl));

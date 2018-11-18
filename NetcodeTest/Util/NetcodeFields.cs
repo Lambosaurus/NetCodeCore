@@ -10,17 +10,7 @@ using NetCode.Util;
 
 namespace NetcodeTest.Util
 {
-
-    public static class NetcodeFields
-    {
-        public static void RegisterCustomFields(NetDefinitions netDefs)
-        {
-            netDefs.RegisterField(typeof(SynchronisableVector2), typeof(Vector2));
-            netDefs.RegisterField(typeof(SynchronisableHalfVector2), typeof(Vector2), SyncFlags.HalfPrecision);
-            netDefs.RegisterField(typeof(SynchronisableColor), typeof(Color));
-        }
-    }
-
+    [FieldSynchroniser(typeof(Vector2))]
     public class SynchronisableVector2 : SynchronisableField
     {
         private Vector2 value;
@@ -41,6 +31,7 @@ namespace NetcodeTest.Util
         public override void Skip(byte[] data, ref int index) { index += sizeof(float) * 2; }
     }
 
+    [FieldSynchroniser(typeof(Vector2), SyncFlags.HalfPrecision)]
     public class SynchronisableHalfVector2 : SynchronisableField
     {
         private Half x;
@@ -71,6 +62,7 @@ namespace NetcodeTest.Util
         public override void Skip(byte[] data, ref int index) { index += Primitive.SizeofHalf * 2; }
     }
 
+    [FieldSynchroniser(typeof(Color))]
     public class SynchronisableColor : SynchronisableField
     {
         private Color value;
@@ -94,5 +86,4 @@ namespace NetcodeTest.Util
         }
         public override void Skip(byte[] data, ref int index) { index += sizeof(uint); }
     }
-
 }

@@ -22,7 +22,7 @@ namespace NetCode.SyncEntity
         // This is a set of fields used in the odd cases where an entity update must be skipped.
         private SynchronisableField[] StaticFields;
 
-        public SyncEntityDescriptor(SyncFieldGenerator fieldGenerator, Type entityType, ushort typeID)
+        public SyncEntityDescriptor(Type entityType, ushort typeID)
         {
             TypeID = typeID;
             Constructor = DelegateGenerator.GenerateConstructor(entityType);
@@ -32,7 +32,7 @@ namespace NetCode.SyncEntity
                 foreach (object attribute in fieldInfo.GetCustomAttributes(true).Where( attr => attr is SynchronisableAttribute ))
                 {
                     SyncFlags flags = ((SynchronisableAttribute)attribute).Flags;
-                    SyncFieldDescriptor descriptor = fieldGenerator.GenerateFieldDescriptor(fieldInfo, flags);
+                    SyncFieldDescriptor descriptor = SyncFieldGenerator.GenerateFieldDescriptor(fieldInfo, flags);
                     fieldDescriptors.Add(descriptor);
                 }
             }
@@ -42,7 +42,7 @@ namespace NetCode.SyncEntity
                 foreach (object attribute in propertyInfo.GetCustomAttributes(true).Where(attr => attr is SynchronisableAttribute))
                 {
                     SyncFlags flags = ((SynchronisableAttribute)attribute).Flags;
-                    SyncFieldDescriptor descriptor = fieldGenerator.GenerateFieldDescriptor(propertyInfo, flags);
+                    SyncFieldDescriptor descriptor = SyncFieldGenerator.GenerateFieldDescriptor(propertyInfo, flags);
                     fieldDescriptors.Add(descriptor);
                 }
             }

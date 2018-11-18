@@ -52,6 +52,7 @@
     <Compile Include="Payloads\HandshakePayload.cs" />
     <Compile Include="Payloads\PoolDeletionPayload.cs" />
     <Compile Include="Payloads\PoolEventPayload.cs" />
+    <Compile Include="SyncField\FieldSynchroniserAttribute.cs" />
     <Compile Include="SyncField\Implementations\SyncFieldArray.cs" />
     <Compile Include="SyncField\Implementations\SyncFieldContainer.cs" />
     <Compile Include="SyncField\Implementations\SyncFieldTimestamp.cs" />

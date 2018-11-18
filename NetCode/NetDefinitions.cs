@@ -10,14 +10,11 @@ namespace NetCode
 {
     public class NetDefinitions
     {
-
-        internal SyncFieldGenerator fieldGenerator;
         internal SyncEntityGenerator entityGenerator;
 
         public NetDefinitions()
         {
-            fieldGenerator = new SyncFieldGenerator();
-            entityGenerator = new SyncEntityGenerator(fieldGenerator);
+            entityGenerator = new SyncEntityGenerator();
         }
         
         uint packetID = 0;
@@ -36,18 +33,6 @@ namespace NetCode
         public void RegisterType(Type syncType)
         {
             entityGenerator.RegisterEntityType(syncType);
-        }
-
-        /// <summary>
-        /// Registers a SynchronisableField implementation to enable custom type parsing
-        /// This action must be exactly mirrored on any client Netcode
-        /// </summary>
-        /// <param name="synchronisableType">The SynchronisableField implementation to register against the following type and flags</param>
-        /// <param name="fieldType">The type of field parsed by SynchronisableField</param>
-        /// <param name="flags">The field implentation may be registered against SyncFlags.HalfPrecision</param>
-        public void RegisterField(Type synchronisableType, Type fieldType, SyncFlags flags = SyncFlags.None)
-        {
-            fieldGenerator.RegisterFieldType(synchronisableType, fieldType, flags);
         }
     }
 }

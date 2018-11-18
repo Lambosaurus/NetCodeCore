@@ -13,13 +13,10 @@ namespace NetCode.SyncEntity
         List<SyncEntityDescriptor> entityDescriptors = new List<SyncEntityDescriptor>();
         Dictionary<RuntimeTypeHandle, SyncEntityDescriptor> entityDescriptorsByType = new Dictionary<RuntimeTypeHandle, SyncEntityDescriptor>();
 
-        SyncFieldGenerator fieldGenerator;
-
         //TODO: We need a way of fingerprinting this class to verify that the other endpoints have
         //      the same encoding/decoding formatting.
-        public SyncEntityGenerator(SyncFieldGenerator _fieldGenerator)
+        public SyncEntityGenerator()
         {
-            fieldGenerator = _fieldGenerator;
         }
 
         private ushort GetNewTypeID()
@@ -33,7 +30,7 @@ namespace NetCode.SyncEntity
 
         public void RegisterEntityType(Type entityType)
         {
-            SyncEntityDescriptor descriptor = new SyncEntityDescriptor(fieldGenerator, entityType, GetNewTypeID());
+            SyncEntityDescriptor descriptor = new SyncEntityDescriptor(entityType, GetNewTypeID());
             entityDescriptors.Add(descriptor);
             entityDescriptorsByType[entityType.TypeHandle] = descriptor;
         }
