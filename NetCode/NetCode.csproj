@@ -61,6 +61,7 @@
     <Compile Include="SyncField\Implementations\SyncFieldTimestamp.cs" />
     <Compile Include="SyncField\Implementations\SyncFieldList.cs" />
     <Compile Include="SyncField\Implementations\SynchronisableString.cs" />
+    <Compile Include="SyncField\Implementations\SyncFieldVariableLength.cs" />
     <Compile Include="SyncPool\SyncEvent.cs" />
     <Compile Include="SyncPool\SyncContext.cs" />
     <Compile Include="SyncField\Implementations\SynchronisableReference.cs" />

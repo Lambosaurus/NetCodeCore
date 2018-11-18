@@ -8,7 +8,7 @@ using NetCode.Util;
 namespace NetCode.SyncField.Implementations
 {
     [EnumerateSyncField(typeof(string))]
-    public class SynchronisableString : SynchronisableField
+    public class SynchronisableString : SyncFieldVariableLength
     {
         protected string value;
         public override void SetValue(object new_value) { value = (string)new_value; }
@@ -16,15 +16,35 @@ namespace NetCode.SyncField.Implementations
         public override bool ValueEqual(object new_value) { return (string)new_value == value; }
         public override int WriteToBufferSize()
         {
-            if (value == null) { return sizeof(byte); }
-            return Primitive.ArraySize(value.Length, sizeof(byte));
+            if (value == null) { return SizeOfLengthHeader; }
+            return SizeOfLengthHeader + (value.Length * sizeof(byte));
         }
         public override void Write(byte[] data, ref int index)
         {
-            if (value == null) { Primitive.WriteByte(data, ref index, 0); }
-            else { Primitive.WriteString(data, ref index, value); }
+            if (value == null) { WriteLengthHeader(data, ref index, 0); }
+            else
+            {
+                WriteLengthHeader(data, ref index, value.Length);
+                foreach (char ch in value)
+                {
+                    data[index++] = (byte)ch;
+                }
+            }
         }
-        public override void Read(byte[] data, ref int index) { value = Primitive.ReadString(data, ref index); }
-        public override void Skip(byte[] data, ref int index) { Primitive.ReadString(data, ref index); }
+        public override void Read(byte[] data, ref int index)
+        {
+            int length = ReadLengthHeader(data, ref index);
+            char[] values = new char[length];
+            for (int i = 0; i < length; i++)
+            {
+                values[i] = (char)data[index++];
+            }
+            value = new string(values);
+        }
+        public override void Skip(byte[] data, ref int index)
+        {
+            int length = ReadLengthHeader(data, ref index);
+            index += length;
+        }
     }
 }
