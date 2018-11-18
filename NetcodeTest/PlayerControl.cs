@@ -9,20 +9,20 @@ using NetCode;
 
 namespace NetcodeTest
 {
-    [NetSynchronisableEntity]
+    [EnumerateSynchEntity]
     public class PlayerControl
     {
-        [NetSynchronisable]
+        [Synchronisable]
         public Color ShipColor;
-        [NetSynchronisable(SyncFlags.HalfPrecision)]
+        [Synchronisable(SyncFlags.HalfPrecision)]
         public float Torque;
-        [NetSynchronisable(SyncFlags.HalfPrecision)]
+        [Synchronisable(SyncFlags.HalfPrecision)]
         public float Thrust;
-        [NetSynchronisable]
+        [Synchronisable]
         public bool Ready = false;
-        [NetSynchronisable]
+        [Synchronisable]
         public string PlayerName = "";
-        [NetSynchronisable]
+        [Synchronisable]
         public bool Firing = false;
     }
 }

@@ -48,11 +48,14 @@
     <Compile Include="Connection\UDP\UDPFeed.cs" />
     <Compile Include="Connection\UDP\UDPServer.cs" />
     <Compile Include="Connection\VirtualConnection.cs" />
+    <Compile Include="EnumerateSyncEntityAttribute.cs" />
     <Compile Include="Exceptions.cs" />
+    <Compile Include="Payloads\EnumeratePayloadAttribute.cs" />
     <Compile Include="Payloads\HandshakePayload.cs" />
+    <Compile Include="Payloads\PayloadGenerator.cs" />
     <Compile Include="Payloads\PoolDeletionPayload.cs" />
     <Compile Include="Payloads\PoolEventPayload.cs" />
-    <Compile Include="SyncField\NetSynchronisableFieldAttribute.cs" />
+    <Compile Include="SyncField\EnumerateSyncFieldAttribute.cs" />
     <Compile Include="SyncField\Implementations\SyncFieldArray.cs" />
     <Compile Include="SyncField\Implementations\SyncFieldContainer.cs" />
     <Compile Include="SyncField\Implementations\SyncFieldTimestamp.cs" />
@@ -78,7 +81,7 @@
     <Compile Include="SyncEntity\SynchronisableEntity.cs" />
     <Compile Include="SyncField\SyncFieldGenerator.cs" />
     <Compile Include="SyncField\Implementations\SyncFieldNumerics.cs" />
-    <Compile Include="NetSynchronisableAttributes.cs" />
+    <Compile Include="SynchronisableAttribute.cs" />
     <Compile Include="SyncField\SynchronisableField.cs" />
     <Compile Include="Payloads\PoolRevisionPayload.cs" />
     <Compile Include="SyncPool\SyncHandle.cs" />

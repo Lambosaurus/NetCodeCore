@@ -8,9 +8,9 @@ using NetCode.Connection;
 
 namespace NetCode.Payloads
 {
+    [EnumeratePayload]
     public class PoolRevisionPayload : Payload
     {
-        public override PayloadType Type { get { return PayloadType.PoolRevision; } }
         public override bool AcknowledgementRequired { get { return true; } }
         public override bool ImmediateTransmitRequired { get { return true; } }
 

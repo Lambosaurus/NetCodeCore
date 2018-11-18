@@ -13,10 +13,10 @@ using NetcodeTest.Events;
 
 namespace NetcodeTest.Entities
 {
-    [NetSynchronisableEntity]
+    [EnumerateSynchEntity]
     public class Projectile : Entity
     {
-        [NetSynchronisable(SyncFlags.Reference)]
+        [Synchronisable(SyncFlags.Reference)]
         public Ship Creator;
 
         const float Speed = 500f;

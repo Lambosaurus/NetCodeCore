@@ -7,7 +7,7 @@ using NetCode.Util;
 
 namespace NetCode.SyncField.Implementations
 {
-    [NetSynchronisableField(typeof(string))]
+    [EnumerateSyncField(typeof(string))]
     public class SynchronisableString : SynchronisableField
     {
         protected string value;

@@ -24,13 +24,13 @@ namespace NetCode.SyncEntity
         public SyncEntityDescriptor(Type entityType, ushort typeID)
         {
             TypeID = typeID;
-            Constructor = DelegateGenerator.GenerateConstructor(entityType);
+            Constructor = DelegateGenerator.GenerateConstructor<object>(entityType);
 
-            AttributeHelper.ForAllFieldsWithAttribute<NetSynchronisableAttribute>(entityType,
+            AttributeHelper.ForAllFieldsWithAttribute<SynchronisableAttribute>(entityType,
                (fieldInfo, attribute) => {
                    fieldDescriptors.Add(SyncFieldGenerator.GenerateFieldDescriptor(fieldInfo, attribute.Flags));
                });
-            AttributeHelper.ForAllPropertiesWithAttribute<NetSynchronisableAttribute>(entityType,
+            AttributeHelper.ForAllPropertiesWithAttribute<SynchronisableAttribute>(entityType,
                (propInfo, attribute) => {
                    fieldDescriptors.Add(SyncFieldGenerator.GenerateFieldDescriptor(propInfo, attribute.Flags));
                });

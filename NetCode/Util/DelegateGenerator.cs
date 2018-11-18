@@ -10,14 +10,7 @@ namespace NetCode.Util
     internal static class DelegateGenerator
     {
         private const bool FIND_NONPUBLIC_ACCESSORS = true;
-
-        private static Dictionary<RuntimeTypeHandle, Func<object>> CashedConstructors = new Dictionary<RuntimeTypeHandle, Func<object>>();
-
-        public static Func<object> GetCachedConstructor(RuntimeTypeHandle type)
-        {
-            return CashedConstructors[type];
-        }
-
+        
         /// <summary>
         /// This generates a constructor of the given type.
         /// It will also cashe the constructor to prevent duplicates.
@@ -25,19 +18,19 @@ namespace NetCode.Util
         /// </summary>
         /// <param name="type">A type with a zero argument constructor</param>
         /// <returns>A function that returns a new instance of the given type</returns>
-        public static Func<object> GenerateConstructor(Type type)
+        public static Func<T> GenerateConstructor<T>(Type type)
         {
-            if ( CashedConstructors.Keys.Contains(type.TypeHandle))
-            {
-                return CashedConstructors[type.TypeHandle];
-            }
-
             ConstructorInfo constructor = type.GetConstructor(Type.EmptyTypes);
             if (constructor == null)
             {
                 throw new NetcodeGenerationException(string.Format("Type {0} does not provide a constructor with zero arguments.", type.Name));
             }
-            
+
+            if ( !typeof(T).IsAssignableFrom(type) )
+            {
+                throw new NetcodeGenerationException(string.Format("Type {0} may not be returned as {1}", type.Name, typeof(T).Name));
+            }
+
             DynamicMethod method =
                 new DynamicMethod(
                     string.Format("{0}.new", constructor.DeclaringType.Name),
@@ -50,7 +43,7 @@ namespace NetCode.Util
             gen.Emit(OpCodes.Newobj, constructor);
             gen.Emit(OpCodes.Ret);
 
-            return (Func<object>)method.CreateDelegate(typeof(Func<object>));
+            return (Func<T>)method.CreateDelegate(typeof(Func<T>));
         }
 
         public static Func<object, object> GenerateGetter(FieldInfo field)

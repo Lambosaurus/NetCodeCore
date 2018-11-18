@@ -9,9 +9,9 @@ using NetCode.SyncEntity;
 
 namespace NetCode.Payloads
 {
+    [EnumeratePayload]
     public class PoolEventPayload : Payload
     {
-        public override PayloadType Type { get { return PayloadType.PoolEvent; } }
         public override bool AcknowledgementRequired { get { return acknowledgementRequired; } }
         public override bool ImmediateTransmitRequired { get { return immediateTransmitRequired; } }
 

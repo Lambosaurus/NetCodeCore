@@ -6,7 +6,7 @@ using NetCode.Util;
 
 namespace NetCode.SyncField.Implementations
 {
-    [NetSynchronisableField(typeof(Enum))]
+    [EnumerateSyncField(typeof(Enum))]
     public class SynchronisableEnum : SynchronisableField
     {
         protected byte value;
@@ -19,7 +19,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(byte); }
     }
 
-    [NetSynchronisableField(typeof(bool))]
+    [EnumerateSyncField(typeof(bool))]
     public class SynchronisableBool : SynchronisableField
     {
         protected bool value;
@@ -32,7 +32,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(byte); }
     }
 
-    [NetSynchronisableField(typeof(byte))]
+    [EnumerateSyncField(typeof(byte))]
     public class SynchronisableByte : SynchronisableField
     {
         protected byte value;
@@ -45,7 +45,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(byte); }
     }
 
-    [NetSynchronisableField(typeof(short))]
+    [EnumerateSyncField(typeof(short))]
     public class SynchronisableShort : SynchronisableField
     {
         protected short value;
@@ -58,7 +58,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(short); }
     }
 
-    [NetSynchronisableField(typeof(ushort))]
+    [EnumerateSyncField(typeof(ushort))]
     public class SynchronisableUShort : SynchronisableField
     {
         protected ushort value;
@@ -71,7 +71,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(ushort); }
     }
 
-    [NetSynchronisableField(typeof(int))]
+    [EnumerateSyncField(typeof(int))]
     public class SynchronisableInt : SynchronisableField
     {
         protected int value;
@@ -84,7 +84,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(int); }
     }
 
-    [NetSynchronisableField(typeof(uint))]
+    [EnumerateSyncField(typeof(uint))]
     public class SynchronisableUInt : SynchronisableField
     {
         protected uint value;
@@ -97,7 +97,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(uint); }
     }
 
-    [NetSynchronisableField(typeof(long))]
+    [EnumerateSyncField(typeof(long))]
     public class SynchronisableLong : SynchronisableField
     {
         protected long value;
@@ -110,7 +110,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(long); }
     }
 
-    [NetSynchronisableField(typeof(ulong))]
+    [EnumerateSyncField(typeof(ulong))]
     public class SynchronisableULong : SynchronisableField
     {
         protected ulong value;
@@ -123,7 +123,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(ulong); }
     }
 
-    [NetSynchronisableField(typeof(float))]
+    [EnumerateSyncField(typeof(float))]
     public class SynchronisableFloat : SynchronisableField
     {
         protected float value;
@@ -136,7 +136,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(float); }
     }
 
-    [NetSynchronisableField(typeof(double))]
+    [EnumerateSyncField(typeof(double))]
     public class SynchronisableDouble : SynchronisableField
     {
         protected double value;
@@ -149,7 +149,7 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(byte[] data, ref int index) { index += sizeof(double); }
     }
 
-    [NetSynchronisableField(typeof(float), SyncFlags.HalfPrecision)]
+    [EnumerateSyncField(typeof(float), SyncFlags.HalfPrecision)]
     public class SynchronisableHalf : SynchronisableField
     {
         protected Half value;
