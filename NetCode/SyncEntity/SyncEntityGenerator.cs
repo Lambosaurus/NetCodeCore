@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using System.Reflection;
-
-using NetCode.SyncField;
+using NetCode.Util;
 
 namespace NetCode.SyncEntity
 {
@@ -60,33 +58,18 @@ namespace NetCode.SyncEntity
                 entityTypes[i] = new List<Type>();
             }
 
-            string definedIn = typeof(NetSynchronisableEntityAttribute).Assembly.GetName().Name;
-            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                if ((!assembly.GlobalAssemblyCache) && ((assembly.GetName().Name == definedIn) || assembly.GetReferencedAssemblies().Any(a => a.Name == definedIn)))
+            AttributeHelper.ForAllTypesWithAttribute<NetSynchronisableEntityAttribute>(
+                (type, attribute) =>
                 {
-                    // We only sort through assemblies that include a reference to our attribute to speed up searching.
-                    foreach (Type type in assembly.GetTypes())
+                    for (int i = 0; i < tags.Length; i++)
                     {
-                        // Find all types with the given attribute.
-                        object[] attributes = type.GetCustomAttributes(typeof(NetSynchronisableEntityAttribute), false);
-                        if (attributes.Length > 0)
+                        if (attribute.Tag == tags[i])
                         {
-                            NetSynchronisableEntityAttribute attribute = (NetSynchronisableEntityAttribute)attributes[0];
-
-                            // Check if it matches any of our tags.
-                            for (int i = 0; i < tags.Length; i++)
-                            {
-                                if (attribute.Tag == tags[i])
-                                {
-                                    entityTypes[i].Add(type);
-                                    break;
-                                }
-                            }
+                            entityTypes[i].Add(type);
+                            break;
                         }
                     }
-                }
-            }
+                });
 
             // The types are loaded in order of their tags for future compatibility reasons.
             foreach (List<Type> types in entityTypes)
