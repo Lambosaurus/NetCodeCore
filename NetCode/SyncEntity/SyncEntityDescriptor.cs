@@ -17,8 +17,7 @@ namespace NetCode.SyncEntity
         public int FieldCount { get; private set; }
         public ushort TypeID { get; private set; }
 
-        private const BindingFlags FIELD_SEARCH_FLAGS = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
-        
+
         // This is a set of fields used in the odd cases where an entity update must be skipped.
         private SynchronisableField[] StaticFields;
 
@@ -27,25 +26,14 @@ namespace NetCode.SyncEntity
             TypeID = typeID;
             Constructor = DelegateGenerator.GenerateConstructor(entityType);
 
-            foreach (FieldInfo fieldInfo in entityType.GetFields(FIELD_SEARCH_FLAGS))
-            {
-                foreach (object attribute in fieldInfo.GetCustomAttributes(true).Where( attr => attr is NetSynchronisableAttribute ))
-                {
-                    SyncFlags flags = ((NetSynchronisableAttribute)attribute).Flags;
-                    SyncFieldDescriptor descriptor = SyncFieldGenerator.GenerateFieldDescriptor(fieldInfo, flags);
-                    fieldDescriptors.Add(descriptor);
-                }
-            }
-
-            foreach (PropertyInfo propertyInfo in entityType.GetProperties(FIELD_SEARCH_FLAGS))
-            {
-                foreach (object attribute in propertyInfo.GetCustomAttributes(true).Where(attr => attr is NetSynchronisableAttribute))
-                {
-                    SyncFlags flags = ((NetSynchronisableAttribute)attribute).Flags;
-                    SyncFieldDescriptor descriptor = SyncFieldGenerator.GenerateFieldDescriptor(propertyInfo, flags);
-                    fieldDescriptors.Add(descriptor);
-                }
-            }
+            AttributeHelper.ForAllFieldsWithAttribute<NetSynchronisableAttribute>(entityType,
+               (fieldInfo, attribute) => {
+                   fieldDescriptors.Add(SyncFieldGenerator.GenerateFieldDescriptor(fieldInfo, attribute.Flags));
+               });
+            AttributeHelper.ForAllPropertiesWithAttribute<NetSynchronisableAttribute>(entityType,
+               (propInfo, attribute) => {
+                   fieldDescriptors.Add(SyncFieldGenerator.GenerateFieldDescriptor(propInfo, attribute.Flags));
+               });
 
             FieldCount = fieldDescriptors.Count;
             if (FieldCount >= byte.MaxValue) { throw new NetcodeItemcountException(string.Format("Type {0} contains more than {1} synchronisable fields.", entityType.Name, byte.MaxValue)); }
