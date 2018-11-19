@@ -8,7 +8,7 @@ using NetCode.Util;
 namespace NetCode.SyncField.Implementations
 {
     [EnumerateSyncField(typeof(string))]
-    public class SynchronisableString : SyncFieldVariableLength
+    public class SynchronisableString : SyncFieldExtendableHeader
     {
         protected string value;
         public override void SetValue(object new_value) { value = (string)new_value; }
@@ -21,10 +21,10 @@ namespace NetCode.SyncField.Implementations
         }
         public override void Write(byte[] data, ref int index)
         {
-            if (value == null) { WriteLengthHeader(data, ref index, 0); }
+            if (value == null) { Primitive.WriteNBytes(data, ref index, 0, SizeOfLengthHeader); }
             else
             {
-                WriteLengthHeader(data, ref index, value.Length);
+                Primitive.WriteNBytes(data, ref index, value.Length, SizeOfLengthHeader);
                 foreach (char ch in value)
                 {
                     data[index++] = (byte)ch;
@@ -33,7 +33,7 @@ namespace NetCode.SyncField.Implementations
         }
         public override void Read(byte[] data, ref int index)
         {
-            int length = ReadLengthHeader(data, ref index);
+            int length = Primitive.ReadNBytes(data, ref index, SizeOfLengthHeader);
             char[] values = new char[length];
             for (int i = 0; i < length; i++)
             {
@@ -43,7 +43,7 @@ namespace NetCode.SyncField.Implementations
         }
         public override void Skip(byte[] data, ref int index)
         {
-            int length = ReadLengthHeader(data, ref index);
+            int length = Primitive.ReadNBytes(data, ref index, SizeOfLengthHeader);
             index += length;
         }
     }

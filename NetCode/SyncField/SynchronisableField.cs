@@ -13,8 +13,10 @@ namespace NetCode.SyncField
         public bool PollingRequired { get; protected set; } = false;
         public SyncFlags Flags { get; internal set; }
 
-        internal byte ElementDepth { get; set; }
-        internal SyncFieldDescriptor Descriptor { get; set; }
+        internal virtual void Initialise(SyncFieldDescriptor descriptor, byte elementDepth)
+        {
+            Flags = descriptor.Flags;
+        }
         
         internal bool TrackChanges(object newValue, SyncContext context)
         {
