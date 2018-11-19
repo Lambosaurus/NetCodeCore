@@ -26,6 +26,12 @@ namespace NetCode
         /// If so, the endpoint will match this reference to its appropriate local reference
         /// </summary>
         Reference = (1 << 2),
+
+        /// <summary>
+        /// For array types, this will indicicate that a two byte length should be specified.
+        /// This allows them to contain more items.
+        /// </summary>
+        ExtendedLength = (1 << 3)
     };
 
     /// <summary>

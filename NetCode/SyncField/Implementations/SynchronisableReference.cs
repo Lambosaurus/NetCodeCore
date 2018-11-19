@@ -9,8 +9,16 @@ namespace NetCode.SyncField.Implementations
 {
     public class SynchronisableReference : SynchronisableField
     {
-        protected object value;
-        protected ushort entityID = SyncHandle.NullEntityID;
+        private object value;
+        private ushort entityID = SyncHandle.NullEntityID;
+
+        private SyncFieldDescriptor Descriptor;
+
+        internal override void Initialise(SyncFieldDescriptor descriptor, byte elementDepth)
+        {
+            Flags = descriptor.Flags;
+            Descriptor = descriptor;
+        }
 
         public override void SetValue(object new_value)
         {
@@ -23,7 +31,7 @@ namespace NetCode.SyncField.Implementations
         {
             return new_value == value;
         }
-
+        
         public override void PostProcess(SyncContext context)
         {
             value = null;

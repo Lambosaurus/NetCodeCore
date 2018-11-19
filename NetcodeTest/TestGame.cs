@@ -106,8 +106,8 @@ namespace NetcodeTest
 
         protected override void Update(GameTime gameTime)
         {
-            NetTime.Realtime = false;
-            NetTime.Advance(1000/60);
+            //NetTime.Realtime = false;
+            //NetTime.Advance(1000/60);
 
             float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
             

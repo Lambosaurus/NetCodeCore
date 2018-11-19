@@ -84,6 +84,24 @@ namespace NetCode.Util
                 WriteUInt(data, ref index, value);
             }
         }
+        public static void WriteNBytes(byte[] data, ref int index, int value, int bytes)
+        {
+            switch(bytes)
+            {
+                case (4):
+                    data[index++] = (byte)(value >> 24);
+                    goto case 3;
+                case (3):
+                    data[index++] = (byte)(value >> 16);
+                    goto case 2;
+                case (2):
+                    data[index++] = (byte)(value >> 8);
+                    goto case 1;
+                case (1):
+                    data[index++] = (byte)value;
+                    break;
+            }
+        }
 
         public static byte ReadByte(byte[] data, ref int index)
         {
@@ -177,6 +195,26 @@ namespace NetCode.Util
             for (int i = 0; i < length; i++)
             {
                 value[i] = ReadUInt(data, ref index);
+            }
+            return value;
+        }
+        public static int ReadNBytes(byte[] data, ref int index, int bytes)
+        {
+            int value = 0;
+            switch (bytes)
+            {
+                case (4):
+                    value |= data[index++] << 24;
+                    goto case 3;
+                case (3):
+                    value |= data[index++] << 16;
+                    goto case 2;
+                case (2):
+                    value |= data[index++] << 8;
+                    goto case 1;
+                case (1):
+                    value |= data[index++];
+                    break;
             }
             return value;
         }

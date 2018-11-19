@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,10 +11,12 @@ namespace NetCode.SyncField
         public uint Revision { get; private set; } = 0;
         public bool Synchronised { get; set; } = false;
         public bool PollingRequired { get; protected set; } = false;
-        public SyncFlags Flags { get; set; }
-        internal byte ElementDepth { get; set; }
+        public SyncFlags Flags { get; internal set; }
 
-        internal SyncFieldDescriptor Descriptor { get; set; }
+        internal virtual void Initialise(SyncFieldDescriptor descriptor, byte elementDepth)
+        {
+            Flags = descriptor.Flags;
+        }
         
         internal bool TrackChanges(object newValue, SyncContext context)
         {

@@ -58,6 +58,7 @@
     <Compile Include="SyncField\EnumerateSyncFieldAttribute.cs" />
     <Compile Include="SyncField\Implementations\SyncFieldArray.cs" />
     <Compile Include="SyncField\Implementations\SyncFieldContainer.cs" />
+    <Compile Include="SyncField\Implementations\SyncFieldExtendableHeader.cs" />
     <Compile Include="SyncField\Implementations\SyncFieldTimestamp.cs" />
     <Compile Include="SyncField\Implementations\SyncFieldList.cs" />
     <Compile Include="SyncField\Implementations\SynchronisableString.cs" />
