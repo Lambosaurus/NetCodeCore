@@ -39,12 +39,12 @@ namespace NetCode.Connection
 
         public enum ConnectionClosedReason
         {
-            None,
+            None = 0,
+            NeverOpened,
             ApplicationRequested,
             EndpointRequested,
             EndpointTimeout,
             EndpointPortClosed,
-            HardwareException,
         }
 
         public ConnectionState State { get; private set; }
@@ -78,7 +78,7 @@ namespace NetCode.Connection
             Connection = connection;
             State = ConnectionState.Closed;
             Behavior = ConnectionBehavior.None;
-            CloseReason = ConnectionClosedReason.ApplicationRequested;
+            CloseReason = ConnectionClosedReason.NeverOpened;
         }
 
         public void SetState(ConnectionState requestedState)
