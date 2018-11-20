@@ -4,7 +4,6 @@ NetCodeTest contains a small test project to demonstrate the functionality of th
 A list of planned improvements include:
 - Synchronisable Field Support:
   - Partial updates for Lists and Arrays
-  - Allow references to objects in other SyncPools
   - Remove Polling mechanism and have job que specifically for resolving Reference lookups.
 - System for automatically breaking large payloads into many small payloads.
 - Client/Connection improvements:
@@ -13,5 +12,6 @@ A list of planned improvements include:
   - Dynamic packet timeouts.
   - Remove UDPConnectionRequestPayload and include more generic solution.
   - Mechanism for deferring and grouping payloads based on transmit priority.
+  - Server Blacklisting
 - Tools to assist in measuring network usage size.
 - General stability testing when recieving garbage payloads.
