@@ -24,6 +24,10 @@ namespace NetCode.SyncPool
 
         private List<SyncEvent> RecievedEvents = new List<SyncEvent>();
 
+        public List<IncomingSyncPool> LinkedPools { get; private set; } = new List<IncomingSyncPool>();
+        internal override IEnumerable<SynchronisablePool> ResourceSyncPools { get { return LinkedPools; } }
+
+
         public IncomingSyncPool(NetDefinitions netDefs, ushort poolID) : base(netDefs, poolID)
         {
         }

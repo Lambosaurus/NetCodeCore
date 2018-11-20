@@ -84,7 +84,7 @@ namespace NetCode.SyncPool
         public SyncHandle GetHandle(ushort entityID)
         {
             //if (entityID == SyncHandle.NullEntityID) { return null; }
-            if (entityID < SyncSlots.Length ) // && SyncSlots[entityID].Handle != null) // If this is null, then we return null anyway.
+            if (entityID < SyncSlots.Length )
             {
                 return SyncSlots[entityID].Handle;
             }
@@ -112,5 +112,7 @@ namespace NetCode.SyncPool
             }
             Array.Resize(ref SyncSlots, newsize);
         }
+
+        internal abstract IEnumerable<SynchronisablePool> ResourceSyncPools { get; }
     }
 }

@@ -15,11 +15,13 @@ namespace NetCode.SyncField
         private static Dictionary<RuntimeTypeHandle, Func<SynchronisableField>> ConstructorLookups = new Dictionary<RuntimeTypeHandle, Func<SynchronisableField>>();
         private static Func<SynchronisableField> TimestampFieldConstructor;
         private static Func<SynchronisableField> ReferenceFieldConstructor;
+        private static Func<SynchronisableField> LinkedReferenceFieldConstructor;
 
         static SyncFieldGenerator()
         {
             TimestampFieldConstructor = DelegateGenerator.GenerateConstructor<SynchronisableField>(typeof(SynchronisableTimestamp));
             ReferenceFieldConstructor = DelegateGenerator.GenerateConstructor<SynchronisableField>(typeof(SynchronisableReference));
+            LinkedReferenceFieldConstructor = DelegateGenerator.GenerateConstructor<SynchronisableField>(typeof(SynchronisableLinkedReference));
             LoadFieldTypes();
         }
 
@@ -96,6 +98,14 @@ namespace NetCode.SyncField
                 SyncFieldDescriptor elementcontent = GenerateFieldDescriptorByType(elementType, flags);
                 elementcontent.InsertParentConstructor(GenerateAndCacheConstructor(syncListType));
                 return elementcontent;
+            }
+            else if ((flags & SyncFlags.LinkedReference) != 0)
+            {
+                if (type.IsValueType)
+                {
+                    throw new NotSupportedException(string.Format("{0}.{1} can not be used on ValueType", typeof(SyncFlags).Name, SyncFlags.LinkedReference));
+                }
+                return new SyncFieldDescriptor(LinkedReferenceFieldConstructor, flags, type);
             }
             else if ((flags & SyncFlags.Reference) != 0)
             {
