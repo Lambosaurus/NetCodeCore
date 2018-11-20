@@ -38,7 +38,8 @@ namespace NetCode.SyncPool
             foreach (SyncHandle handle in SyncHandles)
             {
                 if (handle.Sync.PollingRequired) { handle.Sync.PollFields(Context); }
-                if (!handle.Sync.Synchronised)
+                handle.Updated = !handle.Sync.Synchronised;
+                if (handle.Updated)
                 {
                     handle.Sync.PushChanges(handle.Obj);
                 }

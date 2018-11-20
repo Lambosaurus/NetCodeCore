@@ -34,6 +34,11 @@ namespace NetCode.SyncPool
         public object Obj { get; internal set; }
         public SyncState State { get; set; }
         public ushort EntityID { get { return Sync.EntityID; } }
+        
+        /// <summary>
+        /// Indicates if the object was updated in the last Synchronise call.
+        /// </summary>
+        public bool Updated { get; internal set; }
 
         public const ushort NullEntityID = 0;
 

@@ -142,6 +142,7 @@ namespace NetCode.SyncPool
 
             foreach (SyncHandle handle in SyncHandles)
             {
+                handle.Updated = false;
                 switch (handle.State)
                 {
                     case SyncHandle.SyncState.SyncOnce:
@@ -151,6 +152,7 @@ namespace NetCode.SyncPool
                     case SyncHandle.SyncState.Live:
                         if (handle.Sync.TrackChanges(handle.Obj, context))
                         {
+                            handle.Updated = true;
                             changesFound = true;
                         }
                         break;
