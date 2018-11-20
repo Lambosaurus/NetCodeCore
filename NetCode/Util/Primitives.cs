@@ -8,6 +8,7 @@ namespace NetCode.Util
     public static class Primitive
     {
         public const int SizeofHalf = 2;
+        public const int MaxVWidthValue = (1 << 15) - 1;
 
         public static void WriteByte(byte[] data, ref int index, byte value)
         {
@@ -84,23 +85,13 @@ namespace NetCode.Util
                 WriteUInt(data, ref index, value);
             }
         }
-        public static void WriteNBytes(byte[] data, ref int index, int value, int bytes)
+        public static void WriteVWidth(byte[] data, ref int index, ushort value)
         {
-            switch(bytes)
+            if (value >= (1 << 7))
             {
-                case (4):
-                    data[index++] = (byte)(value >> 24);
-                    goto case 3;
-                case (3):
-                    data[index++] = (byte)(value >> 16);
-                    goto case 2;
-                case (2):
-                    data[index++] = (byte)(value >> 8);
-                    goto case 1;
-                case (1):
-                    data[index++] = (byte)value;
-                    break;
+                data[index++] = (byte)((value >> 8) | (1 << 7));
             }
+            data[index++] = (byte)value;
         }
 
         public static byte ReadByte(byte[] data, ref int index)
@@ -198,25 +189,21 @@ namespace NetCode.Util
             }
             return value;
         }
-        public static int ReadNBytes(byte[] data, ref int index, int bytes)
+        public static ushort ReadVWidth(byte[] data, ref int index)
         {
-            int value = 0;
-            switch (bytes)
+            ushort value = data[index++];
+            if ((value & (1 << 7)) != 0)
             {
-                case (4):
-                    value |= data[index++] << 24;
-                    goto case 3;
-                case (3):
-                    value |= data[index++] << 16;
-                    goto case 2;
-                case (2):
-                    value |= data[index++] << 8;
-                    goto case 1;
-                case (1):
-                    value |= data[index++];
-                    break;
+                value &= 0x7F;
+                value <<= 8;
+                value += data[index++];
             }
             return value;
+        }
+        
+        public static int SizeOfVWidth(ushort value)
+        {
+            return (value >= (1 << 7)) ? sizeof(ushort) : sizeof(byte);
         }
 
         public static int ArraySize(int length, int itemsize)

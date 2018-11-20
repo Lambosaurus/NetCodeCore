@@ -7,35 +7,14 @@ using NetCode.SyncPool;
 
 namespace NetCode.SyncField.Implementations
 {
-    internal class SynchronisableReference : SynchronisableField
+    internal class SynchronisableLinkedReference : SynchronisableReference
     {
-        protected object value;
-        protected ushort EntityID = SyncHandle.NullEntityID;
-        
-        protected SyncFieldDescriptor Descriptor;
-        
-        internal override void Initialise(SyncFieldDescriptor descriptor, byte elementDepth)
-        {
-            Flags = descriptor.Flags;
-            Descriptor = descriptor;
-        }
+        protected ushort PoolID;
 
-        public override void SetValue(object new_value)
-        {
-            value = new_value;
-        }
-
-        public override object GetValue() { return value; }
-
-        public override bool ValueEqual(object new_value)
-        {
-            return new_value == value;
-        }
-        
         public override void PostProcess(SyncContext context)
         {
             value = null;
-            SyncHandle handle = context.GetHandle(EntityID);
+            SyncHandle handle = context.GetHandle(EntityID, PoolID);
 
             if (handle != null)
             {
@@ -54,18 +33,28 @@ namespace NetCode.SyncField.Implementations
         {
             if (value == null)
             {
+                PoolID = 0;
                 EntityID = SyncHandle.NullEntityID;
             }
             else
             {
-                SyncHandle handle = context.GetHandleByObject(value);
-                EntityID = (handle == null) ? SyncHandle.NullEntityID : handle.EntityID;
+                SyncHandle handle = context.GetLinkedHandleByObject(value, out ushort poolID);
+                if (handle != null)
+                {
+                    EntityID = handle.EntityID;
+                    PoolID = poolID;
+                }
+                else
+                {
+                    EntityID = SyncHandle.NullEntityID;
+                    PoolID = 0;
+                }
             }
         }
 
         public override void PeriodicProcess(SyncContext context)
         {
-            SyncHandle handle = context.GetHandle(EntityID);
+            SyncHandle handle = context.GetHandle(EntityID, PoolID);
             
             if (handle != null)
             {
@@ -79,16 +68,18 @@ namespace NetCode.SyncField.Implementations
 
         public override int WriteToBufferSize()
         {
-            return sizeof(ushort);
+            return sizeof(ushort) + Primitive.SizeOfVWidth(PoolID);
         }
 
         public override void Write(byte[] data, ref int index)
         {
+            Primitive.WriteVWidth(data, ref index, PoolID);
             Primitive.WriteUShort(data, ref index, EntityID);
         }
 
         public override void Read(byte[] data, ref int index)
         {
+            PoolID = Primitive.ReadVWidth(data, ref index);
             EntityID = Primitive.ReadUShort(data, ref index);
         }
 

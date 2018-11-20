@@ -27,11 +27,12 @@ namespace NetCode
         /// </summary>
         Reference = (1 << 2),
 
+
         /// <summary>
-        /// For array types, this will indicicate that a two byte length should be specified.
-        /// This allows them to contain more items.
+        /// For reference types this will indicate that a two byte poolID should be included.
+        /// This allows the SyncEntity to be referenced if it is contained in a Linked SyncPool.
         /// </summary>
-        ExtendedLength = (1 << 3)
+        LinkedReference = (1 << 3),
     };
 
     /// <summary>
