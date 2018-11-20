@@ -142,21 +142,25 @@ namespace NetCode.SyncPool
 
             foreach (SyncHandle handle in SyncHandles)
             {
-                if (handle.State == SyncHandle.SyncState.Live)
+                switch (handle.State)
                 {
-                    bool entityChanged = handle.Sync.TrackChanges(handle.Obj, context);
-                    if (entityChanged)
-                    {
-                        changesFound = true;
-                    }
+                    case SyncHandle.SyncState.SyncOnce:
+                        handle.State = SyncHandle.SyncState.Suspended;
+                        goto case SyncHandle.SyncState.Live; // I wish fallthrough was supported.
+
+                    case SyncHandle.SyncState.Live:
+                        if (handle.Sync.TrackChanges(handle.Obj, context))
+                        {
+                            changesFound = true;
+                        }
+                        break;
+
+                    case SyncHandle.SyncState.Deleted:
+                        deletedEntities.Add(handle.EntityID);
+                        break;
                 }
-                else if (handle.State == SyncHandle.SyncState.Deleted)
-                {
-                    deletedEntities.Add(handle.EntityID);
-                }
-                // SyncState.Suspended is ignored
             }
-            
+                
             foreach (ushort entityID in deletedEntities)
             {
                 RemoveHandle(entityID, context.Revision);
