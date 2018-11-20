@@ -41,7 +41,6 @@ namespace NetCode.Connection.UDP
             Socket = new UdpClient(port);
         }
         
-
         public UDPFeed RecieveConnection()
         {
             if (IncomingConnections >= IncomingConnectionLimit)
@@ -63,20 +62,16 @@ namespace NetCode.Connection.UDP
                 {
                     // Attempt to decode the packet.
                     if (incoming.Data.Length < (Packet.HeaderSize + Payload.HeaderSize)) { continue; }
-                    Packet packet = Packet.Decode(incoming.Data, NetTime.Now());
-                    if (packet.DecodingError) { continue; } // Dont bother to check partial packets.
 
-                    foreach (Payload payload in packet.Payloads)
+                    HandshakePayload req = Packet.Peek<HandshakePayload>(incoming.Data);
+                    if (req != null && req.State == NetworkClient.ConnectionState.Opening)
                     {
-                        if (payload is UDPConnectionRequestPayload udpRequest)
-                        {
-                            feed = OpenIncomingConnection(incoming.Source);
-                            feed.FeedData(incoming.Data); // This data belongs to the new feed.
+                        feed = OpenIncomingConnection(incoming.Source);
+                        feed.FeedData(incoming.Data); // This data belongs to the new feed.
 
-                            // We will start putting other packets in here for next round.
-                            remainingIncoming = new List<AddressedData>();
-                            break;
-                        }
+                        // We will start putting other packets in here for next round.
+                        remainingIncoming = new List<AddressedData>();
+                        break;
                     }
                 }
                 else

@@ -61,8 +61,7 @@ namespace NetCode.Connection
             HandleIncomingHandshakesOnly        = 1 << 1,
             AllowOutgoingPayloads               = 1 << 2,
             GenerateOutgoingHandshakes          = 1 << 3,
-            GenerateOutgoingConnectionRequests  = 1 << 4,
-            CloseOnTimeout                      = 1 << 5,
+            CloseOnTimeout                      = 1 << 4,
         }
 
         private ConnectionBehavior Behavior;
@@ -222,8 +221,7 @@ namespace NetCode.Connection
             State = ConnectionState.Opening;
             Behavior = ConnectionBehavior.GenerateOutgoingHandshakes
                      | ConnectionBehavior.HandleIncomingPayloads
-                     | ConnectionBehavior.CloseOnTimeout
-                     | ConnectionBehavior.GenerateOutgoingConnectionRequests;
+                     | ConnectionBehavior.CloseOnTimeout;
 
             // Kick the connection off.
             EnqueueHandshake(true);
@@ -324,14 +322,6 @@ namespace NetCode.Connection
         {
             HandshakeSentMarker.Mark();
             Connection.Enqueue(HandshakePayload.Generate(State, ackRequired));
-            if (BehaviorSet(ConnectionBehavior.GenerateOutgoingConnectionRequests))
-            {
-                Payload request = Connection.GetConnectionRequestPayload();
-                if (request != null)
-                {
-                    Connection.Enqueue(request);
-                }
-            }
         }
         
         private void EnqueueSetupPayloads()

@@ -157,9 +157,6 @@ namespace NetCode.Connection
             }
         }
 
-        
-        internal virtual Payload GetConnectionRequestPayload() { return null; }
-
         public abstract void Destroy();
         protected abstract void SendData(byte[] data);
         protected abstract List<byte[]> RecieveData();

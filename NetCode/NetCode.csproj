@@ -44,7 +44,6 @@
     <Compile Include="Connection\NetworkConnection.cs" />
     <Compile Include="Connection\NetworkClient.cs" />
     <Compile Include="Connection\UDP\UDPConnection.cs" />
-    <Compile Include="Connection\UDP\UDPConnectionRequestPayload.cs" />
     <Compile Include="Connection\UDP\UDPFeed.cs" />
     <Compile Include="Connection\UDP\UDPServer.cs" />
     <Compile Include="Connection\VirtualConnection.cs" />

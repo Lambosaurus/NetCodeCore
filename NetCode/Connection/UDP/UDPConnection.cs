@@ -56,11 +56,6 @@ namespace NetCode.Connection.UDP
             return data;
         }
 
-        internal override Payload GetConnectionRequestPayload()
-        {
-            return UDPConnectionRequestPayload.Generate();
-        }
-
         public override void Destroy()
         {
             Socket.Close();

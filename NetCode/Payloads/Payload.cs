@@ -93,10 +93,7 @@ namespace NetCode.Payloads
 
             Payload payload = PayloadGenerator.GeneratePayload(payloadType);
 
-            if (payload == null || index + size > data.Length)
-            {
-                return null;
-            }
+            if (payload == null || index + size > data.Length) { return null; }
 
             payload.ReadFromExisting(data, index, size);
             index += size;
@@ -108,6 +105,22 @@ namespace NetCode.Payloads
         {
             Buffer.BlockCopy(Data, DataStart, data, index, Size);
             index += Size;
+        }
+
+        public static TPayload Peek<TPayload>(byte[] data, ref int index) where TPayload : Payload
+        {
+            int tempIndex = index;
+            ReadPayloadHeader(data, ref tempIndex, out byte payloadType, out int size);
+
+            if (payloadType == PayloadGenerator.GetPayloadID(typeof(TPayload).TypeHandle))
+            {
+                Payload payload = PayloadGenerator.GeneratePayload(payloadType);
+                if (payload == null || index + size > data.Length) { return null; }
+                payload.ReadFromExisting(data, index, size);
+                return (TPayload)payload;
+            }
+            index += size;
+            return null;
         }
     }
 }

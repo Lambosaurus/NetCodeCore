@@ -68,6 +68,23 @@ namespace NetCode.Payloads
             return false;
         }
         
+        public static TPayload Peek<TPayload>(byte[] data, int maxDepth = 1) where TPayload : Payload
+        {
+            int index = 0;
+            int length = data.Length;
+
+            ReadPacketHeader(data, ref index, out uint packetID);
+
+            while ((index + Payload.HeaderSize <= length) && (maxDepth-- > 0))
+            {
+                TPayload payload = Payload.Peek<TPayload>(data, ref index);
+                if (payload != null)
+                {
+                    return payload;
+                }
+            }
+            return null;
+        }
         
         public static Packet Decode(byte[] data, long timestamp)
         {

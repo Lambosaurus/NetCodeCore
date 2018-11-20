@@ -20,7 +20,7 @@ namespace NetCode.Payloads
             }
         }
 
-        private NetworkClient.ConnectionState State;
+        public NetworkClient.ConnectionState State { get; private set; }
         private uint LocalNetTime;
         private bool AckRequired;
         private const byte AckRequriedBit = 0x80;
