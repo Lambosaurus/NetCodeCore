@@ -58,13 +58,13 @@
     <Compile Include="SyncField\EnumerateSyncFieldAttribute.cs" />
     <Compile Include="SyncField\Implementations\SyncFieldArray.cs" />
     <Compile Include="SyncField\Implementations\SyncFieldContainer.cs" />
+    <Compile Include="SyncField\Implementations\SyncFieldLinkedReference.cs" />
     <Compile Include="SyncField\Implementations\SyncFieldTimestamp.cs" />
     <Compile Include="SyncField\Implementations\SyncFieldList.cs" />
-    <Compile Include="SyncField\Implementations\SynchronisableLinkedReference.cs" />
-    <Compile Include="SyncField\Implementations\SynchronisableString.cs" />
+    <Compile Include="SyncField\Implementations\SyncFieldString.cs" />
     <Compile Include="SyncPool\SyncEvent.cs" />
     <Compile Include="SyncPool\SyncContext.cs" />
-    <Compile Include="SyncField\Implementations\SynchronisableReference.cs" />
+    <Compile Include="SyncField\Implementations\SyncFieldReference.cs" />
     <Compile Include="Util\Aggregators\IAggregator.cs" />
     <Compile Include="Util\Aggregators\PeriodAggregator.cs" />
     <Compile Include="Util\AttributeHelper.cs" />

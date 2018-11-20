@@ -7,7 +7,7 @@ using NetCode.SyncPool;
 
 namespace NetCode.SyncField.Implementations
 {
-    public class SynchronisableTimestamp : SynchronisableLong
+    public class SyncFieldTimestamp : SyncFieldLong
     {
         public override void PostProcess(SyncContext context)
         {

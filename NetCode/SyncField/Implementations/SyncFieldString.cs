@@ -8,7 +8,7 @@ using NetCode.Util;
 namespace NetCode.SyncField.Implementations
 {
     [EnumerateSyncField(typeof(string))]
-    public class SynchronisableString : SynchronisableField
+    public class SyncFieldString : SynchronisableField
     {
         protected string value;
         public override void SetValue(object new_value) { value = (string)new_value; }

@@ -19,9 +19,9 @@ namespace NetCode.SyncField
 
         static SyncFieldGenerator()
         {
-            TimestampFieldConstructor = DelegateGenerator.GenerateConstructor<SynchronisableField>(typeof(SynchronisableTimestamp));
-            ReferenceFieldConstructor = DelegateGenerator.GenerateConstructor<SynchronisableField>(typeof(SynchronisableReference));
-            LinkedReferenceFieldConstructor = DelegateGenerator.GenerateConstructor<SynchronisableField>(typeof(SynchronisableLinkedReference));
+            TimestampFieldConstructor = DelegateGenerator.GenerateConstructor<SynchronisableField>(typeof(SyncFieldTimestamp));
+            ReferenceFieldConstructor = DelegateGenerator.GenerateConstructor<SynchronisableField>(typeof(SyncFieldReference));
+            LinkedReferenceFieldConstructor = DelegateGenerator.GenerateConstructor<SynchronisableField>(typeof(SyncFieldLinkedReference));
             LoadFieldTypes();
         }
 

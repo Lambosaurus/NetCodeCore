@@ -7,7 +7,7 @@ using NetCode.SyncPool;
 
 namespace NetCode.SyncField.Implementations
 {
-    internal class SynchronisableReference : SynchronisableField
+    internal class SyncFieldReference : SynchronisableField
     {
         protected object value;
         protected ushort EntityID = SyncHandle.NullEntityID;
