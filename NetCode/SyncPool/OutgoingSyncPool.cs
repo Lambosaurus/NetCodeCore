@@ -75,7 +75,7 @@ namespace NetCode.SyncPool
             return potentialEntityID;
         }
         
-        public SyncHandle RegisterEntity(object instance)
+        public SyncHandle AddEntity(object instance)
         {
             ushort entityID = GetNextEntityID();
             SyncEntityDescriptor descriptor = entityGenerator.GetEntityDescriptor(instance.GetType().TypeHandle);
@@ -88,14 +88,14 @@ namespace NetCode.SyncPool
             return handle;
         }
 
-        public void RegisterEvent(object instance, bool acknowledgementRequired = true, bool immediateTransmitRequired = true)
+        public void AddEvent(object instance, bool guaranteeReceipt = true, bool urgent = true)
         {
             SyncEntityDescriptor descriptor = entityGenerator.GetEntityDescriptor(instance.GetType().TypeHandle);
             SynchronisableEntity sync = new SynchronisableEntity(descriptor, 0);
 
             sync.TrackChanges(instance, Context);
             int size = sync.WriteAllToBufferSize();
-            PoolEventPayload payload = PoolEventPayload.Generate(PoolID, size, acknowledgementRequired, immediateTransmitRequired);
+            PoolEventPayload payload = PoolEventPayload.Generate(PoolID, size, guaranteeReceipt, urgent);
             payload.GetEventContentBuffer(out byte[] data, out int index, out int count);
             sync.WriteAllToBuffer(data, ref index);
 

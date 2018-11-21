@@ -70,7 +70,7 @@ namespace NetcodeTest.Server
             for (int i = 0; i < 40*k; i++) { AddEntity(NewAsteroid(48)); }
             for (int i = 0; i < 10*k; i++) { AddEntity(NewAsteroid(56)); }
 
-            OutgoingPool.RegisterEntity(serverReport);
+            OutgoingPool.AddEntity(serverReport);
 
             LastTimestamp = 0;
         }
@@ -116,12 +116,12 @@ namespace NetcodeTest.Server
             }
 
             entity.UpdateMotion(NetTime.Now());
-            OutgoingPool.RegisterEntity(entity);
+            OutgoingPool.AddEntity(entity);
         }
 
         private void AddEvent(Event evt)
         {
-            OutgoingPool.RegisterEvent(evt);
+            OutgoingPool.AddEvent(evt);
         }
         
         private void RemoveEntity(Entity entity)

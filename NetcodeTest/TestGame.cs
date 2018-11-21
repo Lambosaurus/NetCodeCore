@@ -78,7 +78,7 @@ namespace NetcodeTest
                 Ready = true,
                 PlayerName = "Lambosaurus"
             };
-            outgoingPool.RegisterEntity(controlVector);
+            outgoingPool.AddEntity(controlVector);
 
             client.SetState(NetworkClient.ConnectionState.Open);
         }
