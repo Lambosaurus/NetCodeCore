@@ -29,18 +29,31 @@ namespace NetCode.SyncPool
             /// </summary>
             Deleted,
         };
-
-        internal SynchronisableEntity Sync;
+        
+        /// <summary>
+        /// The synchronised object
+        /// </summary>
         public object Obj { get; internal set; }
+
+        /// <summary>
+        /// Set this to indicate whether the OutgoingSyncPool should synchronise this device.
+        /// This is only intended to be read from incoming handles.
+        /// </summary>
         public SyncState State { get; set; }
+
+        /// <summary>
+        /// The EntityID identifies this handle across the network, and is unique within its SyncPool.
+        /// </summary>
         public ushort EntityID { get { return Sync.EntityID; } }
         
         /// <summary>
         /// Indicates if the object was updated in the last Synchronise call.
         /// </summary>
         public bool Updated { get; internal set; }
+        
 
-        public const ushort NullEntityID = 0;
+        internal const ushort NullEntityID = 0;
+        internal SynchronisableEntity Sync;
 
         internal SyncHandle(SynchronisableEntity syncEntity, Object syncObject)
         {
@@ -49,5 +62,4 @@ namespace NetCode.SyncPool
             State = SyncState.Live;
         }
     }
-
 }

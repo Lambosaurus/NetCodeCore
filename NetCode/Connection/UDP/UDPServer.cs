@@ -137,6 +137,7 @@ namespace NetCode.Connection.UDP
 
             while (Socket.Available > 0)
             {
+                // TODO: The socket was forcibly closed by the host?
                 byte[] data = Socket.Receive(ref endpoint);
                 bool allocated = false;
                 
