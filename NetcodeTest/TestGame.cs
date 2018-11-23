@@ -64,7 +64,7 @@ namespace NetcodeTest
             
             client = new NetworkClient( new UDPConnection(
                 System.Net.IPAddress.Parse( (server != null) ? "127.0.0.1" : "122.61.155.237"),
-                11002,
+                11002, // Change this destination to 12002 to connect to a running NetProxy.
                 (server != null) ? 11003 : 11002
                 ));
 

@@ -10,7 +10,7 @@ namespace NetCode.Connection
     {
         public int Latency { get { return (int)LatencyAggregator.LongAverage; } }
         public double PacketLoss { get { return LossAggregator.Average; } }
-        public long NetTimeOffset { get { return NetTimeOffsetAggregator.LongAverage - (LatencyAggregator.LongAverage/2); } }
+        public long NetTimeOffset { get { return NetTimeOffsetAggregator.LongAverage + (LatencyAggregator.LongAverage/2); } }
 
         public int TotalDamagedPackets { get; protected set; } = 0;
         public int MillisecondsSinceAcknowledgement { get; protected set; } = 0;
