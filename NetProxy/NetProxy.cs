@@ -8,23 +8,43 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Diagnostics;
 
-namespace NetWreck
+using Troschuetz.Random;
+
+namespace NetProxy
 {
     public partial class NetProxy
     {
-        private UdpClient ClientA;
-        private UdpClient ClientB;
-        private Random Rand;
-        private Stopwatch Timer;
-
         public bool IsOpen { get; private set; } = false;
+        public bool Running { get; private set; }
 
         public int Latency { get; private set; } = 0;
         public double Loss { get; private set; } = 0;
+        public double Deviance { get; private set; } = 0;
+        public double SpikeDeviance { get; private set; } = 0;
+        public double SpikePeriod { get; private set; } = 0;
+        public double SpikeDuration { get; private set; } = 0;
+        public int MTU { get; private set; } = 10000; // 548 is a realistic value
+        
+        private string CommandString = null;
+        private bool PendingCommand = false;
+
+        private UdpClient ClientA;
+        private UdpClient ClientB;
+        private List<Payload> PayloadsA = new List<Payload>();
+        private List<Payload> PayloadsB = new List<Payload>();
+
+        private Stopwatch Timer;
+        private Random Rand;
+        private ChiSquareDistribution Distribution;
+
+        private ulong SpikeTimestamp = 0;
+        public bool SpikeOn = false;
 
         public NetProxy()
         {
             Rand = new Random();
+            Distribution = new ChiSquareDistribution();
+            Distribution.Alpha = 3;
             Timer = new Stopwatch();
             Timer.Start();
         }
@@ -34,6 +54,11 @@ namespace NetWreck
             if (ClientA != null) { ClientA.Close(); }
             if (ClientB != null) { ClientB.Close(); }
             IsOpen = false;
+        }
+
+        private double GetDistributedValue(double mode)
+        {
+            return Distribution.NextDouble() * mode / 2.5;
         }
 
         private void Open(int srcA, int dstA, int srcB, int dstB)
@@ -51,12 +76,48 @@ namespace NetWreck
             public byte[] Data;
         }
 
-        private List<Payload> PayloadsA = new List<Payload>();
-        private List<Payload> PayloadsB = new List<Payload>();
-
+        private void UpdateSpikes()
+        {
+            if (SpikeDeviance > 0 && SpikePeriod > 0)
+            {
+                ulong now = (ulong)Timer.ElapsedMilliseconds;
+                if (now > SpikeTimestamp)
+                {
+                    SpikeOn = !SpikeOn;
+                    double r = (Rand.NextDouble() + 0.5);
+                    SpikeTimestamp = now + (ulong)( r * r * (SpikeOn ? SpikeDuration : SpikePeriod) * 1000);
+                }
+            }
+        }
+        
         private ulong GetDelay()
         {
-            return (ulong)(Latency / 2);
+            ulong delay = (ulong)(Latency / 2);
+
+            if (Deviance > 0)
+            {
+                delay += (ulong)(GetDistributedValue(Deviance / 2));
+            }
+
+            if (SpikeOn && SpikeDeviance > 0)
+            {
+                delay += (ulong)(GetDistributedValue(SpikeDeviance / 2));
+            }
+
+            return delay;
+        }
+
+        private bool GetLoss(int packetSize)
+        {
+            while (packetSize > 0) // Could be handled by binomial distribution..
+            {
+                packetSize -= MTU;
+                if (Rand.NextDouble() < Loss)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private int Recieve(UdpClient client, List<Payload> payloads)
@@ -68,7 +129,7 @@ namespace NetWreck
             {
                 recieved++;
                 byte[] data = client.Receive(ref source);
-                if (Rand.NextDouble() > Loss)
+                if (!GetLoss(data.Length))
                 {
                     payloads.Add(new Payload()
                     {
@@ -108,10 +169,7 @@ namespace NetWreck
             
             return recieved;
         }
-
-        private string CommandString = null;
-        bool PendingCommand = false;
-
+        
         private void ServiceCommand()
         {
             if (PendingCommand)
@@ -121,7 +179,7 @@ namespace NetWreck
 
                 if (items.Length == 0)
                 {
-                    Response = "Type Help for command list.";
+                    Response = "Enter ? for command list.";
                 }
                 else
                 {
@@ -137,13 +195,13 @@ namespace NetWreck
                     }
                     if (command == null)
                     {
-                        Response = string.Format("{0} not a known command. Enter Commands for a command list.", commandName);
+                        Response = string.Format("{0} not a known command. Enter ? for a command list.", commandName);
                     }
                     else
                     {
                         if (items.Length != command.Parameters.Length + 1)
                         {
-                            Response = string.Format("{0} expects {1} arguments: {2}",
+                            Response = string.Format("{0} expects {1} arguments: {2}\n",
                                 command.Name,
                                 command.Parameters.Length,
                                 string.Join(", ", command.Parameters));
@@ -188,8 +246,6 @@ namespace NetWreck
             }
             return CommandString;
         }
-
-        public bool Running { get; private set; }
         
         public void Run()
         {
@@ -202,7 +258,7 @@ namespace NetWreck
                 {
                     packets = Comms();
                 }
-                
+                UpdateSpikes();
                 ServiceCommand();
 
                 if (packets == 0)

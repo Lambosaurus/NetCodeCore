@@ -6,7 +6,7 @@ using System.Threading;
 
 
 
-namespace NetWreck
+namespace NetProxy
 {
     class Program
     {
