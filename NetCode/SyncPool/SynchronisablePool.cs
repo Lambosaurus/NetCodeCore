@@ -113,6 +113,6 @@ namespace NetCode.SyncPool
             Array.Resize(ref SyncSlots, newsize);
         }
 
-        internal abstract IEnumerable<SynchronisablePool> ResourceSyncPools { get; }
+        public List<OutgoingSyncPool> LinkedPools { get; protected set; } = new List<OutgoingSyncPool>();
     }
 }
