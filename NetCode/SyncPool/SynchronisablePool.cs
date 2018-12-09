@@ -17,6 +17,8 @@ namespace NetCode.SyncPool
 
         public const int MaximumEntityCount = ushort.MaxValue + 1;
 
+        public List<SynchronisablePool> LinkedPools { get; } = new List<SynchronisablePool>();
+
         protected struct SyncSlot
         {
             public SyncHandle Handle;
@@ -113,6 +115,5 @@ namespace NetCode.SyncPool
             Array.Resize(ref SyncSlots, newsize);
         }
 
-        internal abstract IEnumerable<SynchronisablePool> ResourceSyncPools { get; }
     }
 }

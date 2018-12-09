@@ -15,9 +15,6 @@ namespace NetCode.SyncPool
         private List<NetworkClient> Subscribers = new List<NetworkClient>();
         private ushort lastEntityID = 0;
 
-        public List<OutgoingSyncPool> LinkedPools { get; private set; } = new List<OutgoingSyncPool>();
-        internal override IEnumerable<SynchronisablePool> ResourceSyncPools { get { return LinkedPools; } }
-
         public OutgoingSyncPool(NetDefinitions netDefs, ushort poolID) : base(netDefs, poolID)
         {
         }

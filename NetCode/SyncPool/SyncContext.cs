@@ -30,7 +30,7 @@ namespace NetCode.SyncPool
             SyncHandle handle;
 
             // Try the resources first
-            foreach (SynchronisablePool resource in Pool.ResourceSyncPools)
+            foreach (SynchronisablePool resource in Pool.LinkedPools)
             {
                 handle = resource.GetHandleByObject(obj);
                 if (handle != null)
@@ -54,7 +54,7 @@ namespace NetCode.SyncPool
         public SyncHandle GetHandle(ushort entityID, ushort poolID)
         {
             if (poolID == Pool.PoolID) { return Pool.GetHandle(entityID); }
-            foreach ( SynchronisablePool resource in Pool.ResourceSyncPools )
+            foreach ( SynchronisablePool resource in Pool.LinkedPools )
             {
                 if (resource.PoolID == poolID)
                 {
