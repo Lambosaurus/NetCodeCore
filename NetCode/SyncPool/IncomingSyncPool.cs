@@ -13,8 +13,11 @@ namespace NetCode.SyncPool
         /// <summary>
         /// A list of handles that have been added during the last Synchronise() call
         /// </summary>
-        public IEnumerable<SyncHandle> NewHandles { get { return newHandles; } }
+        public IEnumerable<SyncHandle> NewHandles { get; protected set; }
         private List<SyncHandle> newHandles = new List<SyncHandle>();
+        
+        public IEnumerable<SyncHandle> RemovedHandles { get; protected set; }
+        private List<SyncHandle> removedHandles = new List<SyncHandle>();
 
         /// <summary>
         /// A list of events that have been recieved.
@@ -34,7 +37,6 @@ namespace NetCode.SyncPool
 
         public void Synchronise()
         {
-            newHandles.Clear();
             foreach (SyncHandle handle in SyncHandles)
             {
                 if (handle.Sync.PollingRequired) { handle.Sync.PollFields(Context); }
@@ -59,6 +61,11 @@ namespace NetCode.SyncPool
                         break;
                 }
             }
+
+            NewHandles = newHandles;
+            RemovedHandles = removedHandles;
+            if (newHandles.Count > 0) { newHandles = new List<SyncHandle>(); }
+            if (removedHandles.Count > 0) { removedHandles = new List<SyncHandle>(); }
         }
         
         internal void RemoveEntity(ushort entityID, uint revision)
@@ -68,6 +75,7 @@ namespace NetCode.SyncPool
             {
                 // only delete if the entity is not more up to date than the deletion revision
                 RemoveHandle(entityID, revision);
+                removedHandles.Add(handle);
             }
         }
         

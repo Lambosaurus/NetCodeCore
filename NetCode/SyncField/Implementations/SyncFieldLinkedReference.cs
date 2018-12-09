@@ -85,6 +85,7 @@ namespace NetCode.SyncField.Implementations
 
         public override void Skip(byte[] data, ref int index)
         {
+            Primitive.ReadVWidth(data, ref index);
             index += sizeof(ushort);
         }   
     }
