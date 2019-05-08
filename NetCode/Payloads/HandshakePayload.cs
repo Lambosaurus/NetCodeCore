@@ -59,18 +59,18 @@ namespace NetCode.Payloads
 
         public override void ReadContent()
         {
-            byte header = Primitive.ReadByte(Data, ref DataIndex);
+            byte header = Buffer.ReadByte();
             State = (NetworkClient.ConnectionState)(header & ~AckRequriedBit);
             AckRequired = (header & AckRequriedBit) != 0;
-            LocalNetTime = Primitive.ReadUInt(Data, ref DataIndex);
+            LocalNetTime = Buffer.ReadUInt();
         }
 
         public override void WriteContent()
         {
             byte header = (byte)State;
             if (AckRequired) { header |= AckRequriedBit; }
-            Primitive.WriteByte(Data, ref DataIndex, header );
-            Primitive.WriteUInt(Data, ref DataIndex, LocalNetTime);
+            Buffer.WriteByte(header );
+            Buffer.WriteUInt(LocalNetTime);
         }
     }
 }

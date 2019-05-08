@@ -5,6 +5,7 @@ using System.Linq;
 using NetCode.SyncField;
 using NetCode.SyncEntity;
 using NetCode.Payloads;
+using NetCode.Util;
 
 namespace NetCode.SyncPool
 {
@@ -90,32 +91,25 @@ namespace NetCode.SyncPool
 
         internal void UnpackEventDatagram(PoolEventPayload payload)
         {
-            payload.GetEventContentBuffer(out byte[] data, out int index, out int count);
-
-            SynchronisableEntity.ReadHeader(data, ref index, out ushort entityID, out ushort typeID);
+            SynchronisableEntity.ReadHeader(payload.EventData, out ushort entityID, out ushort typeID);
             SyncEntityDescriptor descriptor = entityGenerator.GetEntityDescriptor(typeID);
             SynchronisableEntity sync = new SynchronisableEntity(descriptor, entityID, 0);
             object obj = descriptor.ConstructObject();
-            sync.ReadRevisionFromBuffer(data, ref index, Context);
+            sync.ReadRevisionFromBuffer(payload.EventData, Context);
             sync.PushChanges(obj);
-            
-            RecievedEvents.Add(new SyncEvent(
-                sync,
-                obj
-                ));
+            RecievedEvents.Add(new SyncEvent( sync, obj ));
         }
 
         internal void UnpackRevisionDatagram(PoolRevisionPayload payload, long offsetMilliseconds)
         {
-            payload.GetRevisionContentBuffer(out byte[] data, out int index, out int count);
-
             Context.Revision = payload.Revision;
             Context.TimestampOffset = offsetMilliseconds;
 
-            int end = index + count;
-            while (index < end)
+            NetBuffer buffer = payload.RevisionData;
+
+            while (buffer.Remaining > 0) // >= SynchronisableEntity.HeaderSize
             {
-                SynchronisableEntity.ReadHeader(data, ref index, out ushort entityID, out ushort typeID);
+                SynchronisableEntity.ReadHeader(buffer, out ushort entityID, out ushort typeID);
 
                 bool skipUpdate = false;
                 
@@ -158,12 +152,12 @@ namespace NetCode.SyncPool
                 if (skipUpdate)
                 {
                     SyncEntityDescriptor descriptor = entityGenerator.GetEntityDescriptor(typeID);
-                    SynchronisableEntity.SkipRevisionFromBuffer(data, ref index, descriptor);
+                    SynchronisableEntity.SkipRevisionFromBuffer(buffer, descriptor);
                 }
                 else
                 {
                     SynchronisableEntity entity = SyncSlots[entityID].Handle.Sync;
-                    entity.ReadRevisionFromBuffer(data, ref index, Context);
+                    entity.ReadRevisionFromBuffer(buffer, Context);
                 }
             }
         }

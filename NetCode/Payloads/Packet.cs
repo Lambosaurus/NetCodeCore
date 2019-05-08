@@ -22,14 +22,14 @@ namespace NetCode.Payloads
             Payloads = new List<Payload>();
         }
 
-        private void WritePacketHeader(byte[] data, ref int index)
+        private void WritePacketHeader(NetBuffer buffer)
         {
-            Primitive.WriteUInt(data, ref index, PacketID);
+            buffer.WriteUInt(PacketID);
         }
 
-        private static void ReadPacketHeader(byte[] data, ref int index, out uint packetID)
+        private static void ReadPacketHeader(NetBuffer buffer, out uint packetID)
         {
-            packetID = Primitive.ReadUInt(data, ref index);
+            packetID = buffer.ReadUInt();
         }
         
         public byte[] Encode(long timestamp)
@@ -39,21 +39,20 @@ namespace NetCode.Payloads
             int size = HeaderSize;
             foreach (Payload payload in Payloads)
             {
-                size += payload.Size;
+                size += payload.Buffer.Size;
             }
 
-            int index = 0;
-            byte[] data = new byte[size];
+            NetBuffer buffer = new NetBuffer(size);
 
-            WritePacketHeader(data, ref index);
+            WritePacketHeader(buffer);
 
             foreach (Payload payload in Payloads)
             {
-                payload.CopyContent(data, ref index);
+                buffer.WriteBuffer(payload.Buffer);
                 //payload.ClearContent();
             }
 
-            return data;
+            return buffer.Data;
         }
         
         public bool RequiresAcknowledgement()
@@ -70,14 +69,12 @@ namespace NetCode.Payloads
         
         public static TPayload Peek<TPayload>(byte[] data, int maxDepth = 1) where TPayload : Payload
         {
-            int index = 0;
-            int length = data.Length;
+            NetBuffer buffer = new NetBuffer(data);
+            ReadPacketHeader(buffer, out uint packetID);
 
-            ReadPacketHeader(data, ref index, out uint packetID);
-
-            while ((index + Payload.HeaderSize <= length) && (maxDepth-- > 0))
+            while ((buffer.Remaining >= Payload.HeaderSize) && (maxDepth-- > 0))
             {
-                TPayload payload = Payload.Peek<TPayload>(data, ref index);
+                TPayload payload = Payload.Peek<TPayload>(buffer);
                 if (payload != null)
                 {
                     return payload;
@@ -88,16 +85,15 @@ namespace NetCode.Payloads
         
         public static Packet Decode(byte[] data, long timestamp)
         {
-            int index = 0;
-            int length = data.Length;
+            NetBuffer buffer = new NetBuffer(data);
 
-            ReadPacketHeader(data, ref index, out uint packetID);
+            ReadPacketHeader(buffer, out uint packetID);
             Packet packet = new Packet(packetID);
             packet.Timestamp = timestamp;
             
-            while (index + Payload.HeaderSize <= length)
+            while (buffer.Remaining >= Payload.HeaderSize)
             {
-                Payload payload = Payload.Decode(data, ref index);
+                Payload payload = Payload.Decode(buffer);
                 if (payload == null)
                 {
                     packet.DecodingError = true;
@@ -106,7 +102,7 @@ namespace NetCode.Payloads
                 packet.Payloads.Add(payload);
             }
 
-            if (index != length)
+            if (buffer.Remaining != 0)
             {
                 packet.DecodingError = true;
             }

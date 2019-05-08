@@ -16,8 +16,10 @@ namespace NetCode.Payloads
         public override bool ImmediateTransmitRequired { get { return immediateTransmitRequired; } }
 
 
-        public ushort PoolID { get; protected set; }
+        public ushort PoolID { get; private set; }
         private int EventSize { get; set; }
+
+        public NetBuffer EventData { get; private set; }
 
         private bool acknowledgementRequired;
         private bool immediateTransmitRequired;
@@ -41,22 +43,17 @@ namespace NetCode.Payloads
         
         public override void WriteContent()
         {
-            Primitive.WriteUShort(Data, ref DataIndex, PoolID);
-            Primitive.WriteByte(Data, ref DataIndex, acknowledgementRequired ? (byte)0x01 : (byte)0x00);
+            Buffer.WriteUShort(PoolID);
+            Buffer.WriteByte(acknowledgementRequired ? (byte)0x01 : (byte)0x00);
+            EventData = Buffer.SubBuffer(EventSize);
         }
 
         public override void ReadContent()
         {
-            PoolID = Primitive.ReadUShort(Data, ref DataIndex);
-            acknowledgementRequired = Primitive.ReadByte(Data, ref DataIndex) > 0;
-            EventSize = Size - (HeaderSize + sizeof(ushort) + sizeof(byte));
-        }
-
-        public void GetEventContentBuffer(out byte[] data, out int index, out int count)
-        {
-            data = Data;
-            index = DataIndex;
-            count = EventSize;
+            PoolID = Buffer.ReadUShort();
+            acknowledgementRequired = Buffer.ReadByte() > 0;
+            EventSize = Buffer.Remaining;
+            EventData = Buffer.SubBuffer(EventSize);
         }
 
         public override int ContentSize()

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using NetCode.Util;
 using NetCode.SyncPool;
 
 namespace NetCode.SyncField
@@ -30,11 +31,11 @@ namespace NetCode.SyncField
             return false;
         }
 
-        internal void ReadChanges(byte[] data, ref int index, SyncContext context)
+        internal void ReadChanges(NetBuffer buffer, SyncContext context)
         {
             if (context.Revision > Revision)
             {
-                Read(data, ref index);
+                Read(buffer);
 
                 PostProcess(context);
 
@@ -43,7 +44,7 @@ namespace NetCode.SyncField
             }
             else
             {
-                Skip(data, ref index);
+                Skip(buffer);
             }
         }
 
@@ -99,14 +100,14 @@ namespace NetCode.SyncField
         /// </summary>
         /// <param name="data"> The packet to write to </param>
         /// <param name="index"> The index to begin writing at. The index shall be incremented by the number of bytes written </param>
-        public abstract void Write(byte[] data, ref int index);
+        public abstract void Write(NetBuffer buffer);
 
         /// <summary>
         /// Reads the Synchronisable value from the packet.
         /// </summary>
         /// <param name="data"> The packet to read from </param>
         /// <param name="index"> The index to begin reading at. The index shall be incremented by the number of bytes read </param>
-        public abstract void Read(byte[] data, ref int index);
+        public abstract void Read(NetBuffer buffer);
         
         /// <summary>
         /// Must increment the index by the number of bytes that would be read,
@@ -114,7 +115,7 @@ namespace NetCode.SyncField
         /// </summary>
         /// <param name="data"> The packet to read from </param>
         /// <param name="index"> The index to begin reading at. The index shall be incremented by the number of bytes read </param>
-        public abstract void Skip(byte[] data, ref int index);
+        public abstract void Skip(NetBuffer buffer);
     }
 
 }

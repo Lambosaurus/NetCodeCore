@@ -16,35 +16,35 @@ namespace NetCode.SyncField.Implementations
         public override bool ValueEqual(object new_value) { return (string)new_value == value; }
         public override int WriteToBufferSize()
         {
-            if (value == null) return Primitive.SizeOfVWidth(0);
-            return Primitive.SizeOfVWidth((ushort)value.Length) + (value.Length * sizeof(byte));
+            if (value == null) return NetBuffer.SizeOfVWidth(0);
+            return NetBuffer.SizeOfVWidth((ushort)value.Length) + (value.Length * sizeof(byte));
         }
-        public override void Write(byte[] data, ref int index)
+        public override void Write(NetBuffer buffer)
         {
-            if (value == null) { Primitive.WriteVWidth(data, ref index, 0); }
+            if (value == null) { buffer.WriteVWidth(0); }
             else
             {
-                Primitive.WriteVWidth(data, ref index, (ushort)value.Length);
+                buffer.WriteVWidth((ushort)value.Length);
                 foreach (char ch in value)
                 {
-                    data[index++] = (byte)ch;
+                    buffer.Data[buffer.Index++] = (byte)ch;
                 }
             }
         }
-        public override void Read(byte[] data, ref int index)
+        public override void Read(NetBuffer buffer)
         {
-            int length = Primitive.ReadVWidth(data, ref index);
+            int length = buffer.ReadVWidth();
             char[] values = new char[length];
             for (int i = 0; i < length; i++)
             {
-                values[i] = (char)data[index++];
+                values[i] = (char)buffer.Data[buffer.Index++];
             }
             value = new string(values);
         }
-        public override void Skip(byte[] data, ref int index)
+        public override void Skip(NetBuffer buffer)
         {
-            int length = Primitive.ReadVWidth(data, ref index);
-            index += length;
+            int length = buffer.ReadVWidth();
+            buffer.Index += length;
         }
     }
 }

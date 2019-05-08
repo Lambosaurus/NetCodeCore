@@ -88,8 +88,7 @@ namespace NetCode.SyncPool
             sync.TrackChanges(instance, Context);
             int size = sync.WriteAllToBufferSize();
             PoolEventPayload payload = PoolEventPayload.Generate(PoolID, size, guaranteeReceipt, urgent);
-            payload.GetEventContentBuffer(out byte[] data, out int index, out int count);
-            sync.WriteAllToBuffer(data, ref index);
+            sync.WriteAllToBuffer(payload.EventData);
 
             BroadcastPayload(payload);
         }
@@ -180,13 +179,11 @@ namespace NetCode.SyncPool
             if (updatedEntities.Count > 0)
             {
                 PoolRevisionPayload payload = PoolRevisionPayload.Generate(this, revision, size);
-
-                payload.GetRevisionContentBuffer(out byte[] data, out int index, out int count);
                 
                 foreach (ushort entityID in updatedEntities)
                 {
                     SyncHandle handle = SyncSlots[entityID].Handle;
-                    handle.Sync.WriteRevisionToBuffer(data, ref index, revision);
+                    handle.Sync.WriteRevisionToBuffer(payload.RevisionData, revision);
                 }
                 
                 return payload;
@@ -204,11 +201,9 @@ namespace NetCode.SyncPool
             
             PoolRevisionPayload payload = PoolRevisionPayload.Generate(this, Revision, size);
 
-            payload.GetRevisionContentBuffer(out byte[] data, out int index, out int count);
-
             foreach (SyncHandle handle in SyncHandles)
             {
-                handle.Sync.WriteAllToBuffer(data, ref index);
+                handle.Sync.WriteAllToBuffer(payload.RevisionData);
             }
 
             return payload;

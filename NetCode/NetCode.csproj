@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Util\NetBuffer.cs" />
     <Compile Include="Connection\ConnectionStats.cs" />
     <Compile Include="Connection\NetworkConnection.cs" />
     <Compile Include="Connection\NetworkClient.cs" />
@@ -74,7 +75,7 @@
     <Compile Include="Payloads\Payload.cs" />
     <Compile Include="Payloads\Packet.cs" />
     <Compile Include="Payloads\AcknowledgementPayload.cs" />
-    <Compile Include="Util\Primitives.cs" />
+    <Compile Include="Util\FormatHelpers.cs" />
     <Compile Include="SyncEntity\SyncEntityDescriptor.cs" />
     <Compile Include="SyncEntity\SyncEntityGenerator.cs" />
     <Compile Include="SyncField\SyncFieldDescriptor.cs" />

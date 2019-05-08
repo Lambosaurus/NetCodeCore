@@ -56,17 +56,17 @@ namespace NetCode.Payloads
         
         public override void WriteContent()
         {
-            Primitive.WriteUIntArray(Data, ref DataIndex, PacketIDs);
+            Buffer.WriteUIntArray(PacketIDs);
         }
 
         public override void ReadContent()
         {
-            PacketIDs = Primitive.ReadUIntArray(Data, ref DataIndex);
+            PacketIDs = Buffer.ReadUIntArray();
         }
 
         public override int ContentSize()
         {
-            return Primitive.ArraySize(PacketIDs.Length, sizeof(uint));
+            return NetBuffer.ArraySize(PacketIDs.Length, sizeof(uint));
         }
     }
 }

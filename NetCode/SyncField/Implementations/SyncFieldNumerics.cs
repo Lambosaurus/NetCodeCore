@@ -11,9 +11,9 @@ namespace NetCode.SyncField.Implementations
         public override object GetValue() { return (int)value; }
         public override bool ValueEqual(object new_value) { return (byte)(int)new_value == value; }
         public override int WriteToBufferSize() { return sizeof(byte); }
-        public override void Write(byte[] data, ref int index) { Primitive.WriteByte(data, ref index, value); }
-        public override void Read(byte[] data, ref int index) { value = Primitive.ReadByte(data, ref index); }
-        public override void Skip(byte[] data, ref int index) { index += sizeof(byte); }
+        public override void Write(NetBuffer buffer) { buffer.WriteByte(value); }
+        public override void Read(NetBuffer buffer) { value = buffer.ReadByte(); }
+        public override void Skip(NetBuffer buffer) { buffer.Index += sizeof(byte); }
     }
 
     [EnumerateSyncField(typeof(bool))]
@@ -24,9 +24,9 @@ namespace NetCode.SyncField.Implementations
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (bool)new_value == value; }
         public override int WriteToBufferSize() { return sizeof(byte); }
-        public override void Write(byte[] data, ref int index) { Primitive.WriteByte(data, ref index, value ? (byte)0x01 : (byte)0x00); }
-        public override void Read(byte[] data, ref int index) { value = Primitive.ReadByte(data, ref index) > 0; }
-        public override void Skip(byte[] data, ref int index) { index += sizeof(byte); }
+        public override void Write(NetBuffer buffer) { buffer.WriteByte(value ? (byte)0x01 : (byte)0x00); }
+        public override void Read(NetBuffer buffer) { value = buffer.ReadByte() > 0; }
+        public override void Skip(NetBuffer buffer) { buffer.Index += sizeof(byte); }
     }
 
     [EnumerateSyncField(typeof(byte))]
@@ -37,9 +37,9 @@ namespace NetCode.SyncField.Implementations
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (byte)new_value == value; }
         public override int WriteToBufferSize() { return sizeof(byte); }
-        public override void Write(byte[] data, ref int index) { Primitive.WriteByte(data, ref index, value); }
-        public override void Read(byte[] data, ref int index) { value = Primitive.ReadByte(data, ref index); }
-        public override void Skip(byte[] data, ref int index) { index += sizeof(byte); }
+        public override void Write(NetBuffer buffer) { buffer.WriteByte(value); }
+        public override void Read(NetBuffer buffer) { value = buffer.ReadByte(); }
+        public override void Skip(NetBuffer buffer) { buffer.Index += sizeof(byte); }
     }
 
     [EnumerateSyncField(typeof(short))]
@@ -50,9 +50,9 @@ namespace NetCode.SyncField.Implementations
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (short)new_value == value; }
         public override int WriteToBufferSize() { return sizeof(short); }
-        public override void Write(byte[] data, ref int index) { Primitive.WriteShort(data, ref index, value); }
-        public override void Read(byte[] data, ref int index) { value = Primitive.ReadShort(data, ref index); }
-        public override void Skip(byte[] data, ref int index) { index += sizeof(short); }
+        public override void Write(NetBuffer buffer) { buffer.WriteShort(value); }
+        public override void Read(NetBuffer buffer) { value = buffer.ReadShort(); }
+        public override void Skip(NetBuffer buffer) { buffer.Index += sizeof(short); }
     }
 
     [EnumerateSyncField(typeof(ushort))]
@@ -63,9 +63,9 @@ namespace NetCode.SyncField.Implementations
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (ushort)new_value == value; }
         public override int WriteToBufferSize() { return sizeof(ushort); }
-        public override void Write(byte[] data, ref int index) { Primitive.WriteUShort(data, ref index, value); }
-        public override void Read(byte[] data, ref int index) { value = Primitive.ReadUShort(data, ref index); }
-        public override void Skip(byte[] data, ref int index) { index += sizeof(ushort); }
+        public override void Write(NetBuffer buffer) { buffer.WriteUShort(value); }
+        public override void Read(NetBuffer buffer) { value = buffer.ReadUShort(); }
+        public override void Skip(NetBuffer buffer) { buffer.Index += sizeof(ushort); }
     }
 
     [EnumerateSyncField(typeof(int))]
@@ -76,9 +76,9 @@ namespace NetCode.SyncField.Implementations
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (int)new_value == value; }
         public override int WriteToBufferSize() { return sizeof(int); }
-        public override void Write(byte[] data, ref int index) { Primitive.WriteInt(data, ref index, value); }
-        public override void Read(byte[] data, ref int index) { value = Primitive.ReadInt(data, ref index); }
-        public override void Skip(byte[] data, ref int index) { index += sizeof(int); }
+        public override void Write(NetBuffer buffer) { buffer.WriteInt(value); }
+        public override void Read(NetBuffer buffer) { value = buffer.ReadInt(); }
+        public override void Skip(NetBuffer buffer) { buffer.Index += sizeof(int); }
     }
 
     [EnumerateSyncField(typeof(uint))]
@@ -89,9 +89,9 @@ namespace NetCode.SyncField.Implementations
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (uint)new_value == value; }
         public override int WriteToBufferSize() { return sizeof(uint); }
-        public override void Write(byte[] data, ref int index) { Primitive.WriteUInt(data, ref index, value); }
-        public override void Read(byte[] data, ref int index) { value = Primitive.ReadUInt(data, ref index); }
-        public override void Skip(byte[] data, ref int index) { index += sizeof(uint); }
+        public override void Write(NetBuffer buffer) { buffer.WriteUInt(value); }
+        public override void Read(NetBuffer buffer) { value = buffer.ReadUInt(); }
+        public override void Skip(NetBuffer buffer) { buffer.Index += sizeof(uint); }
     }
 
     [EnumerateSyncField(typeof(long))]
@@ -102,9 +102,9 @@ namespace NetCode.SyncField.Implementations
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (long)new_value == value; }
         public override int WriteToBufferSize() { return sizeof(long); }
-        public override void Write(byte[] data, ref int index) { Primitive.WriteLong(data, ref index, value); }
-        public override void Read(byte[] data, ref int index) { value = Primitive.ReadLong(data, ref index); }
-        public override void Skip(byte[] data, ref int index) { index += sizeof(long); }
+        public override void Write(NetBuffer buffer) { buffer.WriteLong(value); }
+        public override void Read(NetBuffer buffer) { value = buffer.ReadLong(); }
+        public override void Skip(NetBuffer buffer) { buffer.Index += sizeof(long); }
     }
 
     [EnumerateSyncField(typeof(ulong))]
@@ -115,9 +115,9 @@ namespace NetCode.SyncField.Implementations
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (ulong)new_value == value; }
         public override int WriteToBufferSize() { return sizeof(ulong); }
-        public override void Write(byte[] data, ref int index) { Primitive.WriteULong(data, ref index, value); }
-        public override void Read(byte[] data, ref int index) { value = Primitive.ReadULong(data, ref index); }
-        public override void Skip(byte[] data, ref int index) { index += sizeof(ulong); }
+        public override void Write(NetBuffer buffer) { buffer.WriteULong(value); }
+        public override void Read(NetBuffer buffer) { value = buffer.ReadULong(); }
+        public override void Skip(NetBuffer buffer) { buffer.Index += sizeof(ulong); }
     }
 
     [EnumerateSyncField(typeof(float))]
@@ -128,9 +128,9 @@ namespace NetCode.SyncField.Implementations
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (float)new_value == value; }
         public override int WriteToBufferSize() { return sizeof(float); }
-        public override void Write(byte[] data, ref int index) { Primitive.WriteFloat(data, ref index, value); }
-        public override void Read(byte[] data, ref int index) { value = Primitive.ReadFloat(data, ref index); }
-        public override void Skip(byte[] data, ref int index) { index += sizeof(float); }
+        public override void Write(NetBuffer buffer) { buffer.WriteFloat(value); }
+        public override void Read(NetBuffer buffer) { value = buffer.ReadFloat(); }
+        public override void Skip(NetBuffer buffer) { buffer.Index += sizeof(float); }
     }
 
     [EnumerateSyncField(typeof(double))]
@@ -141,9 +141,9 @@ namespace NetCode.SyncField.Implementations
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (double)new_value == value; }
         public override int WriteToBufferSize() { return sizeof(double); }
-        public override void Write(byte[] data, ref int index) { Primitive.WriteDouble(data, ref index, value); }
-        public override void Read(byte[] data, ref int index) { value = Primitive.ReadDouble(data, ref index); }
-        public override void Skip(byte[] data, ref int index) { index += sizeof(double); }
+        public override void Write(NetBuffer buffer) { buffer.WriteDouble(value); }
+        public override void Read(NetBuffer buffer) { value = buffer.ReadDouble(); }
+        public override void Skip(NetBuffer buffer) { buffer.Index += sizeof(double); }
     }
 
     [EnumerateSyncField(typeof(float), SyncFlags.HalfPrecision)]
@@ -153,9 +153,9 @@ namespace NetCode.SyncField.Implementations
         public override void SetValue(object new_value) { value = (Half)((float)new_value); }
         public override object GetValue() { return (float)value; }
         public override bool ValueEqual(object new_value) { return (Half)((float)new_value) == value; }
-        public override int WriteToBufferSize() { return Primitive.SizeofHalf; }
-        public override void Write(byte[] data, ref int index) { Primitive.WriteHalf(data, ref index, value); }
-        public override void Read(byte[] data, ref int index) { value = Primitive.ReadHalf(data, ref index); }
-        public override void Skip(byte[] data, ref int index) { index += Primitive.SizeofHalf; }
+        public override int WriteToBufferSize() { return NetBuffer.SizeofHalf; }
+        public override void Write(NetBuffer buffer) { buffer.WriteHalf(value); }
+        public override void Read(NetBuffer buffer) { value = buffer.ReadHalf(); }
+        public override void Skip(NetBuffer buffer) { buffer.Index += NetBuffer.SizeofHalf; }
     }
 }

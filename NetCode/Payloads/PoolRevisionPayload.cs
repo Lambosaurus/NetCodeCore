@@ -14,9 +14,10 @@ namespace NetCode.Payloads
         public override bool AcknowledgementRequired { get { return true; } }
         public override bool ImmediateTransmitRequired { get { return true; } }
 
-        public ushort PoolID { get; protected set; }
-        public uint Revision { get; protected set; }
-        
+        public ushort PoolID { get; private set; }
+        public uint Revision { get; private set; }
+        public NetBuffer RevisionData { get; private set; }
+
         private OutgoingSyncPool SyncPool;
         private int RevisionSize;
 
@@ -40,27 +41,22 @@ namespace NetCode.Payloads
         
         public override void WriteContent()
         {
-            Primitive.WriteUShort(Data, ref DataIndex, PoolID);
-            Primitive.WriteUInt(Data, ref DataIndex, Revision);
+            Buffer.WriteUShort(PoolID);
+            Buffer.WriteUInt(Revision);
+            RevisionData = Buffer.SubBuffer(RevisionSize);
         }
 
         public override void ReadContent()
         {
-            PoolID = Primitive.ReadUShort(Data, ref DataIndex);
-            Revision = Primitive.ReadUInt(Data, ref DataIndex);
-            RevisionSize = Size - (HeaderSize + sizeof(ushort) + sizeof(uint));
+            PoolID = Buffer.ReadUShort();
+            Revision = Buffer.ReadUInt();
+            RevisionSize = Buffer.Remaining;
+            RevisionData = Buffer.SubBuffer(RevisionSize);
         }
 
         public override int ContentSize()
         {
             return sizeof(ushort) + sizeof(uint) + RevisionSize;
-        }
-
-        public void GetRevisionContentBuffer( out byte[] data, out int index, out int count)
-        {
-            data = Data;
-            index = DataIndex;
-            count = RevisionSize;
         }
 
         public override void OnTimeout(NetworkClient client)

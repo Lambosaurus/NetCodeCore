@@ -47,19 +47,19 @@ namespace NetCode.SyncField.Implementations
             }
         }
         
-        public override void Read(byte[] data, ref int index)
+        public override void Read(NetBuffer buffer)
         {
-            ushort count = Primitive.ReadVWidth(data, ref index);
+            ushort count = buffer.ReadVWidth();
             if (count != elements.Count) { SetElementLength(count); }
             foreach (SynchronisableField element in elements)
             {
-                element.Read(data, ref index);
+                element.Read(buffer);
             }
         }
         
-        public override void Skip(byte[] data, ref int index)
+        public override void Skip(NetBuffer buffer)
         {
-            int count = Primitive.ReadVWidth(data, ref index);
+            int count = buffer.ReadVWidth();
             if (count > 0)
             {
                 if (skipElement == null)
@@ -78,27 +78,27 @@ namespace NetCode.SyncField.Implementations
                 }
                 for (int i = 0; i < count; i++)
                 {
-                    skipElement.Skip(data, ref index);
+                    skipElement.Skip(buffer);
                 }
             }
         }
         
-        public override void Write(byte[] data, ref int index)
+        public override void Write(NetBuffer buffer)
         {
-            if (elements.Count > Primitive.MaxVWidthValue)
+            if (elements.Count > NetBuffer.MaxVWidthValue)
             {
-                throw new NetcodeItemcountException(string.Format("There may not be more than {0} items in a Synchronised container", Primitive.MaxVWidthValue));
+                throw new NetcodeItemcountException(string.Format("There may not be more than {0} items in a Synchronised container", NetBuffer.MaxVWidthValue));
             }
-            Primitive.WriteVWidth(data, ref index, (ushort)elements.Count);
+            buffer.WriteVWidth((ushort)elements.Count);
             foreach ( SynchronisableField element in elements )
             {
-                element.Write(data, ref index);
+                element.Write(buffer);
             }
         }
 
         public override int WriteToBufferSize()
         {
-            int count = Primitive.SizeOfVWidth((ushort)elements.Count);
+            int count = NetBuffer.SizeOfVWidth((ushort)elements.Count);
             foreach (SynchronisableField element in elements)
             {
                 count += element.WriteToBufferSize();

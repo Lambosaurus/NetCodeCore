@@ -13,11 +13,7 @@ namespace NetCode.Payloads
 {
     public abstract class Payload
     {
-        public int Size { get; protected set; }
-
-        protected byte[] Data;
-        protected int DataStart;
-        protected int DataIndex;
+        public NetBuffer Buffer { get; private set; }
 
         internal const int HeaderSize = sizeof(ushort) + sizeof(byte);
 
@@ -55,71 +51,53 @@ namespace NetCode.Payloads
         
         private void WritePayloadHeader()
         {
-            Primitive.WriteByte(Data, ref DataIndex,  PayloadGenerator.GetPayloadID( this.GetType().TypeHandle));
-            Primitive.WriteUShort(Data, ref DataIndex, (ushort)Size);
+            Buffer.WriteByte(PayloadGenerator.GetPayloadID(this.GetType().TypeHandle));
+            Buffer.WriteUShort((ushort)Buffer.Size);
         }
         
-        private static void ReadPayloadHeader( byte[] data, ref int index, out byte payloadType, out int size )
+        private static void ReadPayloadHeader( NetBuffer buffer, out byte payloadType, out int size )
         {
-            payloadType = Primitive.ReadByte(data, ref index);
-            size = Primitive.ReadUShort(data, ref index);
+            payloadType = buffer.ReadByte();
+            size = buffer.ReadUShort();
         }
         
         public void AllocateAndWrite()
         {
-            Size = ContentSize() + HeaderSize;
-            Data = new byte[Size];
-            DataStart = 0;
-            DataIndex = DataStart;
-
+            int size = ContentSize() + HeaderSize;
+            Buffer = new NetBuffer(size);
             WritePayloadHeader();
             WriteContent();
         }
 
-        public void ReadFromExisting(byte[] data, int start, int size)
+        public void ReadFromExisting(NetBuffer buffer)
         {
-            Size = size;
-            Data = data;
-            DataStart = start;
-            DataIndex = DataStart + HeaderSize; // Skip datagram header.
-
+            Buffer = buffer;
+            Buffer.Index += HeaderSize;
             ReadContent();
         }
 
-        public static Payload Decode(byte[] data, ref int index)
+        public static Payload Decode(NetBuffer buffer)
         {
-            int tempIndex = index;
-            ReadPayloadHeader(data, ref tempIndex, out byte payloadType, out int size);
-
+            ReadPayloadHeader(buffer, out byte payloadType, out int size);
+            buffer.Index -= HeaderSize;
             Payload payload = PayloadGenerator.GeneratePayload(payloadType);
-
-            if (payload == null || index + size > data.Length) { return null; }
-
-            payload.ReadFromExisting(data, index, size);
-            index += size;
-
+            if (payload == null || buffer.Remaining < size) { return null; }
+            payload.ReadFromExisting( buffer.SubBuffer(size) );
             return payload;
         }
 
-        public void CopyContent(byte[] data, ref int index)
+        public static TPayload Peek<TPayload>(NetBuffer buffer) where TPayload : Payload
         {
-            Buffer.BlockCopy(Data, DataStart, data, index, Size);
-            index += Size;
-        }
-
-        public static TPayload Peek<TPayload>(byte[] data, ref int index) where TPayload : Payload
-        {
-            int tempIndex = index;
-            ReadPayloadHeader(data, ref tempIndex, out byte payloadType, out int size);
-
+            ReadPayloadHeader(buffer, out byte payloadType, out int size);
+            buffer.Index -= HeaderSize;
             if (payloadType == PayloadGenerator.GetPayloadID(typeof(TPayload).TypeHandle))
             {
                 Payload payload = PayloadGenerator.GeneratePayload(payloadType);
-                if (payload == null || index + size > data.Length) { return null; }
-                payload.ReadFromExisting(data, index, size);
+                if (payload == null || buffer.Remaining < size) { return null; }
+                payload.ReadFromExisting(buffer.SubBuffer(size));
                 return (TPayload)payload;
             }
-            index += size;
+            buffer.Index += size;
             return null;
         }
     }

@@ -18,17 +18,17 @@ namespace NetcodeTest.Util
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (Vector2)new_value == value; }
         public override int WriteToBufferSize() { return sizeof(float) * 2; }
-        public override void Write(byte[] data, ref int index)
+        public override void Write(NetBuffer buffer)
         {
-            Primitive.WriteFloat(data, ref index, value.X);
-            Primitive.WriteFloat(data, ref index, value.Y);
+            buffer.WriteFloat(value.X);
+            buffer.WriteFloat(value.Y);
         }
-        public override void Read(byte[] data, ref int index)
+        public override void Read(NetBuffer buffer)
         {
-            value.X = Primitive.ReadFloat(data, ref index);
-            value.Y = Primitive.ReadFloat(data, ref index);
+            value.X = buffer.ReadFloat();
+            value.Y = buffer.ReadFloat();
         }
-        public override void Skip(byte[] data, ref int index) { index += sizeof(float) * 2; }
+        public override void Skip(NetBuffer buffer) { buffer.Index += sizeof(float) * 2; }
     }
 
     [EnumerateSyncField(typeof(Vector2), SyncFlags.HalfPrecision)]
@@ -48,18 +48,18 @@ namespace NetcodeTest.Util
             Vector2 value = (Vector2)new_value;
             return x == (Half)value.X && y == (Half)value.Y;
         }
-        public override int WriteToBufferSize() { return Primitive.SizeofHalf * 2; }
-        public override void Write(byte[] data, ref int index)
+        public override int WriteToBufferSize() { return NetBuffer.SizeofHalf * 2; }
+        public override void Write(NetBuffer buffer)
         {
-            Primitive.WriteHalf(data, ref index, x);
-            Primitive.WriteHalf(data, ref index, y);
+            buffer.WriteHalf(x);
+            buffer.WriteHalf(y);
         }
-        public override void Read(byte[] data, ref int index)
+        public override void Read(NetBuffer buffer)
         {
-            x = Primitive.ReadHalf(data, ref index);
-            y = Primitive.ReadHalf(data, ref index);
+            x = buffer.ReadHalf();
+            y = buffer.ReadHalf();
         }
-        public override void Skip(byte[] data, ref int index) { index += Primitive.SizeofHalf * 2; }
+        public override void Skip(NetBuffer buffer) { buffer.Index += NetBuffer.SizeofHalf * 2; }
     }
 
     [EnumerateSyncField(typeof(Color))]
@@ -76,14 +76,14 @@ namespace NetcodeTest.Util
             return value == (Color)new_value;
         }
         public override int WriteToBufferSize() { return sizeof(uint); }
-        public override void Write(byte[] data, ref int index)
+        public override void Write(NetBuffer buffer)
         {
-            Primitive.WriteUInt(data, ref index, value.PackedValue);
+            buffer.WriteUInt(value.PackedValue);
         }
-        public override void Read(byte[] data, ref int index)
+        public override void Read(NetBuffer buffer)
         {
-            value = new Color(Primitive.ReadUInt(data, ref index));
+            value = new Color(buffer.ReadUInt());
         }
-        public override void Skip(byte[] data, ref int index) { index += sizeof(uint); }
+        public override void Skip(NetBuffer buffer) { buffer.Index += sizeof(uint); }
     }
 }

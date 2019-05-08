@@ -68,25 +68,25 @@ namespace NetCode.SyncField.Implementations
 
         public override int WriteToBufferSize()
         {
-            return sizeof(ushort) + Primitive.SizeOfVWidth(PoolID);
+            return sizeof(ushort) + NetBuffer.SizeOfVWidth(PoolID);
         }
 
-        public override void Write(byte[] data, ref int index)
+        public override void Write(NetBuffer buffer)
         {
-            Primitive.WriteVWidth(data, ref index, PoolID);
-            Primitive.WriteUShort(data, ref index, EntityID);
+            buffer.WriteVWidth(PoolID);
+            buffer.WriteUShort(EntityID);
         }
 
-        public override void Read(byte[] data, ref int index)
+        public override void Read(NetBuffer buffer)
         {
-            PoolID = Primitive.ReadVWidth(data, ref index);
-            EntityID = Primitive.ReadUShort(data, ref index);
+            PoolID = buffer.ReadVWidth();
+            EntityID = buffer.ReadUShort();
         }
 
-        public override void Skip(byte[] data, ref int index)
+        public override void Skip(NetBuffer buffer)
         {
-            Primitive.ReadVWidth(data, ref index);
-            index += sizeof(ushort);
+            buffer.ReadVWidth();
+            buffer.Index += sizeof(ushort);
         }   
     }
 }

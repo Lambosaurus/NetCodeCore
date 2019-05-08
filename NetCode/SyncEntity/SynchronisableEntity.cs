@@ -36,10 +36,10 @@ namespace NetCode.SyncEntity
             Revision = revision;
         }
 
-        public static void ReadHeader(byte[] data, ref int index, out ushort entityID, out ushort typeID)
+        public static void ReadHeader(NetBuffer buffer, out ushort entityID, out ushort typeID)
         {
-            entityID = Primitive.ReadUShort(data, ref index);
-            typeID = Primitive.ReadUShort(data, ref index);
+            entityID = buffer.ReadUShort();
+            typeID = buffer.ReadUShort();
         }
 
         public bool ContainsRevision(uint revision)
@@ -94,7 +94,7 @@ namespace NetCode.SyncEntity
             return size;
         }
         
-        public void WriteRevisionToBuffer(byte[] data, ref int index, uint revision)
+        public void WriteRevisionToBuffer(NetBuffer buffer, uint revision)
         {
             List<byte> updatedFieldIDs = new List<byte>();
 
@@ -108,39 +108,39 @@ namespace NetCode.SyncEntity
 
             if (updatedFieldIDs.Count == fields.Length)
             {
-                WriteAllToBuffer(data, ref index);
+                WriteAllToBuffer(buffer);
             }
             else
             {
-                Primitive.WriteUShort(data, ref index, EntityID);
-                Primitive.WriteUShort(data, ref index, descriptor.TypeID);
-                Primitive.WriteByte(data, ref index, (byte)updatedFieldIDs.Count);
+                buffer.WriteUShort(EntityID);
+                buffer.WriteUShort(descriptor.TypeID);
+                buffer.WriteByte((byte)updatedFieldIDs.Count);
 
                 foreach (byte fieldID in updatedFieldIDs)
                 {
                     SynchronisableField field = fields[fieldID];
-                    Primitive.WriteByte(data, ref index, fieldID);
-                    field.Write(data, ref index);
+                    buffer.WriteByte(fieldID);
+                    field.Write(buffer);
                 }
             }
         }
 
-        public void WriteAllToBuffer(byte[] data, ref int index)
+        public void WriteAllToBuffer(NetBuffer buffer)
         {
-            Primitive.WriteUShort(data, ref index, EntityID);
-            Primitive.WriteUShort(data, ref index, descriptor.TypeID);
-            Primitive.WriteByte(data, ref index, FieldHeaderAll );
+            buffer.WriteUShort(EntityID);
+            buffer.WriteUShort(descriptor.TypeID);
+            buffer.WriteByte(FieldHeaderAll);
 
             for (byte fieldID = 0; fieldID < fields.Length; fieldID++)
             {
                 SynchronisableField field = fields[fieldID];
-                field.Write(data, ref index);
+                field.Write(buffer);
             }
         }
         
-        public void ReadRevisionFromBuffer(byte[] data, ref int index, SyncContext context)
+        public void ReadRevisionFromBuffer(NetBuffer buffer, SyncContext context)
         {
-            byte fieldCount = Primitive.ReadByte(data, ref index);
+            byte fieldCount = buffer.ReadByte();
             bool skipHeader = false;
 
             if (fieldCount == FieldHeaderAll)
@@ -154,9 +154,9 @@ namespace NetCode.SyncEntity
                 //TODO: This is unsafe. The field ID may be out or range, and there
                 //      may be insufficient data remaining to call .PullFromBuffer with
 
-                byte fieldID = (skipHeader) ? i : Primitive.ReadByte(data, ref index);
+                byte fieldID = (skipHeader) ? i : buffer.ReadByte();
                 SynchronisableField field = fields[fieldID];
-                field.ReadChanges(data, ref index, context);
+                field.ReadChanges(buffer, context);
                 
                 if (!field.Synchronised) { Synchronised = false; }
                 if (field.PollingRequired) { PollingRequired = true; }
@@ -195,16 +195,16 @@ namespace NetCode.SyncEntity
         /// <param name="data"></param>
         /// <param name="index"></param>
         /// <param name="descriptor"></param>
-        internal static void SkipRevisionFromBuffer(byte[] data, ref int index, SyncEntityDescriptor descriptor)
+        internal static void SkipRevisionFromBuffer(NetBuffer buffer, SyncEntityDescriptor descriptor)
         {
-            byte fieldCount = Primitive.ReadByte(data, ref index);
+            byte fieldCount = buffer.ReadByte();
 
             for (int i = 0; i < fieldCount; i++)
             {
                 //TODO: This is unsafe. The field ID may be out or range, and there
                 //      may be insufficient data remaining to call .PullFromBuffer with
-                byte fieldID = Primitive.ReadByte(data, ref index);
-                descriptor.GetStaticField(fieldID).Skip(data, ref index);
+                byte fieldID = buffer.ReadByte();
+                descriptor.GetStaticField(fieldID).Skip(buffer);
             }
         }
 

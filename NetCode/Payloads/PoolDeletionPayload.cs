@@ -86,21 +86,21 @@ namespace NetCode.Payloads
 
         public override void WriteContent()
         {
-            Primitive.WriteUShort(Data, ref DataIndex, PoolID);
-            Primitive.WriteUInt(Data, ref DataIndex, Revision);
-            Primitive.WriteUShortArray(Data, ref DataIndex, EntityIDs);
+            Buffer.WriteUShort(PoolID);
+            Buffer.WriteUInt(Revision);
+            Buffer.WriteUShortArray(EntityIDs);
         }
 
         public override void ReadContent()
         {
-            PoolID = Primitive.ReadUShort(Data, ref DataIndex);
-            Revision = Primitive.ReadUInt(Data, ref DataIndex);
-            EntityIDs = Primitive.ReadUShortArray(Data, ref DataIndex);
+            PoolID = Buffer.ReadUShort();
+            Revision = Buffer.ReadUInt();
+            EntityIDs = Buffer.ReadUShortArray();
         }
 
         public override int ContentSize()
         {
-            return sizeof(ushort) + sizeof(uint) + Primitive.ArraySize(EntityIDs.Length, sizeof(ushort));
+            return sizeof(ushort) + sizeof(uint) + NetBuffer.ArraySize(EntityIDs.Length, sizeof(ushort));
         }
     }
 }

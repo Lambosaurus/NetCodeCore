@@ -82,19 +82,19 @@ namespace NetCode.SyncField.Implementations
             return sizeof(ushort);
         }
 
-        public override void Write(byte[] data, ref int index)
+        public override void Write(NetBuffer buffer)
         {
-            Primitive.WriteUShort(data, ref index, EntityID);
+            buffer.WriteUShort(EntityID);
         }
 
-        public override void Read(byte[] data, ref int index)
+        public override void Read(NetBuffer buffer)
         {
-            EntityID = Primitive.ReadUShort(data, ref index);
+            EntityID = buffer.ReadUShort();
         }
 
-        public override void Skip(byte[] data, ref int index)
+        public override void Skip(NetBuffer buffer)
         {
-            index += sizeof(ushort);
+            buffer.Index += sizeof(ushort);
         }   
     }
 }
