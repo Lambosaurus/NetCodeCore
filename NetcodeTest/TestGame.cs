@@ -110,7 +110,7 @@ namespace NetcodeTest
             //NetTime.Advance(1000/60);
 
             float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
-            
+
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
             {
                 this.Exit();

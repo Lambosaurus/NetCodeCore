@@ -39,48 +39,43 @@ namespace NetCode.SyncPool
                 ResizeSyncHandleArray();
             }
 
-            ushort potentialEntityID = (ushort)(lastEntityID + 1);
-            if (potentialEntityID >= SyncSlots.Length)
-            {
-                // This is not zero, to respect SyncHandle.NullEntityID = 0
-                potentialEntityID = 1;
-            }
-            
-            //TODO: This search will start to choke when the dict is nearly full of keys.
-            //      Somone should be informed when this happens.
-
             // start searching for free keys from where we found our last free key
             // This will be empty most of the time
-            while (SyncSlots[potentialEntityID].Handle != null)
+            int start = (lastEntityID + 1);
+            if (start >= SyncSlots.Length)
             {
-                potentialEntityID++;
+                // This is not zero, to respect SyncHandle.NullEntityID = 0
+                start = 1;
+            }
 
-                if (potentialEntityID >= SyncSlots.Length)
+            //TODO: This search will start to choke when the dict is nearly full of keys.
+            //      Somone should be informed when this happens.
+            for (int i = start; i < SyncSlots.Length; i++)
+            {
+                if (SyncSlots[i].Handle == null)
                 {
-                    // Wrap potentialID
-                    potentialEntityID = 0;
-                }
-                
-                // We hit the starting point of our search. We must be out of ID's. Time to throw an exeption.
-                if (potentialEntityID == lastEntityID)
-                {
-                    throw new NetcodeItemcountException(string.Format("Sync pool has been filled. The pool should not contain more than {0} entities.", MaximumEntityCount));
+                    lastEntityID = (ushort)i;
+                    return lastEntityID;
                 }
             }
-            
-            lastEntityID = potentialEntityID;
-            return potentialEntityID;
+            for (int i = 1; i < start - 1; i++) // We start at one to respect SyncHandle.NullEntityID
+            {
+                if (SyncSlots[i].Handle == null)
+                {
+                    lastEntityID = (ushort)i;
+                    return lastEntityID;
+                }
+            }
+            throw new NetcodeItemcountException(string.Format("Sync pool has been filled. The pool should not contain more than {0} entities.", MaximumEntityCount));
         }
         
         public SyncHandle AddEntity(object instance)
         {
             ushort entityID = GetNextEntityID();
             SyncEntityDescriptor descriptor = entityGenerator.GetEntityDescriptor(instance.GetType().TypeHandle);
-            SyncHandle handle = new SyncHandle(
-                new SynchronisableEntity(descriptor, entityID),
-                instance
-                );
+            SynchronisableEntity entity = new SynchronisableEntity(descriptor, entityID);
 
+            SyncHandle handle = new SyncHandle(entity, instance);
             AddHandle(handle);
             return handle;
         }
@@ -126,9 +121,9 @@ namespace NetCode.SyncPool
 
         private void BroadcastPayload(Payload payload)
         {
-            foreach (NetworkClient clients in Subscribers)
+            foreach (NetworkClient client in Subscribers)
             {
-                clients.Enqueue(payload);
+                client.Enqueue(payload);
             }
         }
         
