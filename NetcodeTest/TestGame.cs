@@ -26,7 +26,7 @@ namespace NetcodeTest
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        NetDefinitions netDefs = new NetDefinitions();
+        NetDefinitions netDefs;
         AsteroidServer server = null;
 
         NetworkClient client;
@@ -59,7 +59,7 @@ namespace NetcodeTest
 
         private void SetupNetwork()
         {
-            netDefs.LoadEntityTypes();
+            netDefs = new NetDefinitions();
             server = new AsteroidServer(netDefs, Resolution.ToVector2(), 11002);
             
             client = new NetworkClient( new UDPConnection(

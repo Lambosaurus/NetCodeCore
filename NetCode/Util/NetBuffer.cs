@@ -50,43 +50,49 @@ namespace NetCode.Util
         }
         public void WriteShort(short value)
         {
-            byte[] bytes = BitConverter.GetBytes(value);
-            foreach (byte b in bytes) { Data[Index++] = b; }
+            WriteUShort((ushort)value);
         }
         public void WriteUShort(ushort value)
         {
-            byte[] bytes = BitConverter.GetBytes(value);
-            foreach (byte b in bytes) { Data[Index++] = b; }
+            Data[Index    ] = (byte)(value >> 8);
+            Data[Index + 1] = (byte)(value     );
+            Index += sizeof(ushort);
         }
         public void WriteInt(int value)
         {
-            byte[] bytes = BitConverter.GetBytes(value);
-            foreach (byte b in bytes) { Data[Index++] = b; }
+            WriteUInt((uint)value);
         }
         public void WriteUInt(uint value)
         {
-            byte[] bytes = BitConverter.GetBytes(value);
-            foreach (byte b in bytes) { Data[Index++] = b; }
+            Data[Index    ] = (byte)(value >> 24);
+            Data[Index + 1] = (byte)(value >> 16);
+            Data[Index + 2] = (byte)(value >> 8 );
+            Data[Index + 3] = (byte)(value      );
+            Index += sizeof(uint);
         }
         public void WriteLong(long value)
         {
-            byte[] bytes = BitConverter.GetBytes(value);
-            foreach (byte b in bytes) { Data[Index++] = b; }
+            WriteULong((ulong)value);
         }
         public void WriteULong(ulong value)
         {
-            byte[] bytes = BitConverter.GetBytes(value);
-            foreach (byte b in bytes) { Data[Index++] = b; }
+            Data[Index    ] = (byte)(value >> 56);
+            Data[Index + 1] = (byte)(value >> 48);
+            Data[Index + 2] = (byte)(value >> 40);
+            Data[Index + 3] = (byte)(value >> 32);
+            Data[Index + 4] = (byte)(value >> 24);
+            Data[Index + 5] = (byte)(value >> 16);
+            Data[Index + 6] = (byte)(value >> 8 );
+            Data[Index + 7] = (byte)(value      );
+            Index += sizeof(long);
         }
-        public void WriteFloat(float value)
+        public unsafe void WriteFloat(float value)
         {
-            byte[] bytes = BitConverter.GetBytes(value);
-            foreach (byte b in bytes) { Data[Index++] = b; }
+            WriteUInt(*(uint*)&value);
         }
-        public void WriteDouble(double value)
+        public unsafe void WriteDouble(double value)
         {
-            byte[] bytes = BitConverter.GetBytes(value);
-            foreach (byte b in bytes) { Data[Index++] = b; }
+            WriteULong(*(ulong*)&value);
         }
         public void WriteString(string value)
         {
@@ -95,8 +101,8 @@ namespace NetCode.Util
         }
         public void WriteHalf(Half value)
         {
-            byte[] bytes = Half.GetBytes(value);
-            foreach (byte b in bytes) { Data[Index++] = b; }
+            ushort bits = Half.GetBits(value);
+            WriteUShort(bits);
         }
         public void WriteByteArray(byte[] value)
         {
@@ -134,51 +140,63 @@ namespace NetCode.Util
         }
         public short ReadShort()
         {
-            short value = BitConverter.ToInt16(Data, Index);
-            Index += sizeof(short);
-            return value;
+            return (short)ReadUShort();
         }
         public ushort ReadUShort()
         {
-            ushort value = BitConverter.ToUInt16(Data, Index);
+            ushort value = (ushort)(
+                (Data[Index    ] << 8)
+              | (Data[Index + 1]     )
+              );
+
             Index += sizeof(ushort);
             return value;
         }
         public int ReadInt()
         {
-            int value = BitConverter.ToInt32(Data, Index);
-            Index += sizeof(int);
-            return value;
+            return (int)ReadUInt();
         }
         public uint ReadUInt()
         {
-            uint value = BitConverter.ToUInt32(Data, Index);
+            uint value = (uint)(
+                (Data[Index    ] << 24)
+              | (Data[Index + 1] << 16)
+              | (Data[Index + 2] << 8 )
+              | (Data[Index + 3]      )
+              );
+
             Index += sizeof(uint);
             return value;
         }
         public long ReadLong()
         {
-            long value = BitConverter.ToInt64(Data, Index);
-            Index += sizeof(long);
-            return value;
+            return (long)ReadULong();
         }
         public ulong ReadULong()
         {
-            ulong value = BitConverter.ToUInt64(Data, Index);
+            ulong value = (ulong)(
+                (Data[Index    ] << 56)
+              | (Data[Index + 1] << 48)
+              | (Data[Index + 2] << 40)
+              | (Data[Index + 3] << 32)
+              | (Data[Index + 4] << 24)
+              | (Data[Index + 5] << 16)
+              | (Data[Index + 6] << 8 )
+              | (Data[Index + 7]      )
+              );
+
             Index += sizeof(ulong);
             return value;
         }
-        public float ReadFloat()
+        public unsafe float ReadFloat()
         {
-            float value = BitConverter.ToSingle(Data, Index);
-            Index += sizeof(float);
-            return value;
+            uint raw = ReadUInt();
+            return *(float*)&(raw);
         }
-        public double ReadDouble()
+        public unsafe double ReadDouble()
         {
-            double value = BitConverter.ToSingle(Data, Index);
-            Index += sizeof(double);
-            return value;
+            ulong raw = ReadULong();
+            return *(double*)&(raw);
         }
         public string ReadString()
         {
@@ -192,9 +210,8 @@ namespace NetCode.Util
         }
         public Half ReadHalf()
         {
-            Half value = Half.ToHalf(Data, Index);
-            Index += SizeofHalf;
-            return value;
+            ushort bits = ReadUShort();
+            return Half.ToHalf(bits);
         }
         public byte[] ReadByteArray()
         {
