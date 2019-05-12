@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -107,7 +107,8 @@ namespace NetCode.SyncPool
 
             NetBuffer buffer = payload.RevisionData;
 
-            while (buffer.Remaining > 0) // >= SynchronisableEntity.HeaderSize
+
+            while (buffer.Remaining >= SynchronisableEntity.HeaderSize)
             {
                 SynchronisableEntity.ReadHeader(buffer, out ushort entityID, out ushort typeID);
 

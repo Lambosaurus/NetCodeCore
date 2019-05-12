@@ -152,7 +152,7 @@ namespace NetCode.SyncEntity
             for (byte i = 0; i < fieldCount; i++)
             {
                 //TODO: This is unsafe. The field ID may be out or range, and there
-                //      may be insufficient data remaining to call .PullFromBuffer with
+                //      may be insufficient data remaining to call .ReadRevisionFromBuffer with
 
                 byte fieldID = (skipHeader) ? i : buffer.ReadByte();
                 SynchronisableField field = fields[fieldID];

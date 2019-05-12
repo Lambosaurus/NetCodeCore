@@ -27,13 +27,18 @@ namespace NetCode
         /// </summary>
         Reference = (1 << 2),
 
-
         /// <summary>
         /// For reference types this will indicate that a two byte poolID should be included.
         /// This allows the SyncEntity to be referenced if it is contained in a Linked SyncPool.
         /// </summary>
         LinkedReference = (1 << 3),
+
+        /// <summary>
+        /// For reference types this will automatically add the object to a hidden reference pool, and delete it when not required.
+        /// </summary>
+        AutoReference = (1 << 4),
     };
+
 
     /// <summary>
     /// Indicates what variables and properties should be tracked and synched between SynchronisableEntities.
