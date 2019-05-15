@@ -34,7 +34,7 @@ namespace NetCode.SyncPool
         {
             Obj = obj;
             Sync = sync;
-            State = sync.PollingRequired ? SyncState.PendingReferences : SyncState.Ready;
+            State = sync.ReferencesPending ? SyncState.PendingReferences : SyncState.Ready;
         }
 
         public void Clear()

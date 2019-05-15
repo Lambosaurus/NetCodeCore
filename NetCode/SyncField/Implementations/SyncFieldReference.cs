@@ -14,56 +14,38 @@ namespace NetCode.SyncField.Implementations
         
         protected SyncFieldDescriptor Descriptor;
         
-        internal override void Initialise(SyncFieldDescriptor descriptor, byte elementDepth)
+        internal void Initialise(SyncFieldDescriptor descriptor, byte elementDepth)
         {
-            Flags = descriptor.Flags;
             Descriptor = descriptor;
         }
 
-        public override void SetValue(object new_value)
+        internal override bool ContainsRevision(uint revision)
         {
-            value = new_value;
+            return Revision == revision;
         }
 
-        public override object GetValue() { return value; }
-
-        public override bool ValueEqual(object new_value)
+        internal override bool TrackChanges(object newValue, SyncContext context)
         {
-            return new_value == value;
-        }
-        
-        public override void PostProcess(SyncContext context)
-        {
-            value = null;
-            SyncHandle handle = context.GetHandle(EntityID);
-
-            if (handle != null)
+            if (newValue != value)
             {
-                if (Descriptor.ReferenceType.IsAssignableFrom(handle.Obj.GetType()))
+                Revision = context.Revision;
+                value = newValue;
+                if (value == null)
                 {
-                    value = handle.Obj;
+                    EntityID = SyncHandle.NullEntityID;
                 }
+                else
+                {
+                    SyncHandle handle = context.GetHandleByObject(value);
+                    EntityID = (handle != null) ? handle.EntityID : SyncHandle.NullEntityID;
+                }
+
+                return true;
             }
-            else
-            {
-                PollingRequired = true;
-            }
+            return false;
         }
 
-        public override void PreProcess(SyncContext context)
-        {
-            if (value == null)
-            {
-                EntityID = SyncHandle.NullEntityID;
-            }
-            else
-            {
-                SyncHandle handle = context.GetHandleByObject(value);
-                EntityID = (handle == null) ? SyncHandle.NullEntityID : handle.EntityID;
-            }
-        }
-
-        public override void PeriodicProcess(SyncContext context)
+        internal override void UpdateReferences(SyncContext context)
         {
             SyncHandle handle = context.GetHandle(EntityID);
             
@@ -73,28 +55,51 @@ namespace NetCode.SyncField.Implementations
                 {
                     value = handle.Obj;
                 }
-                PollingRequired = false;
+                Synchronised = false;
+                ReferencesPending = false;
             }
         }
 
-        public override int WriteToBufferSize()
+        internal override int WriteRevisionToBufferSize(uint revision)
         {
             return sizeof(ushort);
         }
 
-        public override void Write(NetBuffer buffer)
+        internal override int WriteAllToBufferSize()
+        {
+            return sizeof(ushort);
+        }
+
+        internal override void WriteRevisionToBuffer(NetBuffer buffer, SyncContext context)
         {
             buffer.WriteUShort(EntityID);
         }
 
-        public override void Read(NetBuffer buffer)
+        internal override void ReadRevisionFromBuffer(NetBuffer buffer, SyncContext context)
         {
-            EntityID = buffer.ReadUShort();
+            if (context.Revision > Revision)
+            {
+                EntityID = buffer.ReadUShort();
+                Revision = context.Revision;
+                Synchronised = false;
+
+                value = null;
+                UpdateReferences(context);
+            }
+            else
+            {
+                SkipRevisionFromBuffer(buffer);
+            }
         }
 
-        public override void Skip(NetBuffer buffer)
+        internal override object GetChanges()
+        {
+            return value;
+        }
+
+        internal override void SkipRevisionFromBuffer(NetBuffer buffer)
         {
             buffer.Index += sizeof(ushort);
-        }   
+        } 
     }
 }

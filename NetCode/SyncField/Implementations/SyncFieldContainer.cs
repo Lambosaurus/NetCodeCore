@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace NetCode.SyncField.Implementations
 {   
-    public abstract class SynchronisableContainer<T> : SynchronisableField
+    public abstract class SynchronisableContainer<T> : SynchronisablePrimitive
     {
         protected List<SynchronisableField> elements = new List<SynchronisableField>();
         protected SynchronisableField skipElement;

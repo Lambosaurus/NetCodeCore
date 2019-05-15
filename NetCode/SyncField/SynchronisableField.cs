@@ -9,36 +9,56 @@ namespace NetCode.SyncField
 {
     public abstract class SynchronisableField
     {
-        public uint Revision { get; private set; } = 0;
+        protected uint Revision { get; set; } = 0;
         public bool Synchronised { get; set; } = false;
-        public bool PollingRequired { get; protected set; } = false;
-        public SyncFlags Flags { get; internal set; }
+        public bool ReferencesPending { get; protected set; } = false;
 
-        internal virtual void Initialise(SyncFieldDescriptor descriptor, byte elementDepth)
+        internal abstract bool ContainsRevision(uint revision);
+        internal abstract bool TrackChanges(object newValue, SyncContext context);
+        internal abstract object GetChanges();
+
+        internal abstract void ReadRevisionFromBuffer(NetBuffer buffer, SyncContext context);
+        internal abstract void WriteRevisionToBuffer(NetBuffer buffer, SyncContext context);
+        internal abstract int WriteRevisionToBufferSize(uint revision);
+        internal abstract int WriteAllToBufferSize();
+        internal abstract void WriteAllToBuffer(NetBuffer buffer);
+        internal abstract void SkipRevisionFromBuffer(NetBuffer buffer);
+
+        internal virtual void UpdateReferences(SyncContext context)
         {
-            Flags = descriptor.Flags;
+            throw new NotImplementedException();
         }
-        
-        internal bool TrackChanges(object newValue, SyncContext context)
+    }
+
+    public abstract class SynchronisablePrimitive : SynchronisableField
+    {
+        internal override bool ContainsRevision(uint revision)
+        {
+            return Revision == revision;
+        }
+
+        internal override bool TrackChanges(object newValue, SyncContext context)
         {
             if (!ValueEqual(newValue))
             {
                 Revision = context.Revision;
                 SetValue(newValue);
-                PreProcess(context);
                 return true;
             }
             return false;
         }
 
-        internal void ReadChanges(NetBuffer buffer, SyncContext context)
+        internal override object GetChanges()
+        {
+            Synchronised = true;
+            return GetValue();
+        }
+
+        internal override void ReadRevisionFromBuffer(NetBuffer buffer, SyncContext context)
         {
             if (context.Revision > Revision)
             {
                 Read(buffer);
-
-                PostProcess(context);
-
                 Revision = context.Revision;
                 Synchronised = false;
             }
@@ -48,30 +68,31 @@ namespace NetCode.SyncField
             }
         }
 
-        /// <summary>
-        /// Will be called while PollingRequired is true.
-        /// </summary>
-        /// <param name="context"></param>
-        public virtual void PeriodicProcess(SyncContext context)
+        internal override void WriteRevisionToBuffer(NetBuffer buffer, SyncContext context)
         {
-            throw new NotImplementedException();
+            Write(buffer);
         }
 
-        /// <summary>
-        /// Performed a value has been read from a payload
-        /// </summary>
-        /// <param name="context">The destination SyncPool context</param>
-        public virtual void PostProcess(SyncContext context)
+        internal override int WriteRevisionToBufferSize(uint revision)
         {
+            return WriteSize();
         }
 
-        /// <summary>
-        /// Performed a value has been read from the entity
-        /// </summary>
-        /// <param name="context">The source SyncPool context</param>
-        public virtual void PreProcess(SyncContext context)
+        internal override int WriteAllToBufferSize()
         {
+            return WriteSize();
         }
+
+        internal override void WriteAllToBuffer(NetBuffer buffer)
+        {
+            Write(buffer);
+        }
+
+        internal override void SkipRevisionFromBuffer(NetBuffer buffer)
+        {
+            Skip(buffer);
+        }
+
 
         /// <summary>
         /// Sets the internal value of the field
@@ -93,7 +114,7 @@ namespace NetCode.SyncField
         /// <summary>
         /// Returns the number of bytes required by Write()
         /// </summary>
-        public abstract int WriteToBufferSize();
+        public abstract int WriteSize();
 
         /// <summary>
         /// Writes the Synchronisable value into the packet.

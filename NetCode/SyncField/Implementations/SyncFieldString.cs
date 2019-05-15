@@ -8,13 +8,13 @@ using NetCode.Util;
 namespace NetCode.SyncField.Implementations
 {
     [EnumerateSyncField(typeof(string))]
-    public class SyncFieldString : SynchronisableField
+    public class SyncFieldString : SynchronisablePrimitive
     {
         protected string value;
         public override void SetValue(object new_value) { value = (string)new_value; }
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (string)new_value == value; }
-        public override int WriteToBufferSize()
+        public override int WriteSize()
         {
             if (value == null) return NetBuffer.SizeOfVWidth(0);
             return NetBuffer.SizeOfVWidth((ushort)value.Length) + (value.Length * sizeof(byte));
