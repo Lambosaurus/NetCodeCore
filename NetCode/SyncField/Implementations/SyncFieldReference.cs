@@ -7,18 +7,10 @@ using NetCode.SyncPool;
 
 namespace NetCode.SyncField.Implementations
 {
-    internal class SyncFieldReference : SynchronisableField
+    internal class SyncFieldReference<T> : SynchronisableField
     {
         protected object value;
         protected ushort EntityID = SyncHandle.NullEntityID;
-        
-        protected SyncFieldDescriptor Descriptor;
-        
-        internal override void Initialise(SyncFieldDescriptor descriptor, byte elementDepth)
-        {
-            Flags = descriptor.Flags;
-            Descriptor = descriptor;
-        }
 
         public override void SetValue(object new_value)
         {
@@ -39,7 +31,7 @@ namespace NetCode.SyncField.Implementations
 
             if (handle != null)
             {
-                if (Descriptor.ReferenceType.IsAssignableFrom(handle.Obj.GetType()))
+                if (typeof(T).IsAssignableFrom(handle.Obj.GetType()))
                 {
                     value = handle.Obj;
                 }
@@ -69,7 +61,7 @@ namespace NetCode.SyncField.Implementations
             
             if (handle != null)
             {
-                if (Descriptor.ReferenceType.IsAssignableFrom(handle.Obj.GetType()))
+                if (typeof(T).IsAssignableFrom(handle.Obj.GetType()))
                 {
                     value = handle.Obj;
                 }

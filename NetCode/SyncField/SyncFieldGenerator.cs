@@ -14,14 +14,10 @@ namespace NetCode.SyncField
         private static Dictionary<RuntimeTypeHandle, Func<SynchronisableField>> HalfConstructorLookups = new Dictionary<RuntimeTypeHandle, Func<SynchronisableField>>();
         private static Dictionary<RuntimeTypeHandle, Func<SynchronisableField>> ConstructorLookups = new Dictionary<RuntimeTypeHandle, Func<SynchronisableField>>();
         private static Func<SynchronisableField> TimestampFieldConstructor;
-        private static Func<SynchronisableField> ReferenceFieldConstructor;
-        private static Func<SynchronisableField> LinkedReferenceFieldConstructor;
 
         static SyncFieldGenerator()
         {
             TimestampFieldConstructor = DelegateGenerator.GenerateConstructor<SynchronisableField>(typeof(SyncFieldTimestamp));
-            ReferenceFieldConstructor = DelegateGenerator.GenerateConstructor<SynchronisableField>(typeof(SyncFieldReference));
-            LinkedReferenceFieldConstructor = DelegateGenerator.GenerateConstructor<SynchronisableField>(typeof(SyncFieldLinkedReference));
             LoadFieldTypes();
         }
 
@@ -105,7 +101,8 @@ namespace NetCode.SyncField
                 {
                     throw new NotSupportedException(string.Format("{0}.{1} can not be used on ValueType", typeof(SyncFlags).Name, SyncFlags.LinkedReference));
                 }
-                return new SyncFieldDescriptor(LinkedReferenceFieldConstructor, flags, type);
+                Type syncReferenceType = typeof(SyncFieldLinkedReference<>).MakeGenericType(new Type[] { type });
+                return new SyncFieldDescriptor(GenerateAndCacheConstructor(syncReferenceType), flags, type);
             }
             else if ((flags & SyncFlags.Reference) != 0)
             {
@@ -113,7 +110,8 @@ namespace NetCode.SyncField
                 {
                     throw new NotSupportedException(string.Format("{0}.{1} can not be used on ValueType", typeof(SyncFlags).Name, SyncFlags.Reference));
                 }
-                return new SyncFieldDescriptor(ReferenceFieldConstructor, flags, type);
+                Type syncReferenceType = typeof(SyncFieldReference<>).MakeGenericType(new Type[] { type });
+                return new SyncFieldDescriptor(GenerateAndCacheConstructor(syncReferenceType), flags, type);
             }
             else if ((flags & SyncFlags.Timestamp) != 0)
             {

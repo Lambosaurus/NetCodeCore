@@ -7,7 +7,7 @@ using NetCode.SyncPool;
 
 namespace NetCode.SyncField.Implementations
 {
-    internal class SyncFieldLinkedReference : SyncFieldReference
+    internal class SyncFieldLinkedReference<T> : SyncFieldReference<T>
     {
         protected ushort PoolID;
 
@@ -18,7 +18,7 @@ namespace NetCode.SyncField.Implementations
 
             if (handle != null)
             {
-                if (Descriptor.ReferenceType.IsAssignableFrom(handle.Obj.GetType()))
+                if (typeof(T).IsAssignableFrom(handle.Obj.GetType()))
                 {
                     value = handle.Obj;
                 }
@@ -58,7 +58,7 @@ namespace NetCode.SyncField.Implementations
             
             if (handle != null)
             {
-                if (Descriptor.ReferenceType.IsAssignableFrom(handle.Obj.GetType()))
+                if (typeof(T).IsAssignableFrom(handle.Obj.GetType()))
                 {
                     value = handle.Obj;
                 }
