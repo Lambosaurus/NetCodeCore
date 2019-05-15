@@ -103,7 +103,7 @@ namespace NetCode.SyncPool
         internal void UnpackRevisionDatagram(PoolRevisionPayload payload, long offsetMilliseconds)
         {
             Context.Revision = payload.Revision;
-            Context.TimestampOffset = offsetMilliseconds;
+            Context.ConnectionTimestampOffset = offsetMilliseconds;
 
             NetBuffer buffer = payload.RevisionData;
 

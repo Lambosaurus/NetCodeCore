@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace NetCode.SyncField.Implementations
 {   
-    public abstract class SynchronisableContainer<T> : SynchronisablePrimitive
+    public abstract class SynchronisableContainer<T> : SynchronisableValue
     {
         protected List<SynchronisableField> elements = new List<SynchronisableField>();
         protected SynchronisableField skipElement;
@@ -47,7 +47,7 @@ namespace NetCode.SyncField.Implementations
             }
         }
         
-        public override void Read(NetBuffer buffer)
+        public override void ReadFromBuffer(NetBuffer buffer)
         {
             ushort count = buffer.ReadVWidth();
             if (count != elements.Count) { SetElementLength(count); }
@@ -57,7 +57,7 @@ namespace NetCode.SyncField.Implementations
             }
         }
         
-        public override void Skip(NetBuffer buffer)
+        public override void SkipFromBuffer(NetBuffer buffer)
         {
             int count = buffer.ReadVWidth();
             if (count > 0)
@@ -78,12 +78,12 @@ namespace NetCode.SyncField.Implementations
                 }
                 for (int i = 0; i < count; i++)
                 {
-                    skipElement.Skip(buffer);
+                    skipElement.SkipFromBuffer(buffer);
                 }
             }
         }
         
-        public override void Write(NetBuffer buffer)
+        public override void WriteToBuffer(NetBuffer buffer)
         {
             if (elements.Count > NetBuffer.MaxVWidthValue)
             {
@@ -92,13 +92,13 @@ namespace NetCode.SyncField.Implementations
             buffer.WriteVWidth((ushort)elements.Count);
             foreach ( SynchronisableField element in elements )
             {
-                element.Write(buffer);
+                element.WriteToBuffer(buffer);
             }
         }
 
         public override int WriteToBufferSize()
         {
-            int count = NetBuffer.SizeOfVWidth((ushort)elements.Count);
+            int count = NetBuffer.SizeofVWidth((ushort)elements.Count);
             foreach (SynchronisableField element in elements)
             {
                 count += element.WriteToBufferSize();

@@ -73,7 +73,7 @@ namespace NetCode.SyncEntity
                 if (field.ContainsRevision(revision))
                 {
                     updatedFields++;
-                    size += field.WriteRevisionToBufferSize(revision);
+                    size += field.WriteToBufferSize(revision);
                 }
             }
             if (updatedFields != fields.Length)
@@ -89,7 +89,7 @@ namespace NetCode.SyncEntity
             int size = HeaderSize;
             foreach (SynchronisableField field in fields)
             {
-                size += field.WriteAllToBufferSize();
+                size += field.WriteToBufferSize();
             }
             return size;
         }
@@ -116,7 +116,7 @@ namespace NetCode.SyncEntity
                 for (int fieldID = 0; fieldID < fields.Length; fieldID++)
                 {
                     SynchronisableField field = fields[fieldID];
-                    field.WriteRevisionToBuffer(buffer, context);
+                    field.WriteToBuffer(buffer, context);
                 }
             }
             else
@@ -127,7 +127,7 @@ namespace NetCode.SyncEntity
                 {
                     SynchronisableField field = fields[fieldID];
                     buffer.WriteByte(fieldID);
-                    field.WriteRevisionToBuffer(buffer, context);
+                    field.WriteToBuffer(buffer, context);
                 }
             }
         }
@@ -141,7 +141,7 @@ namespace NetCode.SyncEntity
             for (byte fieldID = 0; fieldID < fields.Length; fieldID++)
             {
                 SynchronisableField field = fields[fieldID];
-                field.WriteAllToBuffer(buffer);
+                field.WriteToBuffer(buffer);
             }
         }
         
@@ -163,7 +163,7 @@ namespace NetCode.SyncEntity
 
                 byte fieldID = (skipHeader) ? i : buffer.ReadByte();
                 SynchronisableField field = fields[fieldID];
-                field.ReadRevisionFromBuffer(buffer, context);
+                field.ReadFromBuffer(buffer, context);
                 
                 if (!field.Synchronised) { Synchronised = false; }
                 if (field.ReferencesPending) { ReferencesPending = true; }
@@ -211,7 +211,7 @@ namespace NetCode.SyncEntity
                 //TODO: This is unsafe. The field ID may be out or range, and there
                 //      may be insufficient data remaining to call .PullFromBuffer with
                 byte fieldID = buffer.ReadByte();
-                descriptor.GetStaticField(fieldID).SkipRevisionFromBuffer(buffer);
+                descriptor.GetStaticField(fieldID).SkipFromBuffer(buffer);
             }
         }
 
@@ -240,7 +240,7 @@ namespace NetCode.SyncEntity
                 SynchronisableField field = fields[i];
                 if (!field.Synchronised)
                 {
-                    object value = field.GetChanges();
+                    object value = field.GetValue();
                     descriptor.SetField(obj, i, value);
                     field.Synchronised = true;
                 }

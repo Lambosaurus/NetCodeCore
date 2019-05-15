@@ -7,83 +7,107 @@ using NetCode.SyncPool;
 
 namespace NetCode.SyncField.Implementations
 {
-    internal class SyncFieldLinkedReference : SyncFieldReference
+    internal class SyncFieldLinkedReference<T> : SynchronisableField
     {
+        protected object value;
         protected ushort PoolID;
+        protected ushort EntityID = SyncHandle.NullEntityID;
 
-        public override void PostProcess(SyncContext context)
+        private SyncFieldDescriptor Descriptor;
+
+        internal override void Initialise(SyncFieldDescriptor descriptor, byte elementDepth)
         {
-            value = null;
-            SyncHandle handle = context.GetHandle(EntityID, PoolID);
-
-            if (handle != null)
-            {
-                if (Descriptor.ReferenceType.IsAssignableFrom(handle.Obj.GetType()))
-                {
-                    value = handle.Obj;
-                }
-            }
-            else
-            {
-                PollingRequired = true;
-            }
+            Descriptor = descriptor;
         }
 
-        public override void PreProcess(SyncContext context)
+        public sealed override bool TrackChanges(object newValue, SyncContext context)
         {
-            if (value == null)
+            if (newValue != value)
             {
-                PoolID = 0;
-                EntityID = SyncHandle.NullEntityID;
-            }
-            else
-            {
-                SyncHandle handle = context.GetLinkedHandleByObject(value, out ushort poolID);
-                if (handle != null)
+                value = newValue;
+                if (value == null)
                 {
-                    EntityID = handle.EntityID;
-                    PoolID = poolID;
+                    PoolID = 0;
+                    EntityID = SyncHandle.NullEntityID;
                 }
                 else
                 {
-                    EntityID = SyncHandle.NullEntityID;
-                    PoolID = 0;
+                    SyncHandle handle = context.GetLinkedHandleByObject(value, out ushort poolID);
+                    if (handle != null)
+                    {
+                        EntityID = handle.EntityID;
+                        PoolID = poolID;
+                    }
+                    else
+                    {
+                        EntityID = SyncHandle.NullEntityID;
+                        PoolID = 0;
+                    }
                 }
+
+                Synchronised = false;
+                Revision = context.Revision;
+                return true;
             }
+            return false;
         }
 
-        public override void PeriodicProcess(SyncContext context)
+        public sealed override void UpdateReferences(SyncContext context)
         {
             SyncHandle handle = context.GetHandle(EntityID, PoolID);
-            
             if (handle != null)
             {
+                if ( typeof(T).IsAssignableFrom(handle.Obj.GetType()) )
+                {
+
+                }
+                
                 if (Descriptor.ReferenceType.IsAssignableFrom(handle.Obj.GetType()))
                 {
                     value = handle.Obj;
                 }
-                PollingRequired = false;
+                Synchronised = false;
+                ReferencesPending = false;
             }
         }
 
         public override int WriteToBufferSize()
         {
-            return sizeof(ushort) + NetBuffer.SizeOfVWidth(PoolID);
+            return sizeof(ushort) + NetBuffer.SizeofVWidth(PoolID);
         }
 
-        public override void Write(NetBuffer buffer)
+        public override void WriteToBuffer(NetBuffer buffer)
         {
             buffer.WriteVWidth(PoolID);
             buffer.WriteUShort(EntityID);
         }
 
-        public override void Read(NetBuffer buffer)
+        public sealed override void ReadFromBuffer(NetBuffer buffer, SyncContext context)
         {
-            PoolID = buffer.ReadVWidth();
-            EntityID = buffer.ReadUShort();
+            if (context.Revision > Revision)
+            {
+                PoolID = buffer.ReadVWidth();
+                EntityID = buffer.ReadUShort();
+                Revision = context.Revision;
+
+                // In the event UpdateReferences fails, we should still fall back to null.
+                value = null;
+                Synchronised = false;
+
+                UpdateReferences(context);
+            }
+            else
+            {
+                SkipFromBuffer(buffer);
+            }
         }
 
-        public override void Skip(NetBuffer buffer)
+        public sealed override object GetValue()
+        {
+            return value;
+        }
+
+        public sealed override void SkipFromBuffer(NetBuffer buffer)
         {
             buffer.ReadVWidth();
             buffer.Index += sizeof(ushort);

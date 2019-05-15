@@ -11,24 +11,18 @@ namespace NetCode.SyncField.Implementations
     {
         protected object value;
         protected ushort EntityID = SyncHandle.NullEntityID;
+
+        private SyncFieldDescriptor Descriptor;
         
-        protected SyncFieldDescriptor Descriptor;
-        
-        internal void Initialise(SyncFieldDescriptor descriptor, byte elementDepth)
+        internal override void Initialise(SyncFieldDescriptor descriptor, byte elementDepth)
         {
             Descriptor = descriptor;
         }
 
-        internal override bool ContainsRevision(uint revision)
-        {
-            return Revision == revision;
-        }
-
-        internal override bool TrackChanges(object newValue, SyncContext context)
+        public sealed override bool TrackChanges(object newValue, SyncContext context)
         {
             if (newValue != value)
             {
-                Revision = context.Revision;
                 value = newValue;
                 if (value == null)
                 {
@@ -37,18 +31,22 @@ namespace NetCode.SyncField.Implementations
                 else
                 {
                     SyncHandle handle = context.GetHandleByObject(value);
+
+                    // If no handle is found, then the supplie object is not in the syncpool.
+                    //TODO: Here we could optionally add the object to the pool for laughs.
                     EntityID = (handle != null) ? handle.EntityID : SyncHandle.NullEntityID;
                 }
 
+                Synchronised = false;
+                Revision = context.Revision;
                 return true;
             }
             return false;
         }
 
-        internal override void UpdateReferences(SyncContext context)
+        public sealed override void UpdateReferences(SyncContext context)
         {
             SyncHandle handle = context.GetHandle(EntityID);
-            
             if (handle != null)
             {
                 if (Descriptor.ReferenceType.IsAssignableFrom(handle.Obj.GetType()))
@@ -59,45 +57,41 @@ namespace NetCode.SyncField.Implementations
                 ReferencesPending = false;
             }
         }
-
-        internal override int WriteRevisionToBufferSize(uint revision)
+        public sealed override int WriteToBufferSize()
         {
             return sizeof(ushort);
         }
 
-        internal override int WriteAllToBufferSize()
-        {
-            return sizeof(ushort);
-        }
-
-        internal override void WriteRevisionToBuffer(NetBuffer buffer, SyncContext context)
+        public sealed override void WriteToBuffer(NetBuffer buffer)
         {
             buffer.WriteUShort(EntityID);
         }
 
-        internal override void ReadRevisionFromBuffer(NetBuffer buffer, SyncContext context)
+        public sealed override void ReadFromBuffer(NetBuffer buffer, SyncContext context)
         {
             if (context.Revision > Revision)
             {
                 EntityID = buffer.ReadUShort();
                 Revision = context.Revision;
+
+                // In the event UpdateReferences fails, we should still fall back to null.
+                value = null;
                 Synchronised = false;
 
-                value = null;
                 UpdateReferences(context);
             }
             else
             {
-                SkipRevisionFromBuffer(buffer);
+                SkipFromBuffer(buffer);
             }
         }
 
-        internal override object GetChanges()
+        public sealed override object GetValue()
         {
             return value;
         }
 
-        internal override void SkipRevisionFromBuffer(NetBuffer buffer)
+        public sealed override void SkipFromBuffer(NetBuffer buffer)
         {
             buffer.Index += sizeof(ushort);
         } 

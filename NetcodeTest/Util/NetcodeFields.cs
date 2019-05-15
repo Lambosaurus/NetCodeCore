@@ -18,7 +18,7 @@ namespace NetcodeTest.Util
         public override object GetValue() { return value; }
         public override bool ValueEqual(object new_value) { return (Vector2)new_value == value; }
         public override int WriteToBufferSize() { return sizeof(float) * 2; }
-        public override void Write(NetBuffer buffer)
+        public override void WriteToBuffer(NetBuffer buffer)
         {
             buffer.WriteFloat(value.X);
             buffer.WriteFloat(value.Y);
@@ -28,7 +28,7 @@ namespace NetcodeTest.Util
             value.X = buffer.ReadFloat();
             value.Y = buffer.ReadFloat();
         }
-        public override void Skip(NetBuffer buffer) { buffer.Index += sizeof(float) * 2; }
+        public override void SkipFromBuffer(NetBuffer buffer) { buffer.Index += sizeof(float) * 2; }
     }
 
     [EnumerateSyncField(typeof(Vector2), SyncFlags.HalfPrecision)]
@@ -49,7 +49,7 @@ namespace NetcodeTest.Util
             return x == (Half)value.X && y == (Half)value.Y;
         }
         public override int WriteToBufferSize() { return NetBuffer.SizeofHalf * 2; }
-        public override void Write(NetBuffer buffer)
+        public override void WriteToBuffer(NetBuffer buffer)
         {
             buffer.WriteHalf(x);
             buffer.WriteHalf(y);
@@ -59,7 +59,7 @@ namespace NetcodeTest.Util
             x = buffer.ReadHalf();
             y = buffer.ReadHalf();
         }
-        public override void Skip(NetBuffer buffer) { buffer.Index += NetBuffer.SizeofHalf * 2; }
+        public override void SkipFromBuffer(NetBuffer buffer) { buffer.Index += NetBuffer.SizeofHalf * 2; }
     }
 
     [EnumerateSyncField(typeof(Color))]
@@ -76,7 +76,7 @@ namespace NetcodeTest.Util
             return value == (Color)new_value;
         }
         public override int WriteToBufferSize() { return sizeof(uint); }
-        public override void Write(NetBuffer buffer)
+        public override void WriteToBuffer(NetBuffer buffer)
         {
             buffer.WriteUInt(value.PackedValue);
         }
@@ -84,6 +84,6 @@ namespace NetcodeTest.Util
         {
             value = new Color(buffer.ReadUInt());
         }
-        public override void Skip(NetBuffer buffer) { buffer.Index += sizeof(uint); }
+        public override void SkipFromBuffer(NetBuffer buffer) { buffer.Index += sizeof(uint); }
     }
 }

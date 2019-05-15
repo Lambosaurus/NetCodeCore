@@ -9,35 +9,92 @@ namespace NetCode.SyncField
 {
     public abstract class SynchronisableField
     {
+        /// <summary>
+        /// Returns the number of bytes required by Write()
+        /// </summary>
         protected uint Revision { get; set; } = 0;
         public bool Synchronised { get; set; } = false;
         public bool ReferencesPending { get; protected set; } = false;
 
-        internal abstract bool ContainsRevision(uint revision);
-        internal abstract bool TrackChanges(object newValue, SyncContext context);
-        internal abstract object GetChanges();
+        //TODO: Find a WAY more elegant solution to this.
+        internal virtual void Initialise(SyncFieldDescriptor descriptor, byte elementDepth) { }
 
-        internal abstract void ReadRevisionFromBuffer(NetBuffer buffer, SyncContext context);
-        internal abstract void WriteRevisionToBuffer(NetBuffer buffer, SyncContext context);
-        internal abstract int WriteRevisionToBufferSize(uint revision);
-        internal abstract int WriteAllToBufferSize();
-        internal abstract void WriteAllToBuffer(NetBuffer buffer);
-        internal abstract void SkipRevisionFromBuffer(NetBuffer buffer);
+        /// <summary>
+        /// Returns true if the current data reflects changes made at the given revision
+        /// This is used to indicate whether this data needs to be resent if a specific revision payload needs to be regenerated.
+        /// </summary>
+        public virtual bool ContainsRevision(uint revision)
+        {
+            return Revision == revision;
+        }
 
-        internal virtual void UpdateReferences(SyncContext context)
+        /// <summary>
+        /// Updates the current value state with the supplied value.
+        /// Returns true if the new value has triggered an uprevision, and therefore must be synchronised.
+        /// </summary>
+        public abstract bool TrackChanges(object newValue, SyncContext context);
+
+        /// <summary>
+        /// The current value tracked by this object
+        /// </summary>
+        public abstract object GetValue();
+
+        /// <summary>
+        /// Updates the current object from the supplied buffer.
+        /// The revision can be found in the required context, and this function is expected to gracefully content of old or mixed revisions.
+        /// Synchronised should be cleared if the tracked value has been updated as a result.
+        /// </summary>
+        public abstract void ReadFromBuffer(NetBuffer buffer, SyncContext context);
+        
+
+        /// <summary>
+        /// Writes the enture value to the supplied buffer
+        /// </summary>
+        public abstract void WriteToBuffer(NetBuffer buffer);
+
+        /// <summary>
+        /// Writes the current value to the supplied buffer.
+        /// The requested revision is supplied within the SyncContext
+        /// This must only be overridden if the write is revision dependant.
+        /// </summary>
+        public virtual void WriteToBuffer(NetBuffer buffer, SyncContext context)
+        {
+            WriteToBuffer(buffer);
+        }
+
+        /// <summary>
+        /// Indicate the bytes required to write the given revision. 
+        /// This must only be overridden if the size is revision dependant
+        /// </summary>
+        public virtual int WriteToBufferSize(uint revision)
+        {
+            return WriteToBufferSize();
+        }
+
+        /// <summary>
+        /// Indicates the bytes required to write the current value.
+        /// </summary>
+        public abstract int WriteToBufferSize();
+
+        /// <summary>
+        /// Ensures the buffer head is in the correct position as if the content had been read, but without updating the internal state.
+        /// </summary>
+        public abstract void SkipFromBuffer(NetBuffer buffer);
+
+        /// <summary>
+        /// Gives the object an oppertunity to attempt to resolve any missing SyncReferences.
+        /// This will be called periodically while ReferencesPending is true.
+        /// This functions should clear ReferencesPending to indicate success (or sufficiently extreme failure)
+        /// </summary>
+        public virtual void UpdateReferences(SyncContext context)
         {
             throw new NotImplementedException();
         }
     }
 
-    public abstract class SynchronisablePrimitive : SynchronisableField
+    public abstract class SynchronisableValue : SynchronisableField
     {
-        internal override bool ContainsRevision(uint revision)
-        {
-            return Revision == revision;
-        }
-
-        internal override bool TrackChanges(object newValue, SyncContext context)
+        public sealed override bool TrackChanges(object newValue, SyncContext context)
         {
             if (!ValueEqual(newValue))
             {
@@ -48,51 +105,25 @@ namespace NetCode.SyncField
             return false;
         }
 
-        internal override object GetChanges()
+        public sealed override void ReadFromBuffer(NetBuffer buffer, SyncContext context)
         {
-            Synchronised = true;
-            return GetValue();
-        }
-
-        internal override void ReadRevisionFromBuffer(NetBuffer buffer, SyncContext context)
-        {
-            if (context.Revision > Revision)
+            if (Revision < context.Revision)
             {
-                Read(buffer);
                 Revision = context.Revision;
+                ReadFromBuffer(buffer);
                 Synchronised = false;
             }
             else
             {
-                Skip(buffer);
+                SkipFromBuffer(buffer);
             }
         }
 
-        internal override void WriteRevisionToBuffer(NetBuffer buffer, SyncContext context)
-        {
-            Write(buffer);
-        }
-
-        internal override int WriteRevisionToBufferSize(uint revision)
-        {
-            return WriteSize();
-        }
-
-        internal override int WriteAllToBufferSize()
-        {
-            return WriteSize();
-        }
-
-        internal override void WriteAllToBuffer(NetBuffer buffer)
-        {
-            Write(buffer);
-        }
-
-        internal override void SkipRevisionFromBuffer(NetBuffer buffer)
-        {
-            Skip(buffer);
-        }
-
+        /// <summary>
+        /// Updates the current value by parsing the supplied buffer.
+        /// This may safely assume that the revision has been tested alreayd.
+        /// </summary>
+        public abstract void ReadFromBuffer(NetBuffer buffer);
 
         /// <summary>
         /// Sets the internal value of the field
@@ -101,42 +132,9 @@ namespace NetCode.SyncField
         public abstract void SetValue(object newValue);
 
         /// <summary>
-        /// Gets the internal value of the field
-        /// </summary>
-        public abstract object GetValue();
-
-        /// <summary>a
         /// Returns true if the new value does not match the stored value.
         /// </summary>
         /// <param name="newValue"></param>
         public abstract bool ValueEqual(object newValue);
-
-        /// <summary>
-        /// Returns the number of bytes required by Write()
-        /// </summary>
-        public abstract int WriteSize();
-
-        /// <summary>
-        /// Writes the Synchronisable value into the packet.
-        /// </summary>
-        /// <param name="data"> The packet to write to </param>
-        /// <param name="index"> The index to begin writing at. The index shall be incremented by the number of bytes written </param>
-        public abstract void Write(NetBuffer buffer);
-
-        /// <summary>
-        /// Reads the Synchronisable value from the packet.
-        /// </summary>
-        /// <param name="data"> The packet to read from </param>
-        /// <param name="index"> The index to begin reading at. The index shall be incremented by the number of bytes read </param>
-        public abstract void Read(NetBuffer buffer);
-        
-        /// <summary>
-        /// Must increment the index by the number of bytes that would be read,
-        /// without updating the internal state.
-        /// </summary>
-        /// <param name="data"> The packet to read from </param>
-        /// <param name="index"> The index to begin reading at. The index shall be incremented by the number of bytes read </param>
-        public abstract void Skip(NetBuffer buffer);
     }
-
 }
