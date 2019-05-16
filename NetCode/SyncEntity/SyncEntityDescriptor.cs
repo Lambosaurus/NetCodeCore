@@ -46,7 +46,7 @@ namespace NetCode.SyncEntity
             SynchronisableField[] fields = new SynchronisableField[fieldDescriptors.Count];
             for (int i = 0; i < fieldDescriptors.Count; i++)
             {
-                fields[i] = fieldDescriptors[i].GenerateField();
+                fields[i] = fieldDescriptors[i].Factory.Construct();
             }
             return fields;
         }

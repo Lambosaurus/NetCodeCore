@@ -20,6 +20,7 @@ namespace NetCode.Util
         /// <returns>A function that returns a new instance of the given type</returns>
         public static Func<T> GenerateConstructor<T>(Type type)
         {
+            //TODO: Cache these.
             ConstructorInfo constructor = type.GetConstructor(Type.EmptyTypes);
             if (constructor == null)
             {

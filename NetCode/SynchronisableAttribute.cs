@@ -18,12 +18,13 @@ namespace NetCode
         /// <summary>
         /// The synchronised value is a timestamp derived from the local NetTime.
         /// The value will be translated into a local NetTime by the endpoint.
+        /// This flag can only be used with long integers.
         /// </summary>
         Timestamp = (1 << 1),
 
         /// <summary>
         /// The synchronised value is a reference type, and may point to a value in the syncpool
-        /// If so, the endpoint will match this reference to its appropriate local reference
+        /// If possible the endpoint will match this reference to its appropriate local reference
         /// </summary>
         Reference = (1 << 2),
 
@@ -31,12 +32,12 @@ namespace NetCode
         /// For reference types this will indicate that a two byte poolID should be included.
         /// This allows the SyncEntity to be referenced if it is contained in a Linked SyncPool.
         /// </summary>
-        LinkedReference = (1 << 3),
+        Linked = (1 << 3),
 
         /// <summary>
-        /// For reference types this will automatically add the object to a hidden reference pool, and delete it when not required.
+        /// A reference type that may also be contained in a linked pool.
         /// </summary>
-        AutoReference = (1 << 4),
+        LinkedReference = Reference | Linked,
     };
 
 

@@ -12,11 +12,11 @@ namespace NetCode.SyncField.Implementations
         protected object value;
         protected ushort EntityID = SyncHandle.NullEntityID;
 
-        private SyncFieldDescriptor Descriptor;
-        
-        internal override void Initialise(SyncFieldDescriptor descriptor, byte elementDepth)
+        private Type ReferenceType;
+
+        public SyncFieldReference(Type referenceType)
         {
-            Descriptor = descriptor;
+            ReferenceType = referenceType;
         }
 
         public sealed override bool TrackChanges(object newValue, SyncContext context)
@@ -49,7 +49,7 @@ namespace NetCode.SyncField.Implementations
             SyncHandle handle = context.GetHandle(EntityID);
             if (handle != null)
             {
-                if (Descriptor.ReferenceType.IsAssignableFrom(handle.Obj.GetType()))
+                if (ReferenceType.IsAssignableFrom(handle.Obj.GetType()))
                 {
                     value = handle.Obj;
                 }

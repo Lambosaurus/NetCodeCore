@@ -4,7 +4,7 @@ using System;
 namespace NetCode.SyncField.Implementations
 {
     [EnumerateSyncField(typeof(Enum))]
-    public class SynchFieldEnum : SynchronisableValue
+    public class SynchFieldEnum : SyncFieldValue
     {
         protected byte value;
         public override void SetValue(object new_value) { value = (byte)(int)new_value; }
@@ -17,7 +17,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(bool))]
-    public class SyncFieldBool : SynchronisableValue
+    public class SyncFieldBool : SyncFieldValue
     {
         protected bool value;
         public override void SetValue(object new_value) { value = (bool)new_value; }
@@ -30,7 +30,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(byte))]
-    public class SyncFieldByte : SynchronisableValue
+    public class SyncFieldByte : SyncFieldValue
     {
         protected byte value;
         public override void SetValue(object new_value) { value = (byte)new_value; }
@@ -56,7 +56,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(short))]
-    public class SyncFieldShort : SynchronisableValue
+    public class SyncFieldShort : SyncFieldValue
     {
         protected short value;
         public override void SetValue(object new_value) { value = (short)new_value; }
@@ -69,7 +69,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(ushort))]
-    public class SyncFieldUShort : SynchronisableValue
+    public class SyncFieldUShort : SyncFieldValue
     {
         protected ushort value;
         public override void SetValue(object new_value) { value = (ushort)new_value; }
@@ -82,7 +82,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(int))]
-    public class SyncFieldInt : SynchronisableValue
+    public class SyncFieldInt : SyncFieldValue
     {
         protected int value;
         public override void SetValue(object new_value) { value = (int)new_value; }
@@ -95,7 +95,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(uint))]
-    public class SyncFieldUInt : SynchronisableValue
+    public class SyncFieldUInt : SyncFieldValue
     {
         protected uint value;
         public override void SetValue(object new_value) { value = (uint)new_value; }
@@ -108,7 +108,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(long))]
-    public class SyncFieldLong : SynchronisableValue
+    public class SyncFieldLong : SyncFieldValue
     {
         protected long value;
         public override void SetValue(object new_value) { value = (long)new_value; }
@@ -121,7 +121,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(ulong))]
-    public class SyncFieldULong : SynchronisableValue
+    public class SyncFieldULong : SyncFieldValue
     {
         protected ulong value;
         public override void SetValue(object new_value) { value = (ulong)new_value; }
@@ -134,7 +134,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(float))]
-    public class SyncFieldFloat : SynchronisableValue
+    public class SyncFieldFloat : SyncFieldValue
     {
         protected float value;
         public override void SetValue(object new_value) { value = (float)new_value; }
@@ -147,7 +147,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(double))]
-    public class SyncFieldDouble : SynchronisableValue
+    public class SyncFieldDouble : SyncFieldValue
     {
         protected double value;
         public override void SetValue(object new_value) { value = (double)new_value; }
@@ -160,7 +160,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(float), SyncFlags.HalfPrecision)]
-    public class SyncFieldHalf : SynchronisableValue
+    public class SyncFieldHalf : SyncFieldValue
     {
         protected Half value;
         public override void SetValue(object new_value) { value = (Half)((float)new_value); }
