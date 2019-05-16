@@ -42,6 +42,19 @@ namespace NetCode.SyncField.Implementations
         public override void Skip(NetBuffer buffer) { buffer.Index += sizeof(byte); }
     }
 
+    [EnumerateSyncField(typeof(char))]
+    public class SyncFieldChar : SynchronisableField
+    {
+        protected char value;
+        public override void SetValue(object new_value) { value = (char)new_value; }
+        public override object GetValue() { return value; }
+        public override bool ValueEqual(object new_value) { return (char)new_value == value; }
+        public override int WriteToBufferSize() { return sizeof(byte); }
+        public override void Write(NetBuffer buffer) { buffer.WriteByte((byte)value); }
+        public override void Read(NetBuffer buffer) { value = (char)buffer.ReadByte(); }
+        public override void Skip(NetBuffer buffer) { buffer.Index += sizeof(byte); }
+    }
+
     [EnumerateSyncField(typeof(short))]
     public class SyncFieldShort : SynchronisableField
     {
