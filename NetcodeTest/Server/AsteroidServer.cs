@@ -99,6 +99,7 @@ namespace NetcodeTest.Server
 
         private void AddEntity(Entity entity)
         {
+            serverReport.Entities.Add(entity);
             entity.SetContext(Context);
 
             if (entity is Physical phys)
@@ -126,6 +127,7 @@ namespace NetcodeTest.Server
         
         private void RemoveEntity(Entity entity)
         {
+            serverReport.Entities.Remove(entity);
             entity.OnDestroy();
 
             if (entity is Physical phys)

@@ -169,13 +169,16 @@ namespace NetcodeTest
 
             long timestamp = NetTime.Now();
             
+            
             foreach ( SyncHandle handle in incomingPool.Handles )
             {
+                /*
                 if (handle.Obj is Entity entity)
                 {
                     entity.Predict(timestamp);
                     entity.Draw(spriteBatch);
                 }
+                */
                 if (handle.Obj is ServerReport report)
                 {
                     for (int i = 0; i < report.Clients.Count; i++)
@@ -184,8 +187,21 @@ namespace NetcodeTest
                         if (report.Ships[i] != null) { color = report.Ships[i].Color; }
                         spriteBatch.DrawString(font, report.Clients[i], new Vector2(0, 200 + i * 12), color);
                     }
+
+                    if (report.Entities != null)
+                    {
+                        foreach (Entity entity in report.Entities)
+                        {
+                            if (entity != null)
+                            {
+                                entity.Predict(timestamp);
+                                entity.Draw(spriteBatch);
+                            }
+                        }
+                    }
                 }
             }
+            
 
 
             foreach (SyncEvent syncEvent in incomingPool.Events)

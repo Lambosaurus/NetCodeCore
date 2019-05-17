@@ -17,5 +17,8 @@ namespace NetcodeTest.Server
         
         [Synchronisable(SyncFlags.Reference)]
         public List<Ship> Ships = new List<Ship>();
+
+        [Synchronisable(SyncFlags.Reference)]
+        public List<Entity> Entities = new List<Entity>();
     }
 }
