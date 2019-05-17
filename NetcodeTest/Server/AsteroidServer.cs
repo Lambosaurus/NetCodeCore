@@ -161,10 +161,10 @@ namespace NetcodeTest.Server
             float delta = (float)(seconds - LastTimestamp);
             LastTimestamp = seconds;
 
-            UDPFeed feed = Server.RecieveConnection();
-            if (feed != null)
+            NetworkConnection connection = Server.RecieveConnection();
+            if (connection != null)
             {
-                NetworkClient client = new NetworkClient(feed);
+                NetworkClient client = new NetworkClient(connection);
                 client.SetState(NetworkClient.ConnectionState.Open);
                 client.Attach(OutgoingPool);
                 IncomingSyncPool incoming = new IncomingSyncPool(NetDefs, 0);
