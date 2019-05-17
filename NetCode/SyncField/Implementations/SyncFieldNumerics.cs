@@ -4,7 +4,7 @@ using System;
 namespace NetCode.SyncField.Implementations
 {
     [EnumerateSyncField(typeof(Enum))]
-    public class SynchFieldEnum : SyncFieldValue
+    public class SyncFieldEnum : SynchronisableValue
     {
         protected byte value;
         public override void SetValue(object new_value) { value = (byte)(int)new_value; }
@@ -17,7 +17,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(bool))]
-    public class SyncFieldBool : SyncFieldValue
+    public class SyncFieldBool : SynchronisableValue
     {
         protected bool value;
         public override void SetValue(object new_value) { value = (bool)new_value; }
@@ -30,7 +30,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(byte))]
-    public class SyncFieldByte : SyncFieldValue
+    public class SyncFieldByte : SynchronisableValue
     {
         protected byte value;
         public override void SetValue(object new_value) { value = (byte)new_value; }
@@ -43,7 +43,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(char))]
-    public class SyncFieldChar : SyncFieldValue
+    public class SyncFieldChar : SynchronisableValue
     {
         protected char value;
         public override void SetValue(object new_value) { value = (char)new_value; }
@@ -56,7 +56,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(short))]
-    public class SyncFieldShort : SyncFieldValue
+    public class SyncFieldShort : SynchronisableValue
     {
         protected short value;
         public override void SetValue(object new_value) { value = (short)new_value; }
@@ -69,7 +69,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(ushort))]
-    public class SyncFieldUShort : SyncFieldValue
+    public class SyncFieldUShort : SynchronisableValue
     {
         protected ushort value;
         public override void SetValue(object new_value) { value = (ushort)new_value; }
@@ -82,7 +82,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(int))]
-    public class SyncFieldInt : SyncFieldValue
+    public class SyncFieldInt : SynchronisableValue
     {
         protected int value;
         public override void SetValue(object new_value) { value = (int)new_value; }
@@ -95,7 +95,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(uint))]
-    public class SyncFieldUInt : SyncFieldValue
+    public class SyncFieldUInt : SynchronisableValue
     {
         protected uint value;
         public override void SetValue(object new_value) { value = (uint)new_value; }
@@ -108,7 +108,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(long))]
-    public class SyncFieldLong : SyncFieldValue
+    public class SyncFieldLong : SynchronisableValue
     {
         protected long value;
         public override void SetValue(object new_value) { value = (long)new_value; }
@@ -121,7 +121,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(ulong))]
-    public class SyncFieldULong : SyncFieldValue
+    public class SyncFieldULong : SynchronisableValue
     {
         protected ulong value;
         public override void SetValue(object new_value) { value = (ulong)new_value; }
@@ -134,7 +134,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(float))]
-    public class SyncFieldFloat : SyncFieldValue
+    public class SyncFieldFloat : SynchronisableValue
     {
         protected float value;
         public override void SetValue(object new_value) { value = (float)new_value; }
@@ -147,7 +147,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(double))]
-    public class SyncFieldDouble : SyncFieldValue
+    public class SyncFieldDouble : SynchronisableValue
     {
         protected double value;
         public override void SetValue(object new_value) { value = (double)new_value; }
@@ -160,7 +160,7 @@ namespace NetCode.SyncField.Implementations
     }
 
     [EnumerateSyncField(typeof(float), SyncFlags.HalfPrecision)]
-    public class SyncFieldHalf : SyncFieldValue
+    public class SyncFieldHalf : SynchronisableValue
     {
         protected Half value;
         public override void SetValue(object new_value) { value = (Half)((float)new_value); }

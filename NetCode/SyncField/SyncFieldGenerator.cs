@@ -11,13 +11,13 @@ namespace NetCode.SyncField
 {
     internal static class SyncFieldGenerator
     {
-        private static Dictionary<RuntimeTypeHandle, SyncFieldValueFactory> HalfFieldFactoryLookup = new Dictionary<RuntimeTypeHandle, SyncFieldValueFactory>();
-        private static Dictionary<RuntimeTypeHandle, SyncFieldValueFactory> FieldFactoryLookup = new Dictionary<RuntimeTypeHandle, SyncFieldValueFactory>();
-        private static SyncFieldValueFactory TimestampFieldFactory;
+        private static Dictionary<RuntimeTypeHandle, SyncFieldFactory> HalfFieldFactoryLookup = new Dictionary<RuntimeTypeHandle, SyncFieldFactory>();
+        private static Dictionary<RuntimeTypeHandle, SyncFieldFactory> FieldFactoryLookup = new Dictionary<RuntimeTypeHandle, SyncFieldFactory>();
+        private static SyncFieldFactory TimestampFieldFactory;
 
         static SyncFieldGenerator()
         {
-            TimestampFieldFactory = new SyncFieldValueFactory(typeof(SyncFieldTimestamp));
+            TimestampFieldFactory = new SynchronisableValue.Factory(typeof(SyncFieldTimestamp));
             LoadFieldTypes();
         }
 
@@ -38,7 +38,7 @@ namespace NetCode.SyncField
                     ));
             }
             RuntimeTypeHandle fieldTypeHandle = fieldType.TypeHandle;
-            Dictionary<RuntimeTypeHandle, SyncFieldValueFactory> lookup = ((syncFlags & SyncFlags.HalfPrecision) != 0)
+            Dictionary<RuntimeTypeHandle, SyncFieldFactory> lookup = ((syncFlags & SyncFlags.HalfPrecision) != 0)
                                                                ? HalfFieldFactoryLookup : FieldFactoryLookup;
 
             if (lookup.ContainsKey(fieldTypeHandle))
@@ -48,7 +48,7 @@ namespace NetCode.SyncField
                     fieldType.Name, syncFlags
                     ));
             }
-            lookup[fieldTypeHandle] = new SyncFieldValueFactory(syncFieldType); ;
+            lookup[fieldTypeHandle] = new SynchronisableValue.Factory(syncFieldType); ;
         }
 
         private static SyncFieldFactory GenerateFieldFactoryByType(Type type, SyncFlags flags)

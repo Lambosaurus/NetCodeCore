@@ -8,7 +8,7 @@ using NetCode.SyncPool;
 
 namespace NetCode.SyncField
 {
-    public abstract class SyncFieldValue : SynchronisableField
+    public abstract class SynchronisableValue : SynchronisableField
     {
         public sealed override bool TrackChanges(object newValue, SyncContext context)
         {
@@ -52,5 +52,25 @@ namespace NetCode.SyncField
         /// </summary>
         /// <param name="newValue"></param>
         public abstract bool ValueEqual(object newValue);
+
+
+        public class Factory : SyncFieldFactory
+        {
+            Func<SynchronisableField> Constructor;
+            public Factory(Func<SynchronisableField> constructor)
+            {
+                Constructor = constructor;
+            }
+
+            public Factory(Type syncFieldType)
+            {
+                Constructor = DelegateGenerator.GenerateConstructor<SynchronisableField>(syncFieldType);
+            }
+
+            public sealed override SynchronisableField Construct()
+            {
+                return Constructor.Invoke();
+            }
+        }
     }
 }

@@ -11,7 +11,7 @@ using NetCode.Util;
 namespace NetcodeTest.Util
 {
     [EnumerateSyncField(typeof(Vector2))]
-    public class SynchronisableVector2 : SyncFieldValue
+    public class SynchronisableVector2 : SynchronisableValue
     {
         private Vector2 value;
         public override void SetValue(object new_value) { value = (Vector2)new_value; }
@@ -32,7 +32,7 @@ namespace NetcodeTest.Util
     }
 
     [EnumerateSyncField(typeof(Vector2), SyncFlags.HalfPrecision)]
-    public class SynchronisableHalfVector2 : SyncFieldValue
+    public class SynchronisableHalfVector2 : SynchronisableValue
     {
         private Half x;
         private Half y;
@@ -63,7 +63,7 @@ namespace NetcodeTest.Util
     }
 
     [EnumerateSyncField(typeof(Color))]
-    public class SynchronisableColor : SyncFieldValue
+    public class SynchronisableColor : SynchronisableValue
     {
         private Color value;
         public override void SetValue(object new_value)

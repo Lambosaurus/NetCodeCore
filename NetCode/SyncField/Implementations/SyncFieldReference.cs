@@ -94,6 +94,20 @@ namespace NetCode.SyncField.Implementations
         public sealed override void SkipFromBuffer(NetBuffer buffer)
         {
             buffer.Index += sizeof(ushort);
-        } 
+        }
+    }
+
+    public class SyncFieldReferenceFactory : SyncFieldFactory
+    {
+        Type ReferenceType;
+        public SyncFieldReferenceFactory(Type refType)
+        {
+            ReferenceType = refType;
+        }
+
+        public sealed override SynchronisableField Construct()
+        {
+            return new SyncFieldReference(ReferenceType);
+        }
     }
 }

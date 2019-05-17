@@ -9,12 +9,12 @@ using System.Reflection;
 
 namespace NetCode.SyncField.Implementations
 {   
-    public abstract class SynchronisableContainer<T> : SynchronisableField
+    public abstract class SyncFieldContainer<T> : SynchronisableField
     {
         protected List<SynchronisableField> Elements = new List<SynchronisableField>();
         private SyncFieldFactory ElementFactory;
         
-        public SynchronisableContainer( SyncFieldFactory elementFactory )
+        public SyncFieldContainer( SyncFieldFactory elementFactory )
         {
             ElementFactory = elementFactory;
         }

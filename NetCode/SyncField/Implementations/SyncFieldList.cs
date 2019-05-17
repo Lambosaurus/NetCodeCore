@@ -9,9 +9,9 @@ using System.Reflection;
 
 namespace NetCode.SyncField.Implementations
 {   
-    public class SynchronisableList<T> : SynchronisableContainer<T>
+    public class SyncFieldList<T> : SyncFieldContainer<T>
     {
-        public SynchronisableList(SyncFieldFactory elementFactory) : base(elementFactory)
+        public SyncFieldList(SyncFieldFactory elementFactory) : base(elementFactory)
         {
         }
 
@@ -50,6 +50,20 @@ namespace NetCode.SyncField.Implementations
                 Revision = context.Revision;
             }
             return changesFound;
+        }
+    }
+
+    public class SyncFieldListFactory<T> : SyncFieldFactory
+    {
+        SyncFieldFactory ElementFactory;
+        public SyncFieldListFactory(SyncFieldFactory elementFactory)
+        {
+            ElementFactory = elementFactory;
+        }
+
+        public sealed override SynchronisableField Construct()
+        {
+            return new SyncFieldList<T>(ElementFactory);
         }
     }
 }
