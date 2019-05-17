@@ -77,7 +77,7 @@ namespace NetCode.SyncField.Implementations
                 // In the event UpdateReferences fails, we should still fall back to null.
                 value = null;
                 Synchronised = false;
-
+                ReferencesPending = true;
                 UpdateReferences(context);
             }
             else
