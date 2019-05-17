@@ -36,10 +36,9 @@ namespace NetcodeTest
 
         List<Event> events = new List<Event>();
 
-        SpriteFont font;
-        
         Point Resolution = new Point(1200, 800);
-        
+
+        Plotter networkPlot;
         public TestGame()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -50,11 +49,42 @@ namespace NetcodeTest
             graphics.PreferredBackBufferHeight = Resolution.Y;
             
             IsMouseVisible = true;
+
+            networkPlot = new Plotter(30, 10, new Vector2(400, 200))
+            {
+                Origin = new Vector2(200, 10),
+                Unit = "KB/s",
+                TracePointSize = 6,
+                TraceThickness = 4,
+                AutoScaleUp = true,
+                AutoScaleDown = true,
+            };
         }
         
         protected override void Initialize()
         {
             base.Initialize();
+        }
+
+        private Color RandomNiceColor()
+        {
+            Random r = new Random((int)System.DateTime.UtcNow.ToBinary());
+            Color[] colors = new Color[]
+                {
+                    Color.LimeGreen,
+                    Color.Red,
+                    Color.Yellow,
+                    Color.CornflowerBlue,
+                    Color.Violet,
+                    Color.Lime,
+                    Color.BlueViolet,
+                    Color.Orange,
+                    Color.Orchid,
+                    Color.SeaGreen,
+                    Color.OrangeRed,
+                    Color.RoyalBlue,
+                };
+            return colors[r.Next(colors.Length)];
         }
 
         private void SetupNetwork()
@@ -63,7 +93,7 @@ namespace NetcodeTest
             server = new AsteroidServer(netDefs, Resolution.ToVector2(), 11002);
             
             client = new NetworkClient( new UDPConnection(
-                System.Net.IPAddress.Parse( (server != null) ? "127.0.0.1" : "122.61.155.237"),
+                System.Net.IPAddress.Parse( (server != null) ? "127.0.0.1" : "122.58.99.13"),
                 11002, // Change this destination to 12002 to connect to a running NetProxy.
                 (server != null) ? 11003 : 11002
                 ));
@@ -74,9 +104,9 @@ namespace NetcodeTest
             client.Attach(outgoingPool);
             controlVector = new PlayerControl()
             {
-                ShipColor = Color.Red,
+                ShipColor = RandomNiceColor(),
                 Ready = true,
-                PlayerName = "Lambosaurus"
+                PlayerName = System.Environment.MachineName
             };
             outgoingPool.AddEntity(controlVector);
 
@@ -89,8 +119,6 @@ namespace NetcodeTest
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
             Drawing.Load(Content);
-
-            font = Content.Load<SpriteFont>("MenuFont");
 
             SetupNetwork();
 
@@ -138,7 +166,9 @@ namespace NetcodeTest
 
             client.Update();
             incomingPool.Synchronise();
-            
+
+            networkPlot.AddValue(client.Connection.Stats.BytesRecieved.PerSecond / 1024);
+
 
             lastKeys = keys;
             lastMouse = mouse;
@@ -166,43 +196,38 @@ namespace NetcodeTest
             GraphicsDevice.Clear(Color.Black);
 
             spriteBatch.Begin(samplerState:SamplerState.LinearClamp);
-
+            
             long timestamp = NetTime.Now();
-            
-            
+
+            ServerReport serverReport = null;
+
             foreach ( SyncHandle handle in incomingPool.Handles )
             {
-                /*
+                
                 if (handle.Obj is Entity entity)
                 {
                     entity.Predict(timestamp);
                     entity.Draw(spriteBatch);
                 }
-                */
+                
                 if (handle.Obj is ServerReport report)
                 {
-                    for (int i = 0; i < report.Clients.Count; i++)
-                    {
-                        Color color = Color.White;
-                        if (report.Ships[i] != null) { color = report.Ships[i].Color; }
-                        spriteBatch.DrawString(font, report.Clients[i], new Vector2(0, 200 + i * 12), color);
-                    }
-
-                    if (report.Entities != null)
-                    {
-                        foreach (Entity entity in report.Entities)
-                        {
-                            if (entity != null)
-                            {
-                                entity.Predict(timestamp);
-                                entity.Draw(spriteBatch);
-                            }
-                        }
-                    }
+                    serverReport = report;
+                    
+                    //ListStreaming
+                    //if (report.Entities != null)
+                    //{
+                    //    foreach (Entity entity in report.Entities)
+                    //    {
+                    //        if (entity != null)
+                    //        {
+                    //            entity.Predict(timestamp);
+                    //            entity.Draw(spriteBatch);
+                    //        }
+                    //    }
+                    //}
                 }
             }
-            
-
 
             foreach (SyncEvent syncEvent in incomingPool.Events)
             {
@@ -223,15 +248,22 @@ namespace NetcodeTest
                     syncEvent.Clear();
                 }
             }
-            
-            /*
-            foreach ( Entity entity in server.Entities )
+
+            networkPlot.Draw(spriteBatch);
+
+            Drawing.DrawHardSquare(spriteBatch, new Vector2(100, 150), new Vector2(200, 300), 0, Color.Black * 0.5f);
+
+            if (serverReport != null)
             {
-                entity.Draw(spriteBatch);
+                for (int i = 0; i < serverReport.Clients.Count; i++)
+                {
+                    Color color = Color.White;
+                    if (serverReport.Ships[i] != null) { color = serverReport.Ships[i].Color; }
+                    Drawing.DrawString(spriteBatch, serverReport.Clients[i], new Vector2(10, 200 + i * 24), 24, color);
+                }
             }
-            */
-            
-            spriteBatch.DrawString(font, GetConnectionStatsString(client), new Vector2(0, 0), Color.White);
+
+            Drawing.DrawString(spriteBatch, GetConnectionStatsString(client), new Vector2(10, 10), 24, Color.White);
             
             spriteBatch.End();
 

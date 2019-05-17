@@ -77,7 +77,7 @@ namespace NetcodeTest.Entities
             }
             else
             {
-                Context.AddEvent(new Explosion(Position, Size * 1.5f, 1f));
+                Context.AddEvent(new Explosion(Position, Size * 1.5f, 1f, Color.White));
             }
 
             base.OnDestroy();

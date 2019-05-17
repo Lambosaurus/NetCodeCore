@@ -56,13 +56,13 @@ namespace NetcodeTest.Entities
 
         public override void OnDestroy()
         {
-            Context.AddEvent(new Explosion(Position, 32f, 2f));
+            Context.AddEvent(new Explosion(Position, 32f, 2f, Color));
             base.OnDestroy();
         }
 
         public override void Draw(SpriteBatch batch)
         {
-            Drawing.DrawTriangle(batch, Position, Size, Angle, Color);
+            Drawing.DrawTriangle(batch, Position, Size, Angle, Color.Lerp(Color, Color.White, 0.1f));
         }
 
         public void Control(float thrust, float torque, bool firing)
