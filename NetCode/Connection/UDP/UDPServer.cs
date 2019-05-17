@@ -41,7 +41,7 @@ namespace NetCode.Connection.UDP
             Socket = new UdpClient(port);
         }
         
-        public UDPFeed RecieveConnection()
+        public NetworkConnection RecieveConnection()
         {
             if (IncomingConnections >= IncomingConnectionLimit)
             {
@@ -100,7 +100,7 @@ namespace NetCode.Connection.UDP
             return feed; // This may be null
         }
 
-        public UDPFeed OpenConnection(IPEndPoint destination)
+        public NetworkConnection OpenConnection(IPEndPoint destination)
         {
             UDPFeed feed = new UDPFeed(this, destination, false);
             Feeds.Add(feed);
