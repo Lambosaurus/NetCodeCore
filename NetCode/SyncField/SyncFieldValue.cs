@@ -6,7 +6,7 @@ using System.Text;
 using NetCode.Util;
 using NetCode.SyncPool;
 
-namespace NetCode.SyncField.Implementations
+namespace NetCode.SyncField
 {
     public abstract class SyncFieldValue : SynchronisableField
     {

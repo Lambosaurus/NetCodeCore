@@ -41,6 +41,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="SyncField\SyncFieldValue.cs" />
+    <Compile Include="SyncField\SyncFieldFactory.cs" />
     <Compile Include="Util\NetBuffer.cs" />
     <Compile Include="Connection\ConnectionStats.cs" />
     <Compile Include="Connection\NetworkConnection.cs" />

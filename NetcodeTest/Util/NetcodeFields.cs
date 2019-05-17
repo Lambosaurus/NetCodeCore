@@ -11,7 +11,7 @@ using NetCode.Util;
 namespace NetcodeTest.Util
 {
     [EnumerateSyncField(typeof(Vector2))]
-    public class SynchronisableVector2 : SynchronisableField
+    public class SynchronisableVector2 : SyncFieldValue
     {
         private Vector2 value;
         public override void SetValue(object new_value) { value = (Vector2)new_value; }
@@ -23,7 +23,7 @@ namespace NetcodeTest.Util
             buffer.WriteFloat(value.X);
             buffer.WriteFloat(value.Y);
         }
-        public override void Read(NetBuffer buffer)
+        public override void ReadFromBuffer(NetBuffer buffer)
         {
             value.X = buffer.ReadFloat();
             value.Y = buffer.ReadFloat();
@@ -32,7 +32,7 @@ namespace NetcodeTest.Util
     }
 
     [EnumerateSyncField(typeof(Vector2), SyncFlags.HalfPrecision)]
-    public class SynchronisableHalfVector2 : SynchronisableField
+    public class SynchronisableHalfVector2 : SyncFieldValue
     {
         private Half x;
         private Half y;
@@ -54,7 +54,7 @@ namespace NetcodeTest.Util
             buffer.WriteHalf(x);
             buffer.WriteHalf(y);
         }
-        public override void Read(NetBuffer buffer)
+        public override void ReadFromBuffer(NetBuffer buffer)
         {
             x = buffer.ReadHalf();
             y = buffer.ReadHalf();
@@ -63,7 +63,7 @@ namespace NetcodeTest.Util
     }
 
     [EnumerateSyncField(typeof(Color))]
-    public class SynchronisableColor : SynchronisableField
+    public class SynchronisableColor : SyncFieldValue
     {
         private Color value;
         public override void SetValue(object new_value)
@@ -80,7 +80,7 @@ namespace NetcodeTest.Util
         {
             buffer.WriteUInt(value.PackedValue);
         }
-        public override void Read(NetBuffer buffer)
+        public override void ReadFromBuffer(NetBuffer buffer)
         {
             value = new Color(buffer.ReadUInt());
         }

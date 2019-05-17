@@ -10,7 +10,17 @@ namespace NetCode.SyncField
 {
     public abstract class SyncFieldFactory
     {
+        SynchronisableField StaticField;
         public abstract SynchronisableField Construct();
+
+        public void SkipFromBuffer(NetBuffer buffer)
+        {
+            if (StaticField == null)
+            {
+                StaticField = Construct();
+            }
+            StaticField.SkipFromBuffer(buffer);
+        }
     }
 
     public class SyncFieldValueFactory : SyncFieldFactory
@@ -56,6 +66,34 @@ namespace NetCode.SyncField
         public sealed override SynchronisableField Construct()
         {
             return new SyncFieldReference(ReferenceType);
+        }
+    }
+
+    public class SyncFieldArrayFactory<T> : SyncFieldFactory
+    {
+        SyncFieldFactory ElementFactory;
+        public SyncFieldArrayFactory(SyncFieldFactory elementFactory)
+        {
+            ElementFactory = elementFactory;
+        }
+
+        public sealed override SynchronisableField Construct()
+        {
+            return new SynchronisableArray<T>(ElementFactory);
+        }
+    }
+
+    public class SyncFieldListFactory<T> : SyncFieldFactory
+    {
+        SyncFieldFactory ElementFactory;
+        public SyncFieldListFactory(SyncFieldFactory elementFactory)
+        {
+            ElementFactory = elementFactory;
+        }
+
+        public sealed override SynchronisableField Construct()
+        {
+            return new SynchronisableList<T>(ElementFactory);
         }
     }
 }
