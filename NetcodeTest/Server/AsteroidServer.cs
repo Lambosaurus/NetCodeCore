@@ -36,7 +36,8 @@ namespace NetcodeTest.Server
         private OutgoingSyncPool OutgoingPool;
         private NetDefinitions NetDefs;
         private UDPServer Server;
-        
+
+        private Random Random;
         private Vector2 BoundaryMargin = new Vector2(30, 30);
         private Vector2 Boundary;
         private List<Physical> Physicals;
@@ -73,6 +74,26 @@ namespace NetcodeTest.Server
             OutgoingPool.AddEntity(serverReport);
 
             LastTimestamp = 0;
+            Random = new Random((int)System.DateTime.UtcNow.ToBinary());
+        }
+
+        private Color RandomNiceColor()
+        {
+            Color[] colors = new Color[]
+                {
+                    Color.LimeGreen,
+                    Color.Red,
+                    Color.Yellow,
+                    Color.CornflowerBlue,
+                    Color.Violet,
+                    Color.Lime,
+                    Color.Orange,
+                    Color.Orchid,
+                    Color.SeaGreen,
+                    Color.OrangeRed,
+                    Color.RoyalBlue,
+                };
+            return colors[Random.Next(colors.Length)];
         }
 
         private Asteroid NewAsteroid(float scale)
@@ -205,7 +226,7 @@ namespace NetcodeTest.Server
                         {
                             if (client.Player == null)
                             {
-                                client.Player = NewPlayer(control.ShipColor);
+                                client.Player = NewPlayer(RandomNiceColor());
                                 AddEntity(client.Player);
                                 client.PlayerName = control.PlayerName;
                                 serverReport.Clients.Add(control.PlayerName);

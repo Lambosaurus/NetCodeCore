@@ -12,8 +12,6 @@ namespace NetcodeTest
     [EnumerateSynchEntity]
     public class PlayerControl
     {
-        [Synchronisable]
-        public Color ShipColor;
         [Synchronisable(SyncFlags.HalfPrecision)]
         public float Torque;
         [Synchronisable(SyncFlags.HalfPrecision)]

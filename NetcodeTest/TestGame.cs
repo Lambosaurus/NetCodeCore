@@ -66,26 +66,6 @@ namespace NetcodeTest
             base.Initialize();
         }
 
-        private Color RandomNiceColor()
-        {
-            Random r = new Random((int)System.DateTime.UtcNow.ToBinary());
-            Color[] colors = new Color[]
-                {
-                    Color.LimeGreen,
-                    Color.Red,
-                    Color.Yellow,
-                    Color.CornflowerBlue,
-                    Color.Violet,
-                    Color.Lime,
-                    Color.Orange,
-                    Color.Orchid,
-                    Color.SeaGreen,
-                    Color.OrangeRed,
-                    Color.RoyalBlue,
-                };
-            return colors[r.Next(colors.Length)];
-        }
-
         private void SetupNetwork()
         {
             netDefs = new NetDefinitions();
@@ -103,7 +83,6 @@ namespace NetcodeTest
             client.Attach(outgoingPool);
             controlVector = new PlayerControl()
             {
-                ShipColor = RandomNiceColor(),
                 Ready = true,
                 PlayerName = System.Environment.MachineName
             };
