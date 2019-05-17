@@ -11,15 +11,12 @@ namespace NetCode.SyncEntity
 {
     internal class SyncEntityDescriptor
     {
-        List<SyncFieldDescriptor> fieldDescriptors = new List<SyncFieldDescriptor>();
+        public List<SyncFieldDescriptor> FieldDescriptors { get; private set; } = new List<SyncFieldDescriptor>();
         Func<object> Constructor;
 
         public int FieldCount { get; private set; }
         public ushort TypeID { get; private set; }
 
-
-        // This is a set of fields used in the odd cases where an entity update must be skipped.
-        private SynchronisableField[] StaticFields;
 
         public SyncEntityDescriptor(Type entityType, ushort typeID)
         {
@@ -28,42 +25,40 @@ namespace NetCode.SyncEntity
 
             AttributeHelper.ForAllFieldsWithAttribute<SynchronisableAttribute>(entityType,
                (fieldInfo, attribute) => {
-                   fieldDescriptors.Add(SyncFieldGenerator.GenerateFieldDescriptor(fieldInfo, attribute.Flags));
+                   FieldDescriptors.Add(SyncFieldGenerator.GenerateFieldDescriptor(fieldInfo, attribute.Flags));
                });
             AttributeHelper.ForAllPropertiesWithAttribute<SynchronisableAttribute>(entityType,
                (propInfo, attribute) => {
-                   fieldDescriptors.Add(SyncFieldGenerator.GenerateFieldDescriptor(propInfo, attribute.Flags));
+                   FieldDescriptors.Add(SyncFieldGenerator.GenerateFieldDescriptor(propInfo, attribute.Flags));
                });
 
-            FieldCount = fieldDescriptors.Count;
+            FieldCount = FieldDescriptors.Count;
             if (FieldCount >= byte.MaxValue) { throw new NetcodeItemcountException(string.Format("Type {0} contains more than {1} synchronisable fields.", entityType.Name, byte.MaxValue)); }
-
-            StaticFields = GenerateFields();
         }
 
         public SynchronisableField[] GenerateFields()
         {
-            SynchronisableField[] fields = new SynchronisableField[fieldDescriptors.Count];
-            for (int i = 0; i < fieldDescriptors.Count; i++)
+            SynchronisableField[] fields = new SynchronisableField[FieldDescriptors.Count];
+            for (int i = 0; i < FieldDescriptors.Count; i++)
             {
-                fields[i] = fieldDescriptors[i].GenerateField();
+                fields[i] = FieldDescriptors[i].Factory.Construct();
             }
             return fields;
         }
 
-        internal SynchronisableField GetStaticField(int fieldID)
-        {
-            return StaticFields[fieldID];
-        }
-
         public void SetField(object obj, int fieldID, object value)
         {
-            fieldDescriptors[fieldID].Setter(obj, value);
+            FieldDescriptors[fieldID].Setter(obj, value);
         }
 
         public object GetField(object obj, int fieldID)
         {
-            return fieldDescriptors[fieldID].Getter(obj);
+            return FieldDescriptors[fieldID].Getter(obj);
+        }
+
+        public void SkipFromBuffer(NetBuffer buffer, int fieldId)
+        {
+            FieldDescriptors[fieldId].Factory.SkipFromBuffer(buffer);
         }
 
         public object ConstructObject()

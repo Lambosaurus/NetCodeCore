@@ -64,7 +64,7 @@ namespace NetcodeTest.Entities
 
             phys.Push(this.Velocity * this.Force / Speed, Position);
 
-            Context.AddEvent(new Explosion(Position, 16f, 0.4f));
+            Context.AddEvent(new Explosion(Position, 10f, 0.4f, Creator.Color));
         }
     }
 }

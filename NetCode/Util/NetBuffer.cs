@@ -253,7 +253,7 @@ namespace NetCode.Util
             return value;
         }
 
-        public static int SizeOfVWidth(ushort value)
+        public static int SizeofVWidth(ushort value)
         {
             return (value >= (1 << 7)) ? sizeof(ushort) : sizeof(byte);
         }

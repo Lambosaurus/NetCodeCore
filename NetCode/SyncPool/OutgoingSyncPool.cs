@@ -164,6 +164,7 @@ namespace NetCode.SyncPool
         
         internal Payload GenerateRevisionPayload(uint revision)
         {
+            Context.Revision = revision;
             List<uint> updatedEntities = new List<uint>();
             
             int size = 0;
@@ -183,7 +184,7 @@ namespace NetCode.SyncPool
                 foreach (ushort entityID in updatedEntities)
                 {
                     SyncHandle handle = SyncSlots[entityID].Handle;
-                    handle.Sync.WriteRevisionToBuffer(payload.RevisionData, revision);
+                    handle.Sync.WriteRevisionToBuffer(payload.RevisionData, Context);
                 }
                 
                 return payload;

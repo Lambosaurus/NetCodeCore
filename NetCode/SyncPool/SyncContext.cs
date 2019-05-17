@@ -8,7 +8,7 @@ namespace NetCode.SyncPool
 {
     public class SyncContext
     {
-        public long TimestampOffset { get; set; }
+        public long ConnectionTimestampOffset { get; set; }
         public uint Revision { get; set; }
 
         private SynchronisablePool Pool;
@@ -17,7 +17,7 @@ namespace NetCode.SyncPool
         {
             Pool = pool;
             Revision = revision;
-            TimestampOffset = timestampOffset;
+            ConnectionTimestampOffset = timestampOffset;
         }
 
         public SyncHandle GetHandleByObject(object obj)

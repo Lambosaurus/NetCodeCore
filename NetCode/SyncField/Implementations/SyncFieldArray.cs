@@ -9,43 +9,61 @@ using System.Reflection;
 
 namespace NetCode.SyncField.Implementations
 {   
-    public class SynchronisableArray<T> : SynchronisableContainer<T>
+    public class SyncFieldArray<T> : SyncFieldContainer<T>
     {
+        public SyncFieldArray(SyncFieldFactory elementFactory) : base(elementFactory)
+        {
+        }
+
         public override object GetValue()
         {
-            T[] items = new T[elements.Count];
-            for (int i = 0; i < elements.Count; i++)
+            T[] items = new T[Elements.Count];
+            for (int i = 0; i < Elements.Count; i++)
             {
-                items[i] = (T)elements[i].GetValue();
+                items[i] = (T)Elements[i].GetValue();
             }
             return items;
         }
 
-        public override bool ValueEqual(object newValue)
+        public override bool TrackChanges(object newValue, SyncContext context)
         {
+            bool changesFound = false;
             T[] items = (T[])newValue;
-            if (items.Length != elements.Count)
+            int count = items.Length;
+
+            if (Elements.Count != count)
             {
-                return false;
+                changesFound = true;
+                SetElementLength(count);
             }
-            for (int i = 0; i < elements.Count; i++)
+            
+            for (int i = 0; i < count; i++)
             {
-                if (!elements[i].ValueEqual(items[i]))
+                if (Elements[i].TrackChanges(items[i], context))
                 {
-                    return false;
+                    changesFound = true;
                 }
             }
-            return true;
-        }
-        
-        public override void SetValue(object newValue)
-        {
-            T[] items = (T[])newValue;
-            if (items.Length != elements.Count) { SetElementLength(items.Length); }
-            for (int i = 0; i < items.Length; i++)
+
+            if (changesFound)
             {
-                elements[i].SetValue(items[i]);
+                Revision = context.Revision;
             }
+            return changesFound;
+        }
+    }
+
+    public class SyncFieldArrayFactory<T> : SyncFieldFactory
+    {
+        SyncFieldFactory ElementFactory;
+        public SyncFieldArrayFactory(SyncFieldFactory elementFactory)
+        {
+            ElementFactory = elementFactory;
+        }
+
+        public sealed override SynchronisableField Construct()
+        {
+            return new SyncFieldArray<T>(ElementFactory);
         }
     }
 }

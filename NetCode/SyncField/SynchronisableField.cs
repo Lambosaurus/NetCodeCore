@@ -9,113 +9,93 @@ namespace NetCode.SyncField
 {
     public abstract class SynchronisableField
     {
-        public uint Revision { get; private set; } = 0;
-        public bool Synchronised { get; set; } = false;
-        public bool PollingRequired { get; protected set; } = false;
-        public SyncFlags Flags { get; internal set; }
-
-        internal virtual void Initialise(SyncFieldDescriptor descriptor, byte elementDepth)
-        {
-            Flags = descriptor.Flags;
-        }
-        
-        internal bool TrackChanges(object newValue, SyncContext context)
-        {
-            if (!ValueEqual(newValue))
-            {
-                Revision = context.Revision;
-                SetValue(newValue);
-                PreProcess(context);
-                return true;
-            }
-            return false;
-        }
-
-        internal void ReadChanges(NetBuffer buffer, SyncContext context)
-        {
-            if (context.Revision > Revision)
-            {
-                Read(buffer);
-
-                PostProcess(context);
-
-                Revision = context.Revision;
-                Synchronised = false;
-            }
-            else
-            {
-                Skip(buffer);
-            }
-        }
-
         /// <summary>
-        /// Will be called while PollingRequired is true.
+        /// Returns the number of bytes required by Write()
         /// </summary>
-        /// <param name="context"></param>
-        public virtual void PeriodicProcess(SyncContext context)
+        protected uint Revision { get; set; } = 0;
+        public bool Synchronised { get; protected set; } = false;
+        public bool ReferencesPending { get; protected set; } = false;
+
+
+        /// <summary>
+        /// Sets the object state to the given synchronisation state
+        /// May need to be overridden if the element has children to set synchronised
+        /// </summary>
+        public virtual void SetSynchonised(bool sync)
         {
-            throw new NotImplementedException();
+            Synchronised = sync;
         }
 
         /// <summary>
-        /// Performed a value has been read from a payload
+        /// Returns true if the current data reflects changes made at the given revision
+        /// This is used to indicate whether this data needs to be resent if a specific revision payload needs to be regenerated.
         /// </summary>
-        /// <param name="context">The destination SyncPool context</param>
-        public virtual void PostProcess(SyncContext context)
+        public virtual bool ContainsRevision(uint revision)
         {
+            return Revision == revision;
         }
 
         /// <summary>
-        /// Performed a value has been read from the entity
+        /// Updates the current value state with the supplied value.
+        /// Returns true if the new value has triggered an uprevision, and therefore must be synchronised.
         /// </summary>
-        /// <param name="context">The source SyncPool context</param>
-        public virtual void PreProcess(SyncContext context)
-        {
-        }
+        public abstract bool TrackChanges(object newValue, SyncContext context);
 
         /// <summary>
-        /// Sets the internal value of the field
-        /// </summary>
-        /// <param name="newValue"></param>
-        public abstract void SetValue(object newValue);
-
-        /// <summary>
-        /// Gets the internal value of the field
+        /// The current value tracked by this object
         /// </summary>
         public abstract object GetValue();
 
-        /// <summary>a
-        /// Returns true if the new value does not match the stored value.
+        /// <summary>
+        /// Updates the current object from the supplied buffer.
+        /// The revision can be found in the required context, and this function is expected to gracefully content of old or mixed revisions.
+        /// Synchronised should be cleared if the tracked value has been updated as a result.
         /// </summary>
-        /// <param name="newValue"></param>
-        public abstract bool ValueEqual(object newValue);
+        public abstract void ReadFromBuffer(NetBuffer buffer, SyncContext context);
+        
 
         /// <summary>
-        /// Returns the number of bytes required by Write()
+        /// Writes the enture value to the supplied buffer
+        /// </summary>
+        public abstract void WriteToBuffer(NetBuffer buffer);
+
+        /// <summary>
+        /// Writes the current value to the supplied buffer.
+        /// The requested revision is supplied within the SyncContext
+        /// This must only be overridden if the write is revision dependant.
+        /// </summary>
+        public virtual void WriteToBuffer(NetBuffer buffer, SyncContext context)
+        {
+            WriteToBuffer(buffer);
+        }
+
+        /// <summary>
+        /// Indicate the bytes required to write the given revision. 
+        /// This must only be overridden if the size is revision dependant
+        /// </summary>
+        public virtual int WriteToBufferSize(uint revision)
+        {
+            return WriteToBufferSize();
+        }
+
+        /// <summary>
+        /// Indicates the bytes required to write the current value.
         /// </summary>
         public abstract int WriteToBufferSize();
 
         /// <summary>
-        /// Writes the Synchronisable value into the packet.
+        /// Ensures the buffer head is in the correct position as if the content had been read, but without updating the internal state.
         /// </summary>
-        /// <param name="data"> The packet to write to </param>
-        /// <param name="index"> The index to begin writing at. The index shall be incremented by the number of bytes written </param>
-        public abstract void Write(NetBuffer buffer);
+        public abstract void SkipFromBuffer(NetBuffer buffer);
 
         /// <summary>
-        /// Reads the Synchronisable value from the packet.
+        /// Gives the object an oppertunity to attempt to resolve any missing SyncReferences.
+        /// This will be called periodically while ReferencesPending is true.
+        /// This functions should clear ReferencesPending to indicate success (or sufficiently extreme failure)
         /// </summary>
-        /// <param name="data"> The packet to read from </param>
-        /// <param name="index"> The index to begin reading at. The index shall be incremented by the number of bytes read </param>
-        public abstract void Read(NetBuffer buffer);
-        
-        /// <summary>
-        /// Must increment the index by the number of bytes that would be read,
-        /// without updating the internal state.
-        /// </summary>
-        /// <param name="data"> The packet to read from </param>
-        /// <param name="index"> The index to begin reading at. The index shall be incremented by the number of bytes read </param>
-        public abstract void Skip(NetBuffer buffer);
+        public virtual void UpdateReferences(SyncContext context)
+        {
+            throw new NotImplementedException();
+        }
     }
-
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using NetCode;
 using NetCode.Connection;
 using NetCode.Connection.UDP;
@@ -65,7 +65,7 @@ namespace NetcodeTest.Server
 
             Context = new ContextToken();
 
-            int k = 2;
+            int k = 6;
             for (int i = 0; i < 30*k; i++) { AddEntity(NewAsteroid(32)); }
             for (int i = 0; i < 40*k; i++) { AddEntity(NewAsteroid(48)); }
             for (int i = 0; i < 10*k; i++) { AddEntity(NewAsteroid(56)); }
@@ -99,6 +99,8 @@ namespace NetcodeTest.Server
 
         private void AddEntity(Entity entity)
         {
+            //ListStreaming
+            //serverReport.Entities.Add(entity);
             entity.SetContext(Context);
 
             if (entity is Physical phys)
@@ -126,6 +128,8 @@ namespace NetcodeTest.Server
         
         private void RemoveEntity(Entity entity)
         {
+            //ListStreaming
+            //serverReport.Entities.Remove(entity);
             entity.OnDestroy();
 
             if (entity is Physical phys)

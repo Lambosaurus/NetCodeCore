@@ -8,7 +8,7 @@ using NetCode.Util;
 namespace NetCode.SyncField.Implementations
 {
     [EnumerateSyncField(typeof(string))]
-    public class SyncFieldString : SynchronisableField
+    public class SyncFieldString : SynchronisableValue
     {
         protected string value;
         public override void SetValue(object new_value) { value = (string)new_value; }
@@ -16,10 +16,10 @@ namespace NetCode.SyncField.Implementations
         public override bool ValueEqual(object new_value) { return (string)new_value == value; }
         public override int WriteToBufferSize()
         {
-            if (value == null) return NetBuffer.SizeOfVWidth(0);
-            return NetBuffer.SizeOfVWidth((ushort)value.Length) + (value.Length * sizeof(byte));
+            if (value == null) return NetBuffer.SizeofVWidth(0);
+            return NetBuffer.SizeofVWidth((ushort)value.Length) + (value.Length * sizeof(byte));
         }
-        public override void Write(NetBuffer buffer)
+        public override void WriteToBuffer(NetBuffer buffer)
         {
             if (value == null) { buffer.WriteVWidth(0); }
             else
@@ -31,7 +31,7 @@ namespace NetCode.SyncField.Implementations
                 }
             }
         }
-        public override void Read(NetBuffer buffer)
+        public override void ReadFromBuffer(NetBuffer buffer)
         {
             int length = buffer.ReadVWidth();
             char[] values = new char[length];
@@ -41,7 +41,7 @@ namespace NetCode.SyncField.Implementations
             }
             value = new string(values);
         }
-        public override void Skip(NetBuffer buffer)
+        public override void SkipFromBuffer(NetBuffer buffer)
         {
             int length = buffer.ReadVWidth();
             buffer.Index += length;

@@ -48,6 +48,7 @@
     <Compile Include="Events\Explosion.cs" />
     <Compile Include="Entities\Projectile.cs" />
     <Compile Include="Entities\Physical.cs" />
+    <Compile Include="Util\PlottingVisualiser.cs" />
     <Compile Include="Server\AsteroidServer.cs" />
     <Compile Include="PlayerControl.cs" />
     <Compile Include="Drawing.cs" />
@@ -77,9 +78,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\box.png" />
     <Content Include="Content\cir.png" />
-    <Content Include="Content\tri.png" />
     <Content Include="Content\sq.png" />
+    <Content Include="Content\tri.png" />
     <Content Include="Icon.ico" />
     <Content Include="lib\TimSort.dll" />
     <Content Include="lib\VolatilePhysics.dll" />

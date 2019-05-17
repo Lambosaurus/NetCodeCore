@@ -11,90 +11,103 @@ namespace NetCode.SyncField.Implementations
     {
         protected object value;
         protected ushort EntityID = SyncHandle.NullEntityID;
-        
-        protected SyncFieldDescriptor Descriptor;
-        
-        internal override void Initialise(SyncFieldDescriptor descriptor, byte elementDepth)
+
+        private Type ReferenceType;
+
+        public SyncFieldReference(Type referenceType)
         {
-            Flags = descriptor.Flags;
-            Descriptor = descriptor;
+            ReferenceType = referenceType;
         }
 
-        public override void SetValue(object new_value)
+        public sealed override bool TrackChanges(object newValue, SyncContext context)
         {
-            value = new_value;
+            if (newValue != value)
+            {
+                value = newValue;
+                if (value == null)
+                {
+                    EntityID = SyncHandle.NullEntityID;
+                }
+                else
+                {
+                    SyncHandle handle = context.GetHandleByObject(value);
+
+                    // If no handle is found, then the supplie object is not in the syncpool.
+                    //TODO: Here we could optionally add the object to the pool for laughs.
+                    EntityID = (handle != null) ? handle.EntityID : SyncHandle.NullEntityID;
+                }
+
+                Synchronised = false;
+                Revision = context.Revision;
+                return true;
+            }
+            return false;
         }
 
-        public override object GetValue() { return value; }
-
-        public override bool ValueEqual(object new_value)
+        public sealed override void UpdateReferences(SyncContext context)
         {
-            return new_value == value;
-        }
-        
-        public override void PostProcess(SyncContext context)
-        {
-            value = null;
             SyncHandle handle = context.GetHandle(EntityID);
-
             if (handle != null)
             {
-                if (Descriptor.ReferenceType.IsAssignableFrom(handle.Obj.GetType()))
+                if (ReferenceType.IsAssignableFrom(handle.Obj.GetType()))
                 {
                     value = handle.Obj;
                 }
-            }
-            else
-            {
-                PollingRequired = true;
+                Synchronised = false;
+                ReferencesPending = false;
             }
         }
-
-        public override void PreProcess(SyncContext context)
-        {
-            if (value == null)
-            {
-                EntityID = SyncHandle.NullEntityID;
-            }
-            else
-            {
-                SyncHandle handle = context.GetHandleByObject(value);
-                EntityID = (handle == null) ? SyncHandle.NullEntityID : handle.EntityID;
-            }
-        }
-
-        public override void PeriodicProcess(SyncContext context)
-        {
-            SyncHandle handle = context.GetHandle(EntityID);
-            
-            if (handle != null)
-            {
-                if (Descriptor.ReferenceType.IsAssignableFrom(handle.Obj.GetType()))
-                {
-                    value = handle.Obj;
-                }
-                PollingRequired = false;
-            }
-        }
-
-        public override int WriteToBufferSize()
+        public sealed override int WriteToBufferSize()
         {
             return sizeof(ushort);
         }
 
-        public override void Write(NetBuffer buffer)
+        public sealed override void WriteToBuffer(NetBuffer buffer)
         {
             buffer.WriteUShort(EntityID);
         }
 
-        public override void Read(NetBuffer buffer)
+        public sealed override void ReadFromBuffer(NetBuffer buffer, SyncContext context)
         {
-            EntityID = buffer.ReadUShort();
+            if (context.Revision > Revision)
+            {
+                EntityID = buffer.ReadUShort();
+                Revision = context.Revision;
+
+                // In the event UpdateReferences fails, we should still fall back to null.
+                value = null;
+                Synchronised = false;
+                ReferencesPending = true;
+                UpdateReferences(context);
+            }
+            else
+            {
+                SkipFromBuffer(buffer);
+            }
         }
 
-        public override void Skip(NetBuffer buffer)
+        public sealed override object GetValue()
+        {
+            return value;
+        }
+
+        public sealed override void SkipFromBuffer(NetBuffer buffer)
         {
             buffer.Index += sizeof(ushort);
-        }   
+        }
+    }
+
+    public class SyncFieldReferenceFactory : SyncFieldFactory
+    {
+        Type ReferenceType;
+        public SyncFieldReferenceFactory(Type refType)
+        {
+            ReferenceType = refType;
+        }
+
+        public sealed override SynchronisableField Construct()
+        {
+            return new SyncFieldReference(ReferenceType);
+        }
     }
 }

@@ -9,128 +9,100 @@ using System.Reflection;
 
 namespace NetCode.SyncField.Implementations
 {   
-    public abstract class SynchronisableContainer<T> : SynchronisableField
+    public abstract class SyncFieldContainer<T> : SynchronisableField
     {
-        protected List<SynchronisableField> elements = new List<SynchronisableField>();
-        protected SynchronisableField skipElement;
-
-        private SyncFieldDescriptor Descriptor;
-        private byte ElementDepth;
-
-        internal override void Initialise(SyncFieldDescriptor descriptor, byte elementDepth)
+        protected List<SynchronisableField> Elements = new List<SynchronisableField>();
+        private SyncFieldFactory ElementFactory;
+        
+        public SyncFieldContainer( SyncFieldFactory elementFactory )
         {
-            Descriptor = descriptor;
-            ElementDepth = elementDepth;
-            base.Initialise(descriptor, elementDepth);
+            ElementFactory = elementFactory;
+        }
+
+        public sealed override void SetSynchonised(bool sync)
+        {
+            Synchronised = sync;
+            foreach(SynchronisableField element in Elements)
+            {
+                element.SetSynchonised(sync);
+            }
         }
 
         protected void SetElementLength(int count)
         {
-            if (count > elements.Count)
+            if (count > Elements.Count)
             {
-                // This may be bad for streamed updates.....
-                if (elements.Count == 0 && skipElement != null)
+                for (int i = Elements.Count; i < count; i++)
                 {
-                    // Reuse the skip element if possible to prevent waste.
-                    elements.Add(skipElement);
-                }
-                
-                byte childDepth = (byte)(ElementDepth + 1);
-                for (int i = elements.Count; i < count; i++)
-                {
-                    elements.Add(Descriptor.GenerateField(childDepth));
+                    Elements.Add(ElementFactory.Construct());
                 }
             }
             else
             {
-                elements.RemoveRange(count, elements.Count - count);
+                //TODO: I'd prefer not to delete these, and leave them for later.
+                Elements.RemoveRange(count, Elements.Count - count);
             }
         }
         
-        public override void Read(NetBuffer buffer)
+        public sealed override void ReadFromBuffer(NetBuffer buffer, SyncContext context)
         {
+            ReferencesPending = false;
             ushort count = buffer.ReadVWidth();
-            if (count != elements.Count) { SetElementLength(count); }
-            foreach (SynchronisableField element in elements)
+            if (count != Elements.Count)
             {
-                element.Read(buffer);
+                SetElementLength(count);
+                Synchronised = false;
+            }
+            foreach (SynchronisableField element in Elements)
+            {
+                element.ReadFromBuffer(buffer, context);
+                ReferencesPending |= element.ReferencesPending;
+                Synchronised &= element.Synchronised;
             }
         }
         
-        public override void Skip(NetBuffer buffer)
+        public sealed override void SkipFromBuffer(NetBuffer buffer)
         {
             int count = buffer.ReadVWidth();
-            if (count > 0)
+            for (int i = 0; i < count; i++)
             {
-                if (skipElement == null)
-                {
-                    // We need an instance of the sub element to skip correctly.
-                    // We generate this on demand only because only few SyncLists will need to skip items
-                    if (elements.Count == 0)
-                    {
-                        byte childDepth = (byte)(ElementDepth + 1);
-                        skipElement = Descriptor.GenerateField(childDepth);
-                    }
-                    else
-                    {
-                        skipElement = elements[0];
-                    }
-                }
-                for (int i = 0; i < count; i++)
-                {
-                    skipElement.Skip(buffer);
-                }
+                ElementFactory.SkipFromBuffer(buffer);
             }
         }
         
-        public override void Write(NetBuffer buffer)
+        public sealed override void WriteToBuffer(NetBuffer buffer)
         {
-            if (elements.Count > NetBuffer.MaxVWidthValue)
+            if (Elements.Count > NetBuffer.MaxVWidthValue)
             {
                 throw new NetcodeItemcountException(string.Format("There may not be more than {0} items in a Synchronised container", NetBuffer.MaxVWidthValue));
             }
-            buffer.WriteVWidth((ushort)elements.Count);
-            foreach ( SynchronisableField element in elements )
+            buffer.WriteVWidth((ushort)Elements.Count);
+            foreach ( SynchronisableField element in Elements )
             {
-                element.Write(buffer);
+                element.WriteToBuffer(buffer);
             }
         }
 
-        public override int WriteToBufferSize()
+        public sealed override int WriteToBufferSize()
         {
-            int count = NetBuffer.SizeOfVWidth((ushort)elements.Count);
-            foreach (SynchronisableField element in elements)
+            int count = NetBuffer.SizeofVWidth((ushort)Elements.Count);
+            foreach (SynchronisableField element in Elements)
             {
                 count += element.WriteToBufferSize();
             }
             return count;
         }
 
-        public override void PeriodicProcess(SyncContext context)
+        public sealed override void UpdateReferences(SyncContext context)
         {
-            PollingRequired = false;
-            foreach (SynchronisableField element in elements)
+            ReferencesPending = false;
+            foreach (SynchronisableField element in Elements)
             {
-                element.PeriodicProcess(context);
-                if (element.PollingRequired) { PollingRequired = true; }
-            }
-        }
-
-        public override void PostProcess(SyncContext context)
-        {
-            PollingRequired = false;
-            foreach (SynchronisableField element in elements)
-            {
-                element.PostProcess(context);
-                if (element.PollingRequired) { PollingRequired = true; }
-            }
-        }
-
-        public override void PreProcess(SyncContext context)
-        {
-            foreach (SynchronisableField element in elements)
-            {
-                element.PreProcess(context);
+                if (element.ReferencesPending)
+                {
+                    element.UpdateReferences(context);
+                    ReferencesPending |= element.ReferencesPending;
+                }
             }
         }
     }

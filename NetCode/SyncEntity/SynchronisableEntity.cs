@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -21,7 +21,7 @@ namespace NetCode.SyncEntity
         public ushort EntityID { get; private set; }
         public ushort TypeID { get { return descriptor.TypeID; } }
         public bool Synchronised { get; protected set; } = false;
-        public bool PollingRequired { get; protected set; } = false;
+        public bool ReferencesPending { get; protected set; } = false;
         
         
         internal SynchronisableEntity(SyncEntityDescriptor _descriptor, ushort entityID, uint revision = 0)
@@ -56,7 +56,7 @@ namespace NetCode.SyncEntity
 
             foreach (SynchronisableField field in fields)
             {
-                if (field.Revision == revision)
+                if (field.ContainsRevision(revision))
                 {
                     return true;
                 }
@@ -70,10 +70,10 @@ namespace NetCode.SyncEntity
             int size = HeaderSize;
             foreach (SynchronisableField field in fields)
             {
-                if (field.Revision == revision)
+                if (field.ContainsRevision(revision))
                 {
                     updatedFields++;
-                    size += field.WriteToBufferSize();
+                    size += field.WriteToBufferSize(revision);
                 }
             }
             if (updatedFields != fields.Length)
@@ -94,33 +94,40 @@ namespace NetCode.SyncEntity
             return size;
         }
         
-        public void WriteRevisionToBuffer(NetBuffer buffer, uint revision)
+        public void WriteRevisionToBuffer(NetBuffer buffer, SyncContext context)
         {
             List<byte> updatedFieldIDs = new List<byte>();
 
             for (byte i = 0; i < fields.Length; i++)
             {
-                if (fields[i].Revision == revision)
+                if (fields[i].ContainsRevision(context.Revision))
                 {
                     updatedFieldIDs.Add(i);
                 }
             }
 
+            buffer.WriteUShort(EntityID);
+            buffer.WriteUShort(descriptor.TypeID);
+
             if (updatedFieldIDs.Count == fields.Length)
             {
-                WriteAllToBuffer(buffer);
+                buffer.WriteByte(FieldHeaderAll);
+
+                for (int fieldID = 0; fieldID < fields.Length; fieldID++)
+                {
+                    SynchronisableField field = fields[fieldID];
+                    field.WriteToBuffer(buffer, context);
+                }
             }
             else
             {
-                buffer.WriteUShort(EntityID);
-                buffer.WriteUShort(descriptor.TypeID);
                 buffer.WriteByte((byte)updatedFieldIDs.Count);
 
                 foreach (byte fieldID in updatedFieldIDs)
                 {
                     SynchronisableField field = fields[fieldID];
                     buffer.WriteByte(fieldID);
-                    field.Write(buffer);
+                    field.WriteToBuffer(buffer, context);
                 }
             }
         }
@@ -134,7 +141,7 @@ namespace NetCode.SyncEntity
             for (byte fieldID = 0; fieldID < fields.Length; fieldID++)
             {
                 SynchronisableField field = fields[fieldID];
-                field.Write(buffer);
+                field.WriteToBuffer(buffer);
             }
         }
         
@@ -152,14 +159,14 @@ namespace NetCode.SyncEntity
             for (byte i = 0; i < fieldCount; i++)
             {
                 //TODO: This is unsafe. The field ID may be out or range, and there
-                //      may be insufficient data remaining to call .PullFromBuffer with
+                //      may be insufficient data remaining to call .ReadRevisionFromBuffer with
 
                 byte fieldID = (skipHeader) ? i : buffer.ReadByte();
                 SynchronisableField field = fields[fieldID];
-                field.ReadChanges(buffer, context);
+                field.ReadFromBuffer(buffer, context);
                 
                 if (!field.Synchronised) { Synchronised = false; }
-                if (field.PollingRequired) { PollingRequired = true; }
+                if (field.ReferencesPending) { ReferencesPending = true; }
             }
 
             if (context.Revision > Revision)
@@ -169,17 +176,17 @@ namespace NetCode.SyncEntity
         }
 
 
-        public void PollFields(SyncContext context)
+        public void UpdateReferences(SyncContext context)
         {
-            PollingRequired = false;
+            ReferencesPending = false;
             foreach (SynchronisableField field in fields)
             {
-                if (field.PollingRequired)
+                if (field.ReferencesPending)
                 {
-                    field.PeriodicProcess(context);
-                    if (field.PollingRequired)
+                    field.UpdateReferences(context);
+                    if (field.ReferencesPending)
                     {
-                        PollingRequired = true;
+                        ReferencesPending = true;
                     }
                 }
                 if (!field.Synchronised)
@@ -192,9 +199,6 @@ namespace NetCode.SyncEntity
         /// <summary>
         /// As per ReadRevisionFromBuffer, but skips the data and keeps the index up to date.
         /// </summary>
-        /// <param name="data"></param>
-        /// <param name="index"></param>
-        /// <param name="descriptor"></param>
         internal static void SkipRevisionFromBuffer(NetBuffer buffer, SyncEntityDescriptor descriptor)
         {
             byte fieldCount = buffer.ReadByte();
@@ -204,7 +208,7 @@ namespace NetCode.SyncEntity
                 //TODO: This is unsafe. The field ID may be out or range, and there
                 //      may be insufficient data remaining to call .PullFromBuffer with
                 byte fieldID = buffer.ReadByte();
-                descriptor.GetStaticField(fieldID).Skip(buffer);
+                descriptor.SkipFromBuffer(buffer, fieldID);
             }
         }
 
@@ -235,7 +239,7 @@ namespace NetCode.SyncEntity
                 {
                     object value = field.GetValue();
                     descriptor.SetField(obj, i, value);
-                    field.Synchronised = true;
+                    field.SetSynchonised(true);
                 }
             }
             Synchronised = true;

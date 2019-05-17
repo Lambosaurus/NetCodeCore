@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -36,7 +36,7 @@ namespace NetCode.SyncPool
         {
             foreach (SyncHandle handle in SyncHandles)
             {
-                if (handle.Sync.PollingRequired) { handle.Sync.PollFields(Context); }
+                if (handle.Sync.ReferencesPending) { handle.Sync.UpdateReferences(Context); }
                 handle.Updated = !handle.Sync.Synchronised;
                 if (handle.Updated)
                 {
@@ -53,8 +53,8 @@ namespace NetCode.SyncPool
                         RecievedEvents.RemoveAt(i);
                         break;
                     case SyncEvent.SyncState.PendingReferences:
-                        evt.Sync.PollFields(Context);
-                        if (!evt.Sync.PollingRequired) { evt.State = SyncEvent.SyncState.Ready; }
+                        evt.Sync.UpdateReferences(Context);
+                        if (!evt.Sync.ReferencesPending) { evt.State = SyncEvent.SyncState.Ready; }
                         break;
                 }
             }
@@ -103,11 +103,12 @@ namespace NetCode.SyncPool
         internal void UnpackRevisionDatagram(PoolRevisionPayload payload, long offsetMilliseconds)
         {
             Context.Revision = payload.Revision;
-            Context.TimestampOffset = offsetMilliseconds;
+            Context.ConnectionTimestampOffset = offsetMilliseconds;
 
             NetBuffer buffer = payload.RevisionData;
 
-            while (buffer.Remaining > 0) // >= SynchronisableEntity.HeaderSize
+
+            while (buffer.Remaining >= SynchronisableEntity.HeaderSize)
             {
                 SynchronisableEntity.ReadHeader(buffer, out ushort entityID, out ushort typeID);
 
