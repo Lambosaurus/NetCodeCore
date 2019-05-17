@@ -21,6 +21,7 @@ namespace NetCode.SyncField.Implementations
             if ( Revision < context.Revision )
             {
                 value = buffer.ReadLong() - context.ConnectionTimestampOffset;
+                Synchronised = false;
             }
             else
             {

@@ -20,7 +20,7 @@ namespace NetCode.SyncField.Implementations
             List<T> items = new List<T>(Elements.Count);
             for (int i = 0; i < Elements.Count; i++)
             {
-                items[i] = (T)Elements[i].GetValue();
+                items.Add((T)Elements[i].GetValue());
             }
             return items;
         }

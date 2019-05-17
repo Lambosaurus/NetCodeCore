@@ -13,9 +13,18 @@ namespace NetCode.SyncField
         /// Returns the number of bytes required by Write()
         /// </summary>
         protected uint Revision { get; set; } = 0;
-        public bool Synchronised { get; set; } = false;
+        public bool Synchronised { get; protected set; } = false;
         public bool ReferencesPending { get; protected set; } = false;
 
+
+        /// <summary>
+        /// Sets the object state to the given synchronisation state
+        /// May need to be overridden if the element has children to set synchronised
+        /// </summary>
+        public virtual void SetSynchonised(bool sync)
+        {
+            Synchronised = sync;
+        }
 
         /// <summary>
         /// Returns true if the current data reflects changes made at the given revision

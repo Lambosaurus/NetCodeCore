@@ -18,7 +18,16 @@ namespace NetCode.SyncField.Implementations
         {
             ElementFactory = elementFactory;
         }
-        
+
+        public sealed override void SetSynchonised(bool sync)
+        {
+            Synchronised = sync;
+            foreach(SynchronisableField element in Elements)
+            {
+                element.SetSynchonised(sync);
+            }
+        }
+
         protected void SetElementLength(int count)
         {
             if (count > Elements.Count)
@@ -42,11 +51,13 @@ namespace NetCode.SyncField.Implementations
             if (count != Elements.Count)
             {
                 SetElementLength(count);
+                Synchronised = false;
             }
             foreach (SynchronisableField element in Elements)
             {
                 element.ReadFromBuffer(buffer, context);
                 ReferencesPending |= element.ReferencesPending;
+                Synchronised &= element.Synchronised;
             }
         }
         

@@ -242,7 +242,7 @@ namespace NetCode.SyncEntity
                 {
                     object value = field.GetValue();
                     descriptor.SetField(obj, i, value);
-                    field.Synchronised = true;
+                    field.SetSynchonised(true);
                 }
             }
             Synchronised = true;
