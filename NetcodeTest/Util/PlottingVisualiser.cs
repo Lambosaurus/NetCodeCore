@@ -21,7 +21,7 @@ namespace NetcodeTest
         public double TraceThickness { get; set; } = 4.0;
         public double AxisThickness { get; set; } = 3.0;
         public Color AxisColor { get; set; } = Color.White * 0.8f;
-        public Color TraceColor { get; set; } = Color.DarkRed * 0.8f;
+        public Color TraceColor { get; set; } = Color.IndianRed * 0.8f;
         public Color BackgroundColor { get; set; } = Color.Black * 0.5f;
 
         public int TickCount { get; set; } = 5;

@@ -77,7 +77,6 @@ namespace NetcodeTest
                     Color.CornflowerBlue,
                     Color.Violet,
                     Color.Lime,
-                    Color.BlueViolet,
                     Color.Orange,
                     Color.Orchid,
                     Color.SeaGreen,
