@@ -60,36 +60,54 @@ namespace NetCode.SyncField.Implementations
         {
             ReferencesPending = false;
             ushort elementCount = buffer.ReadVWidth();
-            if (elementCount != Elements.Count)
-            {
-                SetElementLength(elementCount);
-                Synchronised = false;
-            }
-
+            
             if (DeltaEncoding)
             {
+                if (context.Revision > Revision)
+                {
+                    if (elementCount != Elements.Count)
+                    {
+                        SetElementLength(elementCount);
+                        Synchronised = false;
+                    }
+                }
+
                 int changeCount = buffer.ReadVWidth();
                 // If the change count is 0, then we want to default to the read all behavior of non delta lists.
-                if (changeCount != elementCount)
+                bool skipHeader = changeCount == elementCount;
+                
+                for (int i = 0; i < changeCount; i++)
                 {
-                    for (int i = 0; i < changeCount; i++)
+                    int index = skipHeader ? i : buffer.ReadVWidth();
+
+                    if (index < Elements.Count)
                     {
-                        //TODO: any of these could edit an out of bounds object if a payload is bad.
-                        int index = buffer.ReadVWidth();
                         SynchronisableField element = Elements[index];
                         element.ReadFromBuffer(buffer, context);
                         ReferencesPending |= element.ReferencesPending;
                         Synchronised &= element.Synchronised;
                     }
-                    return;
+                    else
+                    {
+                        // Elements will be out of range if an out of date revision arrives after after the list is shrunk
+                        ElementFactory.SkipFromBuffer(buffer);
+                    }
                 }
             }
-
-            foreach (SynchronisableField element in Elements)
+            else
             {
-                element.ReadFromBuffer(buffer, context);
-                ReferencesPending |= element.ReferencesPending;
-                Synchronised &= element.Synchronised;
+                if (elementCount != Elements.Count)
+                {
+                    SetElementLength(elementCount);
+                    Synchronised = false;
+                }
+
+                foreach (SynchronisableField element in Elements)
+                {
+                    element.ReadFromBuffer(buffer, context);
+                    ReferencesPending |= element.ReferencesPending;
+                    Synchronised &= element.Synchronised;
+                }
             }
         }
         

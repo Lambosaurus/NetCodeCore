@@ -246,9 +246,7 @@ namespace NetCode.Util
             ushort value = Data[Index++];
             if ((value & (1 << 7)) != 0)
             {
-                value &= 0x7F;
-                value <<= 8;
-                value += Data[Index++];
+                value = (ushort)(((value & 0x7F) << 8) | Data[Index++]);
             }
             return value;
         }
