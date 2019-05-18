@@ -13,7 +13,7 @@ namespace NetCode.SyncField
         /// Returns the number of bytes required by Write()
         /// </summary>
         protected uint Revision { get; set; } = 0;
-        public bool Synchronised { get; protected set; } = false;
+        public bool Synchronised { get; protected set; } = true;
         public bool ReferencesPending { get; protected set; } = false;
 
 

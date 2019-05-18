@@ -20,7 +20,7 @@ namespace NetCode.SyncEntity
         public uint Revision { get; private set; }
         public ushort EntityID { get; private set; }
         public ushort TypeID { get { return descriptor.TypeID; } }
-        public bool Synchronised { get; protected set; } = false;
+        public bool Synchronised { get; protected set; } = true;
         public bool ReferencesPending { get; protected set; } = false;
         
         
