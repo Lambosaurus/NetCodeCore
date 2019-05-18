@@ -77,6 +77,9 @@ namespace NetcodeTest
                 (server != null) ? 11003 : 11002
                 ));
 
+            // Note, when using NetProxy with this setup, the Open command should be:
+            // open 12002 11003 12003 11002
+
             incomingPool = new IncomingSyncPool(netDefs, 0);
             outgoingPool = new OutgoingSyncPool(netDefs, 0);
             client.Attach(incomingPool);
