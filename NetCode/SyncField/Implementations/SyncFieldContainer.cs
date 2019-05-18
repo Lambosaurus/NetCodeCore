@@ -65,6 +65,7 @@ namespace NetCode.SyncField.Implementations
             {
                 if (context.Revision > Revision)
                 {
+                    Revision = context.Revision;
                     if (elementCount != Elements.Count)
                     {
                         SetElementLength(elementCount);
@@ -96,6 +97,7 @@ namespace NetCode.SyncField.Implementations
             }
             else
             {
+                Revision = context.Revision;
                 if (elementCount != Elements.Count)
                 {
                     SetElementLength(elementCount);
