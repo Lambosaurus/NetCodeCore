@@ -72,7 +72,6 @@ namespace NetcodeTest.Entities
             thrust = Fmath.Clamp(thrust, 0.0f, 1.0f);
             torque = Fmath.Clamp(torque, -1.0f, 1.0f);
 
-            
             /*
             float epsilon = 0.001f;
             if (torque < epsilon && torque > -epsilon)
@@ -85,9 +84,6 @@ namespace NetcodeTest.Entities
 
             CollisionBody.AddForce(Fmath.CosSin(Angle, Thrust * thrust));
             CollisionBody.AddTorque(Torque * torque);
-            
-
-            RequestMotionUpdate();
         }
 
         protected override Vector2[] GetHitbox()

@@ -66,7 +66,7 @@ namespace NetcodeTest.Server
 
             Context = new ContextToken();
 
-            int k = 6;
+            int k = 4;
             for (int i = 0; i < 30*k; i++) { AddEntity(NewAsteroid(32)); }
             for (int i = 0; i < 40*k; i++) { AddEntity(NewAsteroid(48)); }
             for (int i = 0; i < 10*k; i++) { AddEntity(NewAsteroid(56)); }

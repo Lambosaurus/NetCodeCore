@@ -26,7 +26,8 @@ namespace NetcodeTest.Entities
                 Angle = Fmath.Mod(Angle, MathHelper.TwoPi);
             }
 
-            if ((CollisionBody.LinearVelocity - Velocity).LengthSquared() > VelocityTolerance * VelocityTolerance)
+            if ((CollisionBody.LinearVelocity - Velocity).LengthSquared() > VelocityTolerance * VelocityTolerance
+                || (Fmath.Abs(CollisionBody.AngularVelocity - AngularVelocity) > VelocityTolerance) )
             {
                 RequestMotionUpdate();
             }
