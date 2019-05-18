@@ -20,20 +20,22 @@ namespace NetCode.Payloads
 
         private OutgoingSyncPool SyncPool;
         private int RevisionSize;
-
+        private bool CompleteState;
 
         public PoolRevisionPayload()
         {
         }
 
-        public static PoolRevisionPayload Generate(OutgoingSyncPool syncPool, uint revision, int size)
+        public static PoolRevisionPayload Generate(OutgoingSyncPool syncPool, uint revision, int size, bool completeState)
         {
+            
             PoolRevisionPayload payload = new PoolRevisionPayload()
             {
                 PoolID = syncPool.PoolID,
                 Revision = revision,
                 SyncPool = syncPool,
-                RevisionSize = size
+                RevisionSize = size,
+                CompleteState = completeState
             };
             payload.AllocateAndWrite();
             return payload;
@@ -61,10 +63,17 @@ namespace NetCode.Payloads
 
         public override void OnTimeout(NetworkClient client)
         {
-            Payload payload = SyncPool.GenerateRevisionPayload(Revision);
-            if (payload != null)
+            if (CompleteState)
             {
-                client.Enqueue(payload);
+                client.Enqueue(this);
+            }
+            else
+            {
+                Payload payload = SyncPool.GenerateRevisionPayload(Revision);
+                if (payload != null)
+                {
+                    client.Enqueue(payload);
+                }
             }
         }
 

@@ -179,7 +179,7 @@ namespace NetCode.SyncPool
 
             if (updatedEntities.Count > 0)
             {
-                PoolRevisionPayload payload = PoolRevisionPayload.Generate(this, revision, size);
+                PoolRevisionPayload payload = PoolRevisionPayload.Generate(this, revision, size, false);
                 
                 foreach (ushort entityID in updatedEntities)
                 {
@@ -200,7 +200,7 @@ namespace NetCode.SyncPool
                 size += handle.Sync.WriteAllToBufferSize();
             }
             
-            PoolRevisionPayload payload = PoolRevisionPayload.Generate(this, Revision, size);
+            PoolRevisionPayload payload = PoolRevisionPayload.Generate(this, Revision, size, true);
 
             foreach (SyncHandle handle in SyncHandles)
             {
