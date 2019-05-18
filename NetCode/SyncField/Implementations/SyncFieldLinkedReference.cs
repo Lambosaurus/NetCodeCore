@@ -107,17 +107,4 @@ namespace NetCode.SyncField.Implementations
             buffer.Index += sizeof(ushort);
         }
     }
-
-    public class SyncFieldLinkedReferenceFactory : SyncFieldFactory
-    {
-        Type ReferenceType;
-        public SyncFieldLinkedReferenceFactory(Type refType)
-        {
-            ReferenceType = refType;
-        }
-        public sealed override SynchronisableField Construct()
-        {
-            return new SyncFieldReference(ReferenceType);
-        }
-    }
 }

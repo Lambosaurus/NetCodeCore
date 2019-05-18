@@ -11,7 +11,7 @@ namespace NetCode.SyncField.Implementations
 {   
     public class SyncFieldList<T> : SyncFieldContainer<T>
     {
-        public SyncFieldList(SyncFieldFactory elementFactory) : base(elementFactory)
+        public SyncFieldList(SyncFieldFactory elementFactory, bool deltas) : base(elementFactory, deltas)
         {
         }
 
@@ -56,14 +56,16 @@ namespace NetCode.SyncField.Implementations
     public class SyncFieldListFactory<T> : SyncFieldFactory
     {
         SyncFieldFactory ElementFactory;
-        public SyncFieldListFactory(SyncFieldFactory elementFactory)
+        bool DeltaEncoding;
+        public SyncFieldListFactory(SyncFieldFactory elementFactory, SyncFlags flags)
         {
+            DeltaEncoding = (flags & SyncFlags.NoDeltas) == 0;
             ElementFactory = elementFactory;
         }
 
         public sealed override SynchronisableField Construct()
         {
-            return new SyncFieldList<T>(ElementFactory);
+            return new SyncFieldList<T>(ElementFactory, DeltaEncoding);
         }
     }
 }

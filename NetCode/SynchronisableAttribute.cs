@@ -33,11 +33,13 @@ namespace NetCode
         /// This allows the SyncEntity to be referenced if it is contained in a Linked SyncPool.
         /// </summary>
         Linked = (1 << 3),
+        LinkedReference = Reference | Linked,
 
         /// <summary>
-        /// A reference type that may also be contained in a linked pool.
+        /// For delta based synchronoisers, this will revert to the WriteAll behavior.
+        /// This may reduce traffic if the majority of the object is changed at once.
         /// </summary>
-        LinkedReference = Reference | Linked,
+        NoDeltas = (1 << 4)
     };
 
 

@@ -55,28 +55,27 @@ namespace NetCode.SyncField
         {
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
             {
-                // Get the factory used to create generate the element.
+                // Recursively get the factory used to create generate the element.
                 Type elementType = type.GetGenericArguments()[0];
                 SyncFieldFactory elementFactory = GenerateFieldFactoryByType(elementType, flags);
                 
                 // Generate the generic factory and create an instance
                 Type syncFactoryType = typeof(SyncFieldListFactory<>).MakeGenericType(new Type[] { elementType });
                 // SyncFieldLists take a SyncFieldFactory as an argument.
-                ConstructorInfo constructor = syncFactoryType.GetConstructor(new Type[] { typeof(SyncFieldFactory) });
-                return (SyncFieldFactory)constructor.Invoke(new object[] { elementFactory });
-                
+                ConstructorInfo constructor = syncFactoryType.GetConstructor(new Type[] { typeof(SyncFieldFactory), typeof(SyncFlags) });
+                return (SyncFieldFactory)constructor.Invoke(new object[] { elementFactory, flags });
             }
             else if (type.IsArray)
             {
-                // Get the factory used to create generate the element.
+                // Recursively get the factory used to create generate the element.
                 Type elementType = type.GetElementType();
                 SyncFieldFactory elementFactory = GenerateFieldFactoryByType(elementType, flags);
 
                 // Generate the generic factory and create an instance
                 Type syncFactoryType = typeof(SyncFieldArrayFactory<>).MakeGenericType(new Type[] { elementType });
                 // SyncFieldArrays take a SyncFieldFactory as an argument.
-                ConstructorInfo constructor = syncFactoryType.GetConstructor(new Type[] { typeof(SyncFieldFactory) });
-                return (SyncFieldFactory)constructor.Invoke(new object[] { elementFactory });
+                ConstructorInfo constructor = syncFactoryType.GetConstructor(new Type[] { typeof(SyncFieldFactory), typeof(SyncFlags) });
+                return (SyncFieldFactory)constructor.Invoke(new object[] { elementFactory, flags });
             }
             else if ((flags & SyncFlags.Reference) != 0)
             {
@@ -84,14 +83,7 @@ namespace NetCode.SyncField
                 {
                     throw new NotSupportedException(string.Format("{0}.{1} can not be used on ValueType", typeof(SyncFlags).Name, SyncFlags.Reference));
                 }
-                if ((flags & SyncFlags.Linked) != 0)
-                {
-                    return new SyncFieldLinkedReferenceFactory(type);
-                }
-                else
-                {
-                    return new SyncFieldReferenceFactory(type);
-                }
+                return new SyncFieldReferenceFactory(type, flags);
             }
             else if ((flags & SyncFlags.Timestamp) != 0)
             {

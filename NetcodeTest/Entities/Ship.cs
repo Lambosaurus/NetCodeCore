@@ -22,7 +22,7 @@ namespace NetcodeTest.Entities
         
         float Thrust = 300;
         float Torque = 500;
-        float FireRate = 10f;
+        float FireRate = 20f;
         float Cooldown = 0.0f;
         bool Firing = false;
 

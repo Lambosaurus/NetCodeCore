@@ -99,14 +99,20 @@ namespace NetCode.SyncField.Implementations
 
     public class SyncFieldReferenceFactory : SyncFieldFactory
     {
-        Type ReferenceType;
-        public SyncFieldReferenceFactory(Type refType)
+        private readonly Type ReferenceType;
+        private readonly bool Linked;
+        public SyncFieldReferenceFactory(Type refType, SyncFlags flags)
         {
+            Linked = (flags & SyncFlags.Linked) != 0;
             ReferenceType = refType;
         }
 
         public sealed override SynchronisableField Construct()
         {
+            if (Linked)
+            {
+                return new SyncFieldLinkedReference(ReferenceType);
+            }
             return new SyncFieldReference(ReferenceType);
         }
     }

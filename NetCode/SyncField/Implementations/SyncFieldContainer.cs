@@ -12,10 +12,13 @@ namespace NetCode.SyncField.Implementations
     public abstract class SyncFieldContainer<T> : SynchronisableField
     {
         protected List<SynchronisableField> Elements = new List<SynchronisableField>();
-        private SyncFieldFactory ElementFactory;
         
-        public SyncFieldContainer( SyncFieldFactory elementFactory )
+        private readonly SyncFieldFactory ElementFactory;
+        private readonly bool DeltaEncoding;
+        
+        public SyncFieldContainer( SyncFieldFactory elementFactory, bool deltas )
         {
+            DeltaEncoding = deltas;
             ElementFactory = elementFactory;
         }
 
@@ -24,12 +27,20 @@ namespace NetCode.SyncField.Implementations
             Synchronised = sync;
             foreach(SynchronisableField element in Elements)
             {
-                element.SetSynchonised(sync);
+                if (element.Synchronised != sync)
+                {
+                    element.SetSynchonised(sync);
+                }
             }
         }
 
         protected void SetElementLength(int count)
         {
+            if (count > NetBuffer.MaxVWidthValue)
+            {
+                throw new NetcodeItemcountException(string.Format("There may not be more than {0} items in a Synchronised container", NetBuffer.MaxVWidthValue));
+            }
+
             if (count > Elements.Count)
             {
                 for (int i = Elements.Count; i < count; i++)
@@ -40,6 +51,7 @@ namespace NetCode.SyncField.Implementations
             else
             {
                 //TODO: I'd prefer not to delete these, and leave them for later.
+                //      Better to replace the list of elements with an Array.
                 Elements.RemoveRange(count, Elements.Count - count);
             }
         }
@@ -47,12 +59,32 @@ namespace NetCode.SyncField.Implementations
         public sealed override void ReadFromBuffer(NetBuffer buffer, SyncContext context)
         {
             ReferencesPending = false;
-            ushort count = buffer.ReadVWidth();
-            if (count != Elements.Count)
+            ushort elementCount = buffer.ReadVWidth();
+            if (elementCount != Elements.Count)
             {
-                SetElementLength(count);
+                SetElementLength(elementCount);
                 Synchronised = false;
             }
+
+            if (DeltaEncoding)
+            {
+                int changeCount = buffer.ReadVWidth();
+                // If the change count is 0, then we want to default to the read all behavior of non delta lists.
+                if (changeCount != elementCount)
+                {
+                    for (int i = 0; i < changeCount; i++)
+                    {
+                        //TODO: any of these could edit an out of bounds object if a payload is bad.
+                        int index = buffer.ReadVWidth();
+                        SynchronisableField element = Elements[index];
+                        element.ReadFromBuffer(buffer, context);
+                        ReferencesPending |= element.ReferencesPending;
+                        Synchronised &= element.Synchronised;
+                    }
+                    return;
+                }
+            }
+
             foreach (SynchronisableField element in Elements)
             {
                 element.ReadFromBuffer(buffer, context);
@@ -64,28 +96,138 @@ namespace NetCode.SyncField.Implementations
         public sealed override void SkipFromBuffer(NetBuffer buffer)
         {
             int count = buffer.ReadVWidth();
-            for (int i = 0; i < count; i++)
+
+            if (DeltaEncoding)
             {
-                ElementFactory.SkipFromBuffer(buffer);
+                int changeCount = buffer.ReadVWidth();
+                for (int i = 0; i < changeCount; i++)
+                {
+                    buffer.ReadVWidth();
+                    ElementFactory.SkipFromBuffer(buffer);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    ElementFactory.SkipFromBuffer(buffer);
+                }
             }
         }
-        
+
+        public sealed override bool ContainsRevision(uint revision)
+        {
+            if (Revision > revision)
+            {
+                return false;
+            }
+            else if (Revision == revision)
+            {
+                return true;
+            }
+            else if (DeltaEncoding)
+            {
+                foreach ( SynchronisableField element in Elements)
+                {
+                    if (element.ContainsRevision(revision))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public sealed override void WriteToBuffer(NetBuffer buffer, SyncContext context)
+        {
+            if (DeltaEncoding)
+            {
+                List<ushort> updatedElements = new List<ushort>();
+
+                for (int i = 0; i < Elements.Count; i++)
+                {
+                    if (Elements[i].ContainsRevision(context.Revision))
+                    {
+                        updatedElements.Add((ushort)i);
+                    }
+                }
+
+                buffer.WriteVWidth((ushort)Elements.Count);
+                buffer.WriteVWidth((ushort)updatedElements.Count);
+                if (updatedElements.Count == Elements.Count)
+                {
+                    foreach (SynchronisableField element in Elements)
+                    {
+                        element.WriteToBuffer(buffer, context);
+                    }
+                }
+                else
+                {
+                    foreach (ushort elementIndex in updatedElements)
+                    {
+                        buffer.WriteVWidth(elementIndex);
+                        Elements[elementIndex].WriteToBuffer(buffer, context);
+                    }
+                }
+            }
+            else
+            {
+                WriteToBuffer(buffer);
+            }
+        }
+
         public sealed override void WriteToBuffer(NetBuffer buffer)
         {
-            if (Elements.Count > NetBuffer.MaxVWidthValue)
-            {
-                throw new NetcodeItemcountException(string.Format("There may not be more than {0} items in a Synchronised container", NetBuffer.MaxVWidthValue));
-            }
             buffer.WriteVWidth((ushort)Elements.Count);
-            foreach ( SynchronisableField element in Elements )
+            if (DeltaEncoding)
+            {
+                buffer.WriteVWidth((ushort)Elements.Count);
+            }
+            foreach (SynchronisableField element in Elements)
             {
                 element.WriteToBuffer(buffer);
+            }
+        }
+
+        public sealed override int WriteToBufferSize(uint revision)
+        {
+            if (DeltaEncoding)
+            {
+                int count = NetBuffer.SizeofVWidth((ushort)Elements.Count);
+                int elementHeaderCount = 0;
+                ushort changeCount = 0;
+                for (int i = 0; i < Elements.Count; i++)
+                {
+                    SynchronisableField element = Elements[i];
+                    if (element.ContainsRevision(revision))
+                    {
+                        changeCount += 1;
+                        elementHeaderCount += NetBuffer.SizeofVWidth((ushort)i);
+                        count += element.WriteToBufferSize(revision);
+                    }
+                }
+                count += NetBuffer.SizeofVWidth(changeCount);
+                if (changeCount != Elements.Count)
+                {
+                    count += elementHeaderCount;
+                }
+                return count;
+            }
+            else
+            {
+                return WriteToBufferSize();
             }
         }
 
         public sealed override int WriteToBufferSize()
         {
             int count = NetBuffer.SizeofVWidth((ushort)Elements.Count);
+            
+            if (DeltaEncoding)
+            {
+                count += NetBuffer.SizeofVWidth((ushort)Elements.Count);
+            }
+
             foreach (SynchronisableField element in Elements)
             {
                 count += element.WriteToBufferSize();
