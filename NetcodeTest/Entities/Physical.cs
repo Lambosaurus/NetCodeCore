@@ -13,7 +13,7 @@ namespace NetcodeTest.Entities
     public abstract class Physical : Entity
     {
         public VoltBody CollisionBody { get; protected set; }
-        protected const float VelocityTolerance = 0.1f;
+        protected const float VelocityTolerance = 0.2f;
         public double Hitpoints = 100f;
         
         public override void Update(float delta)
@@ -26,7 +26,8 @@ namespace NetcodeTest.Entities
                 Angle = Fmath.Mod(Angle, MathHelper.TwoPi);
             }
 
-            if ((CollisionBody.LinearVelocity - Velocity).LengthSquared() > VelocityTolerance * VelocityTolerance)
+            if ((CollisionBody.LinearVelocity - Velocity).LengthSquared() > VelocityTolerance * VelocityTolerance
+                || (CollisionBody.AngularVelocity - AngularVelocity) > VelocityTolerance)
             {
                 RequestMotionUpdate();
             }
