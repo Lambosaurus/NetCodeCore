@@ -113,9 +113,8 @@ namespace NetCode.SyncEntity
             {
                 buffer.WriteByte(FieldHeaderAll);
 
-                for (int fieldID = 0; fieldID < fields.Length; fieldID++)
+                foreach(SynchronisableField field in fields)
                 {
-                    SynchronisableField field = fields[fieldID];
                     field.WriteToBuffer(buffer, context);
                 }
             }
@@ -125,9 +124,8 @@ namespace NetCode.SyncEntity
 
                 foreach (byte fieldID in updatedFieldIDs)
                 {
-                    SynchronisableField field = fields[fieldID];
                     buffer.WriteByte(fieldID);
-                    field.WriteToBuffer(buffer, context);
+                    fields[fieldID].WriteToBuffer(buffer, context);
                 }
             }
         }
@@ -138,9 +136,8 @@ namespace NetCode.SyncEntity
             buffer.WriteUShort(descriptor.TypeID);
             buffer.WriteByte(FieldHeaderAll);
 
-            for (byte fieldID = 0; fieldID < fields.Length; fieldID++)
+            foreach (SynchronisableField field in fields) 
             {
-                SynchronisableField field = fields[fieldID];
                 field.WriteToBuffer(buffer);
             }
         }
@@ -148,25 +145,29 @@ namespace NetCode.SyncEntity
         public void ReadRevisionFromBuffer(NetBuffer buffer, SyncContext context)
         {
             byte fieldCount = buffer.ReadByte();
-            bool skipHeader = false;
 
             if (fieldCount == FieldHeaderAll)
             {
-                fieldCount = (byte)fields.Length;
-                skipHeader = true;
+                foreach (SynchronisableField field in fields)
+                {
+                    field.ReadFromBuffer(buffer, context);
+                    Synchronised &= field.Synchronised;
+                    ReferencesPending |= field.ReferencesPending;
+                }
             }
-            
-            for (byte i = 0; i < fieldCount; i++)
+            else
             {
-                //TODO: This is unsafe. The field ID may be out or range, and there
-                //      may be insufficient data remaining to call .ReadRevisionFromBuffer with
+                for (byte i = 0; i < fieldCount; i++)
+                {
+                    //TODO: This is unsafe. The field ID may be out or range, and there
+                    //      may be insufficient data remaining to call .ReadRevisionFromBuffer with
 
-                byte fieldID = (skipHeader) ? i : buffer.ReadByte();
-                SynchronisableField field = fields[fieldID];
-                field.ReadFromBuffer(buffer, context);
-                
-                if (!field.Synchronised) { Synchronised = false; }
-                if (field.ReferencesPending) { ReferencesPending = true; }
+                    byte fieldID = buffer.ReadByte();
+                    SynchronisableField field = fields[fieldID];
+                    field.ReadFromBuffer(buffer, context);
+                    Synchronised &= field.Synchronised;
+                    ReferencesPending |= field.ReferencesPending;
+                }
             }
 
             if (context.Revision > Revision)
@@ -203,12 +204,22 @@ namespace NetCode.SyncEntity
         {
             byte fieldCount = buffer.ReadByte();
 
-            for (int i = 0; i < fieldCount; i++)
+            if (fieldCount == FieldHeaderAll)
             {
-                //TODO: This is unsafe. The field ID may be out or range, and there
-                //      may be insufficient data remaining to call .PullFromBuffer with
-                byte fieldID = buffer.ReadByte();
-                descriptor.SkipFromBuffer(buffer, fieldID);
+                for (int i = 0; i < descriptor.FieldCount; i++)
+                {
+                    descriptor.SkipFromBuffer(buffer, i);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < fieldCount; i++)
+                {
+                    //TODO: This is unsafe. The field ID may be out or range, and there
+                    //      may be insufficient data remaining to call .PullFromBuffer with
+                    byte fieldID = buffer.ReadByte();
+                    descriptor.SkipFromBuffer(buffer, fieldID);
+                }
             }
         }
 
