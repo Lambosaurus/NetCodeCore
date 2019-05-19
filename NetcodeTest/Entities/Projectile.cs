@@ -20,11 +20,11 @@ namespace NetcodeTest.Entities
         public Ship Creator;
 
         const float Speed = 500f;
-        double Duration = 3.0f;
-        double Damage = 20;
+        private double Duration = 3.0f;
+        const double Damage = 20;
 
-        float Recoil = 250;
-        float Force = 1000f;
+        const float Recoil = 250;
+        const float Force = 1000f;
 
         public Projectile()
         {
@@ -62,7 +62,7 @@ namespace NetcodeTest.Entities
             phys.Hitpoints -= Damage;
             IsDestroyed = true;
 
-            phys.Push(this.Velocity * this.Force / Speed, Position);
+            phys.Push(Velocity * Force / Speed, Position);
 
             Context.AddEvent(new Explosion(Position, 10f, 0.4f, Creator.Color));
         }

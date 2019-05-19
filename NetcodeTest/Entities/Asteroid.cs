@@ -62,17 +62,22 @@ namespace NetcodeTest.Entities
             {
                 Vector2 ecc = Fmath.Rotate(new Vector2(Size/4, Size/4), Angle);
 
+                // Hack to pull the pending forces out of the collision system and applying them immediately.
+                Velocity += (CollisionBody.Force / 60f) * CollisionBody.InvMass;
+
                 for (int i = 0; i < 4; i++)
                 {
                     ecc = Fmath.RotatePos(ecc);
 
-                    Context.AddEntity(new Asteroid(
+                    Asteroid subasteroid = new Asteroid(
                         Position + ecc,
                         Velocity + ecc * EjectionVelocity / Size,
                         subsize,
                         Angle,
                         AngularVelocity + EjectionRotation - Fmath.RandF(2 * EjectionRotation)
-                        ));
+                        );
+
+                    Context.AddEntity(subasteroid);
                 }
             }
             else

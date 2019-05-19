@@ -1,16 +1,17 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Volatile;
+
 using NetCode;
 using NetCode.Connection;
 using NetCode.Connection.UDP;
 using NetCode.SyncPool;
+
 using NetcodeTest.Entities;
 using NetcodeTest.Events;
 using NetcodeTest.Util;
-using System;
-using System.Collections.Generic;
-using Volatile;
-
-
+using NetcodeTest.Requests;
 
 
 namespace NetcodeTest.Server
@@ -64,9 +65,9 @@ namespace NetcodeTest.Server
             
             Clients = new List<RemoteClient>();
 
-            Context = new ContextToken();
+            Context = new ContextToken(this);
 
-            int k = 6;
+            int k = 4;
             for (int i = 0; i < 30*k; i++) { AddEntity(NewAsteroid(32)); }
             for (int i = 0; i < 40*k; i++) { AddEntity(NewAsteroid(48)); }
             for (int i = 0; i < 10*k; i++) { AddEntity(NewAsteroid(56)); }
@@ -218,6 +219,18 @@ namespace NetcodeTest.Server
                 client.Client.Update();
                 client.Incoming.Synchronise();
 
+                foreach (SyncEvent evt in client.Incoming.Events)
+                {
+                    if (evt.Obj is PlayerRequest request)
+                    {
+                        if (request.Request == PlayerRequest.RequestType.FireMissile)
+                        {
+                            client.Player?.FireMissile();
+                        }
+                    }
+                    evt.Clear();
+                }
+
                 foreach (SyncHandle handle in client.Incoming.Handles)
                 {
                     if (handle.Obj is PlayerControl control)
@@ -299,7 +312,16 @@ namespace NetcodeTest.Server
                 }
             }
         }
-        
+
+        public List<Physical> GetPhysicalsInCircle(Vector2 center, float radius)
+        {
+            List<Physical> Matches = new List<Physical>();
+            foreach (VoltBody body in CollisionWorld.QueryCircle(center, radius))
+            {
+                Matches.Add((Physical)body.UserData);
+            }
+            return Matches;
+        }
         
         private void UpdateEntitites(float delta)
         {

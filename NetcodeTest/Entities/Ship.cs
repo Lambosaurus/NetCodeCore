@@ -25,6 +25,8 @@ namespace NetcodeTest.Entities
         float FireRate = 20f;
         float Cooldown = 0.0f;
         bool Firing = false;
+        float MissileCooldown = 0.0f;
+        float MissilePeriod = 5f;
 
         public Ship()
         {
@@ -51,6 +53,8 @@ namespace NetcodeTest.Entities
             }
             else if (Cooldown > 0) { Cooldown -= delta; }
 
+            if (MissileCooldown > 0) { MissileCooldown -= delta; }
+
             base.Update(delta);
         }
 
@@ -72,7 +76,6 @@ namespace NetcodeTest.Entities
             thrust = Fmath.Clamp(thrust, 0.0f, 1.0f);
             torque = Fmath.Clamp(torque, -1.0f, 1.0f);
 
-            
             /*
             float epsilon = 0.001f;
             if (torque < epsilon && torque > -epsilon)
@@ -85,9 +88,15 @@ namespace NetcodeTest.Entities
 
             CollisionBody.AddForce(Fmath.CosSin(Angle, Thrust * thrust));
             CollisionBody.AddTorque(Torque * torque);
-            
+        }
 
-            RequestMotionUpdate();
+        public void FireMissile()
+        {
+            if (MissileCooldown <= 0)
+            {
+                MissileCooldown = MissilePeriod;
+                Context.AddEntity(new Missile(this));
+            }
         }
 
         protected override Vector2[] GetHitbox()

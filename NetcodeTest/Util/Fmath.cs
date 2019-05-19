@@ -110,5 +110,10 @@ namespace NetcodeTest.Util
         {
             return (one.X * two.X) + (one.Y * two.Y);
         }
+
+        public static float Abs(float value)
+        {
+            return value < 0 ? -value : value;
+        }
     }
 }

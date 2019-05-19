@@ -40,7 +40,15 @@ namespace NetCode.SyncEntity
 
         public SyncEntityDescriptor GetEntityDescriptor(RuntimeTypeHandle typeHandle)
         {
-            return entityDescriptorsByType[typeHandle];
+            if (entityDescriptorsByType.TryGetValue(typeHandle, out SyncEntityDescriptor descriptor))
+            {
+                return descriptor;
+            }
+
+            throw new NetcodeGenerationException(string.Format(
+                "No definitions are found for type {0}. Have you enumerated this type as a SyncEntity?",
+                typeHandle.GetType().FullName
+                ));
         }
         
         public bool TypeExists(ushort typeID)

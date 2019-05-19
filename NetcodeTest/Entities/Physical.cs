@@ -27,7 +27,7 @@ namespace NetcodeTest.Entities
             }
 
             if ((CollisionBody.LinearVelocity - Velocity).LengthSquared() > VelocityTolerance * VelocityTolerance
-                || (CollisionBody.AngularVelocity - AngularVelocity) > VelocityTolerance)
+                || (Fmath.Abs(CollisionBody.AngularVelocity - AngularVelocity) > VelocityTolerance) )
             {
                 RequestMotionUpdate();
             }

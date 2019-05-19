@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 
 using NetcodeTest.Entities;
 using NetcodeTest.Events;
+using NetcodeTest.Server;
 
 namespace NetcodeTest.Entities
 {
@@ -13,6 +15,13 @@ namespace NetcodeTest.Entities
     {
         List<Entity> Entities = new List<Entity>();
         List<Event> Events = new List<Event>();
+
+        AsteroidServer Server;
+
+        public ContextToken( AsteroidServer server )
+        {
+            Server = server;
+        }
 
         public void AddEntity(Entity entity)
         {
@@ -44,6 +53,11 @@ namespace NetcodeTest.Entities
                 return tmp;
             }
             return null;
+        }
+
+        public List<Physical> GetEntitiesWithin(Vector2 center, float radius)
+        {
+            return Server.GetPhysicalsInCircle(center, radius);
         }
     }
 }
