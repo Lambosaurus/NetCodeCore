@@ -65,7 +65,7 @@ namespace NetcodeTest.Entities
                 }
             }
 
-            Context.AddEvent(new Explosion(Position, 30f, 2.5f, Creator.Color));
+            Context.AddEvent(new Explosion(Position, 40f, 1.5f, Creator.Color));
         }
 
         public override void Predict(long timestamp)
