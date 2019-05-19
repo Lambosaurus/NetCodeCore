@@ -77,6 +77,7 @@ namespace NetcodeTest
                 11002, // Change this destination to 12002 to connect to a running NetProxy.
                 (server != null) ? 11003 : 11002
                 ));
+            client.Connection.Compression = AsteroidServer.NetworkCompression;
 
             // Note, when using NetProxy with this setup, the Open command should be:
             // open 12002 11003 12003 11002

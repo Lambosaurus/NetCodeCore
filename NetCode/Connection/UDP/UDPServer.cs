@@ -15,6 +15,8 @@ namespace NetCode.Connection.UDP
         public int IncomingConnectionLimit { get; set; } = 0;
         public int IncomingConnections { get; private set; } = 0;
         public int OutgoingConnections { get; private set; } = 0;
+        public bool Compression { get; set; } = false;
+
 
         private List<UDPFeed> Feeds;
         private UdpClient Socket;
@@ -60,10 +62,16 @@ namespace NetCode.Connection.UDP
 
                 if (feed == null)
                 {
-                    // Attempt to decode the packet.
-                    if (incoming.Data.Length < (Packet.HeaderSize + Payload.HeaderSize)) { continue; }
+                    byte[] data = incoming.Data;
+                    if (Compression)
+                    {
+                        data = Compress.Enflate(data);
+                    }
 
-                    HandshakePayload req = Packet.Peek<HandshakePayload>(incoming.Data);
+                    // Attempt to decode the packet.
+                    if (data.Length < (Packet.HeaderSize + Payload.HeaderSize)) { continue; }
+
+                    HandshakePayload req = Packet.Peek<HandshakePayload>(data);
                     if (req != null && req.State == NetworkClient.ConnectionState.Opening)
                     {
                         feed = OpenIncomingConnection(incoming.Source);
@@ -103,6 +111,7 @@ namespace NetCode.Connection.UDP
         public NetworkConnection OpenConnection(IPEndPoint destination)
         {
             UDPFeed feed = new UDPFeed(this, destination, false);
+            feed.Compression = Compression;
             Feeds.Add(feed);
             OutgoingConnections += 1;
             return feed;
@@ -111,6 +120,7 @@ namespace NetCode.Connection.UDP
         private UDPFeed OpenIncomingConnection(IPEndPoint destination)
         {
             UDPFeed feed = new UDPFeed(this, destination, true);
+            feed.Compression = Compression;
             Feeds.Add(feed);
             IncomingConnections += 1;
             return feed;

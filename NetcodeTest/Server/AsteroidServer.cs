@@ -13,11 +13,12 @@ using NetcodeTest.Events;
 using NetcodeTest.Util;
 using NetcodeTest.Requests;
 
-
 namespace NetcodeTest.Server
 {
     public class AsteroidServer
-    {       
+    {
+        public const bool NetworkCompression = false;
+
         public int MaxPlayers
         {
             get { return Server.IncomingConnectionLimit; }
@@ -56,6 +57,7 @@ namespace NetcodeTest.Server
 
             Boundary = boundary;
             Server = new UDPServer(port);
+            Server.Compression = NetworkCompression;
             MaxPlayers = 8;
 
             OutgoingPool = new OutgoingSyncPool(netdefs, 0);

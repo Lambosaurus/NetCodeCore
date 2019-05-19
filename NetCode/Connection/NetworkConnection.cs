@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,12 +13,13 @@ namespace NetCode.Connection
     {
         public ConnectionStats Stats { get; private set; }
         public int PacketTimeout { get; set; } = 500;
+        public bool Compression { get; set; } = false;
 
         private List<Packet> pendingPackets = new List<Packet>();
         private List<Payload> payloadQueue = new List<Payload>();
         
         private List<uint> packetAcknowledgementQueue = new List<uint>();
-        
+
 
         public NetworkConnection()
         {
@@ -118,7 +119,7 @@ namespace NetCode.Connection
 
             return packet;
         }
-        
+
         private void SendPacket(Packet packet)
         {
             if (packet.RequiresAcknowledgement())
@@ -127,12 +128,23 @@ namespace NetCode.Connection
             }
             long timestamp = NetTime.Now();
             byte[] data = packet.Encode(timestamp);
+
+            if (Compression)
+            {
+                data = Compress.Deflate(data);
+            }
+
             Stats.RecordSend(data.Length, timestamp);
             SendData(data);
         }
 
         private List<Payload> RecievePacket(byte[] data)
         {
+            if (Compression)
+            {
+                data = Compress.Enflate(data);
+            }
+
             long timestamp = NetTime.Now();
             Packet packet = Packet.Decode(data, timestamp);
             Stats.RecordReceive(data.Length, timestamp, packet.DecodingError);
