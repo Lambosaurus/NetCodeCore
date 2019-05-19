@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using NetCode;
 
-namespace NetcodeTest
+namespace NetcodeTest.Requests
 {
     [EnumerateSynchEntity]
     public class PlayerControl

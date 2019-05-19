@@ -12,8 +12,10 @@ namespace NetcodeTest.Entities
         public Vector2 Position { get; protected set; }
         public float Angle { get; protected set; }
 
-        [Synchronisable(SyncFlags.HalfPrecision)]
         public Vector2 Velocity { get; protected set; }
+
+        [Synchronisable(SyncFlags.HalfPrecision)]
+        public Vector2 baseVelocity { get; protected set; }
         [Synchronisable(SyncFlags.HalfPrecision)]
         public float AngularVelocity { get; protected set; }
 
@@ -47,13 +49,14 @@ namespace NetcodeTest.Entities
             baseTimestamp = timestamp;
             basePosition = Position;
             baseAngle = Angle;
+            baseVelocity = Velocity;
             NeedsMotionReset = false;
         }
 
         public virtual void Predict(long timestamp)
         {
             long delta = timestamp - baseTimestamp;
-            Position = basePosition + (Velocity * (delta / 1000.0f));
+            Position = basePosition + (baseVelocity * (delta / 1000.0f));
             Angle = baseAngle + (AngularVelocity * (delta / 1000.0f));
         }
 

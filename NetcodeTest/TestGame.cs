@@ -18,6 +18,7 @@ using NetcodeTest.Entities;
 using NetcodeTest.Server;
 using NetcodeTest.Util;
 using NetcodeTest.Events;
+using NetcodeTest.Requests;
 
 namespace NetcodeTest
 {
@@ -138,6 +139,11 @@ namespace NetcodeTest
             controlVector.Torque = (keys.IsKeyDown(Keys.A) ? 1.0f : 0f) + (keys.IsKeyDown(Keys.D) ? -1.0f : 0f);
             controlVector.Firing = keys.IsKeyDown(Keys.Space); // Should be done as events.
             
+            if (keys.IsKeyDown(Keys.Q) && !lastKeys.IsKeyDown(Keys.Q))
+            {
+                outgoingPool.AddEvent(new PlayerRequest(PlayerRequest.RequestType.FireMissile));
+            }
+
             tickCounter += delta;
             if (tickCounter >= 1f / 20)
             {
