@@ -5,7 +5,6 @@ using System.Linq;
 using NetCode.Util;
 using NetCode.SyncPool;
 using NetCode.Connection;
-using NetCode.SyncEntity;
 
 namespace NetCode.Payloads
 {

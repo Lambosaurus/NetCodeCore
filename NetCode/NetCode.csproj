@@ -41,6 +41,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="SyncField\Entities\EntityDescriptor.cs" />
+    <Compile Include="SyncField\Entities\SyncFieldEntity.cs" />
     <Compile Include="SyncField\SynchronisableValue.cs" />
     <Compile Include="SyncField\SyncFieldFactory.cs" />
     <Compile Include="Util\NetBuffer.cs" />
@@ -79,11 +81,9 @@
     <Compile Include="Payloads\Packet.cs" />
     <Compile Include="Payloads\AcknowledgementPayload.cs" />
     <Compile Include="Util\FormatHelpers.cs" />
-    <Compile Include="SyncEntity\SyncEntityDescriptor.cs" />
-    <Compile Include="SyncEntity\SyncEntityGenerator.cs" />
-    <Compile Include="SyncField\SyncFieldDescriptor.cs" />
-    <Compile Include="SyncEntity\SynchronisableEntity.cs" />
-    <Compile Include="SyncField\SyncFieldGenerator.cs" />
+    <Compile Include="SyncField\Entities\EntityDescriptorCache.cs" />
+    <Compile Include="SyncField\FieldDescriptor.cs" />
+    <Compile Include="SyncField\FieldDescriptorCache.cs" />
     <Compile Include="SyncField\Implementations\SyncFieldNumerics.cs" />
     <Compile Include="SynchronisableAttribute.cs" />
     <Compile Include="SyncField\SynchronisableField.cs" />
@@ -105,6 +105,8 @@
       <HintPath>lib\System.Half.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="SyncField\Containers\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

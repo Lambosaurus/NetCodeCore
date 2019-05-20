@@ -36,10 +36,16 @@ namespace NetCode
         LinkedReference = Reference | Linked,
 
         /// <summary>
-        /// For delta based synchronoisers, this will revert to the WriteAll behavior.
-        /// This may reduce traffic if the majority of the object is changed at once.
+        /// For delta based synchronoisers, this will cause them to rewrite all fields if any are changes
+        /// This may reduce traffic if the individual items are one byte long, and over half are changed at once.
         /// </summary>
-        NoDeltas = (1 << 4)
+        NoDeltas = (1 << 4),
+
+        /// <summary>
+        /// Synchronises this field as a nested entity.
+        /// This entity will not be given an EntityID or handle.
+        /// </summary>
+        NestedEntity = (1 << 5),
     };
 
 

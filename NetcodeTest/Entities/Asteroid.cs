@@ -15,7 +15,7 @@ namespace NetcodeTest.Entities
     [EnumerateSynchEntity]
     public class Asteroid : Physical
     {
-        [Synchronisable]
+        [Synchronisable(SyncFlags.HalfPrecision)]
         public float Size { get; protected set; }
 
         public const float MinimumSize = 8f;

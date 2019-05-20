@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using NetCode.SyncEntity;
+using NetCode.SyncField.Entities;
 
 namespace NetCode.SyncPool
 {
@@ -44,7 +44,7 @@ namespace NetCode.SyncPool
         /// <summary>
         /// The EntityID identifies this handle across the network, and is unique within its SyncPool.
         /// </summary>
-        public ushort EntityID { get { return Sync.EntityID; } }
+        public ushort EntityID { get; private set; }
         
         /// <summary>
         /// Indicates if the object was updated in the last Synchronise call.
@@ -53,13 +53,14 @@ namespace NetCode.SyncPool
         
 
         internal const ushort NullEntityID = 0;
-        internal SynchronisableEntity Sync;
+        internal SyncFieldEntity Sync;
 
-        internal SyncHandle(SynchronisableEntity syncEntity, Object syncObject)
+        internal SyncHandle(SyncFieldEntity syncEntity, ushort entityID)
         {
             Sync = syncEntity;
-            Obj = syncObject;
+            Obj = Sync.Value; // This is cheaper than GetValue(), as it doesnt flush field data.
             State = SyncState.Live;
+            EntityID = entityID;
         }
     }
 }

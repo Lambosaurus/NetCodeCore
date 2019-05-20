@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using NetCode.SyncEntity;
+using NetCode.SyncField.Entities;
 
 namespace NetCode.SyncPool
 {
@@ -28,13 +28,13 @@ namespace NetCode.SyncPool
         protected SyncSlot[] SyncSlots;
         protected List<SyncHandle> SyncHandles { get; private set; }
         
-        internal SyncEntityGenerator entityGenerator;
+        internal EntityDescriptorCache EntityGenerator;
 
         protected SyncContext Context;
         
         internal SynchronisablePool(NetDefinitions netDefs, ushort poolID)
         {
-            entityGenerator = netDefs.entityGenerator;
+            EntityGenerator = netDefs.entityGenerator;
             PoolID = poolID;
 
             SyncHandles = new List<SyncHandle>();

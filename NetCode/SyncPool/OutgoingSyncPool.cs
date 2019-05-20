@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using NetCode.SyncField;
+using NetCode.SyncField.Entities;
 using NetCode.Connection;
-using NetCode.SyncEntity;
 using NetCode.Payloads;
 using NetCode.Util;
 
@@ -48,7 +47,7 @@ namespace NetCode.SyncPool
                 start = 1;
             }
 
-            //TODO: This search will start to choke when the dict is nearly full of keys.
+            //TODO: This search will start to choke when the buffers are nearly full.
             //      Somone should be informed when this happens.
             for (int i = start; i < SyncSlots.Length; i++)
             {
@@ -72,24 +71,21 @@ namespace NetCode.SyncPool
         public SyncHandle AddEntity(object instance)
         {
             ushort entityID = GetNextEntityID();
-            SyncEntityDescriptor descriptor = entityGenerator.GetEntityDescriptor(instance.GetType().TypeHandle);
-            SynchronisableEntity entity = new SynchronisableEntity(descriptor, entityID);
-
-            SyncHandle handle = new SyncHandle(entity, instance);
+            RuntimeTypeHandle typeHandle = instance.GetType().TypeHandle;
+            SyncFieldEntity entity = EntityGenerator.GetEntityFactory(typeHandle).ConstructForExisting(instance);
+            SyncHandle handle = new SyncHandle(entity, entityID);
             AddHandle(handle);
             return handle;
         }
 
         public void AddEvent(object instance, bool guaranteeReceipt = true, bool urgent = true)
         {
-            SyncEntityDescriptor descriptor = entityGenerator.GetEntityDescriptor(instance.GetType().TypeHandle);
-            SynchronisableEntity sync = new SynchronisableEntity(descriptor, 0);
-
-            sync.TrackChanges(instance, Context);
-            int size = sync.WriteAllToBufferSize();
+            SyncFieldEntity entity = EntityGenerator.GetEntityFactory(instance.GetType().TypeHandle).ConstructForExisting(instance);
+            entity.TrackChanges(instance, Context);
+            int size = entity.WriteToBufferSize() + sizeof(ushort);
             PoolEventPayload payload = PoolEventPayload.Generate(PoolID, size, guaranteeReceipt, urgent);
-            sync.WriteAllToBuffer(payload.EventData);
-
+            payload.EventData.WriteUShort(entity.TypeID);
+            entity.WriteToBuffer(payload.EventData);
             BroadcastPayload(payload);
         }
 
@@ -172,7 +168,8 @@ namespace NetCode.SyncPool
             {
                 if (handle.Sync.ContainsRevision(revision))
                 {
-                    size += handle.Sync.WriteRevisionToBufferSize(revision);
+                    size += sizeof(ushort) + sizeof(ushort);
+                    size += handle.Sync.WriteToBufferSize(revision);
                     updatedEntities.Add(handle.EntityID);
                 }
             }
@@ -184,7 +181,9 @@ namespace NetCode.SyncPool
                 foreach (ushort entityID in updatedEntities)
                 {
                     SyncHandle handle = SyncSlots[entityID].Handle;
-                    handle.Sync.WriteRevisionToBuffer(payload.RevisionData, Context);
+                    payload.RevisionData.WriteUShort(entityID);
+                    payload.RevisionData.WriteUShort(handle.Sync.TypeID);
+                    handle.Sync.WriteToBuffer(payload.RevisionData, Context);
                 }
                 
                 return payload;
@@ -197,14 +196,17 @@ namespace NetCode.SyncPool
             int size = 0;
             foreach (SyncHandle handle in SyncHandles)
             {
-                size += handle.Sync.WriteAllToBufferSize();
+                size += sizeof(ushort) + sizeof(ushort);
+                size += handle.Sync.WriteToBufferSize();
             }
             
             PoolRevisionPayload payload = PoolRevisionPayload.Generate(this, Revision, size, true);
 
             foreach (SyncHandle handle in SyncHandles)
             {
-                handle.Sync.WriteAllToBuffer(payload.RevisionData);
+                payload.RevisionData.WriteUShort(handle.EntityID);
+                payload.RevisionData.WriteUShort(handle.Sync.TypeID);
+                handle.Sync.WriteToBuffer(payload.RevisionData);
             }
 
             return payload;

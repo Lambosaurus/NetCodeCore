@@ -3,15 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-using NetCode.SyncEntity;
-using NetCode.SyncField;
+using NetCode.SyncField.Entities;
 using NetCode.SyncPool;
 
 namespace NetCode
 {
     public class NetDefinitions
     {
-        internal SyncEntityGenerator entityGenerator;
+        internal EntityDescriptorCache entityGenerator;
 
         public NetDefinitions(string[] tags = null)
         {
@@ -19,7 +18,7 @@ namespace NetCode
             {
                 tags = new string[] { null };
             }
-            entityGenerator = new SyncEntityGenerator();
+            entityGenerator = new EntityDescriptorCache();
             entityGenerator.LoadEntityTypes(tags);
         }
 

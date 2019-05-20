@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NetCode.SyncPool;
-using NetCode.Util;
 
-using System.Reflection;
+using NetCode.SyncPool;
+
 
 namespace NetCode.SyncField.Implementations
 {   

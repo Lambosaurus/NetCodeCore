@@ -6,23 +6,26 @@ using System.Linq;
 using System.Reflection;
 using NetCode.Util;
 using NetCode.SyncField.Implementations;
+using NetCode.SyncField.Entities;
 
 namespace NetCode.SyncField
 {
-    internal static class SyncFieldGenerator
+    internal class FieldDescriptorCache
     {
         private static Dictionary<RuntimeTypeHandle, SyncFieldFactory> HalfFieldFactoryLookup = new Dictionary<RuntimeTypeHandle, SyncFieldFactory>();
         private static Dictionary<RuntimeTypeHandle, SyncFieldFactory> FieldFactoryLookup = new Dictionary<RuntimeTypeHandle, SyncFieldFactory>();
         private static SyncFieldFactory TimestampFieldFactory;
 
-        static SyncFieldGenerator()
+        EntityDescriptorCache EntityGenerator;
+        public FieldDescriptorCache(EntityDescriptorCache entityGenerator)
         {
-            TimestampFieldFactory = new SynchronisableValue.Factory(typeof(SyncFieldTimestamp));
-            LoadFieldTypes();
+            EntityGenerator = entityGenerator;
         }
 
-        private static void LoadFieldTypes()
+        static FieldDescriptorCache()
         {
+            TimestampFieldFactory = new SynchronisableValue.Factory(typeof(SyncFieldTimestamp));
+
             AttributeHelper.ForAllTypesWithAttribute<EnumerateSyncFieldAttribute>(
                 (type, attribute) => { RegisterFieldType(type, attribute.FieldType, attribute.Flags); }
                 );
@@ -51,7 +54,7 @@ namespace NetCode.SyncField
             lookup[fieldTypeHandle] = new SynchronisableValue.Factory(syncFieldType); ;
         }
 
-        private static SyncFieldFactory GenerateFieldFactoryByType(Type type, SyncFlags flags)
+        private SyncFieldFactory GenerateFieldFactoryByType(Type type, SyncFlags flags)
         {
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
             {
@@ -76,6 +79,14 @@ namespace NetCode.SyncField
                 // SyncFieldArrays take a SyncFieldFactory as an argument.
                 ConstructorInfo constructor = syncFactoryType.GetConstructor(new Type[] { typeof(SyncFieldFactory), typeof(SyncFlags) });
                 return (SyncFieldFactory)constructor.Invoke(new object[] { elementFactory, flags });
+            }
+            else if ((flags & SyncFlags.NestedEntity) != 0)
+            {
+                if (type.IsValueType)
+                {
+                    throw new NotSupportedException(string.Format("{0}.{1} can not be used on ValueType", typeof(SyncFlags).Name, SyncFlags.NestedEntity));
+                }
+                return EntityGenerator.GetEntityFactory(type.TypeHandle);
             }
             else if ((flags & SyncFlags.Reference) != 0)
             {
@@ -125,18 +136,18 @@ namespace NetCode.SyncField
             }
         }
         
-        internal static SyncFieldDescriptor GenerateFieldDescriptor(FieldInfo fieldInfo, SyncFlags syncFlags)
+        internal FieldDescriptor GetFieldDescriptor(FieldInfo fieldInfo, SyncFlags syncFlags)
         {
-            return new SyncFieldDescriptor(
+            return new FieldDescriptor(
                 GenerateFieldFactoryByType(fieldInfo.FieldType, syncFlags),
                 DelegateGenerator.GenerateGetter(fieldInfo),
                 DelegateGenerator.GenerateSetter(fieldInfo)
                 );
         }
         
-        internal static SyncFieldDescriptor GenerateFieldDescriptor(PropertyInfo propertyInfo, SyncFlags syncFlags)
+        internal FieldDescriptor GetFieldDescriptor(PropertyInfo propertyInfo, SyncFlags syncFlags)
         {
-            return new SyncFieldDescriptor(
+            return new FieldDescriptor(
                 GenerateFieldFactoryByType(propertyInfo.PropertyType, syncFlags),
                 DelegateGenerator.GenerateGetter(propertyInfo),
                 DelegateGenerator.GenerateSetter(propertyInfo)
