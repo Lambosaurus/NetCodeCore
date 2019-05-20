@@ -16,6 +16,7 @@ A list of planned improvements include:
   - Remove UDPConnectionRequestPayload and include more generic solution.
   - Mechanism for deferring and grouping payloads based on transmit priority.
   - Server Blacklisting
+  - A port based UDP model where new connections are forwarded to new ports.
 - Tools to assist in measuring network usage size.
 - General stability testing when recieving garbage payloads.
 - Payload encryption options
