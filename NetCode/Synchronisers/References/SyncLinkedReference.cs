@@ -2,19 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using NetCode.Util;
 using NetCode.SyncPool;
 
-namespace NetCode.SyncField.Implementations
+namespace NetCode.Synchronisers.References
 {
-    internal class SyncFieldLinkedReference : SynchronisableField
+    internal class SyncLinkedReference : Synchroniser
     {
         protected object value;
         protected ushort PoolID;
         protected ushort EntityID = SyncHandle.NullEntityID;
 
         private Type ReferenceType;
-        public SyncFieldLinkedReference(Type referenceType)
+        public SyncLinkedReference(Type referenceType)
         {
             ReferenceType = referenceType;
         }

@@ -2,24 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
 using NetCode.SyncPool;
+using NetCode.Util;
 
+using System.Reflection;
 
-namespace NetCode.SyncField.Implementations
+namespace NetCode.Synchronisers.Containers
 {   
-    public class SyncFieldList<T> : SyncFieldContainer<T>
+    public class SyncContainerArray<T> : SyncContainer<T>
     {
-        public SyncFieldList(SyncFieldFactory elementFactory, bool deltas) : base(elementFactory, deltas)
+        public SyncContainerArray(SynchroniserFactory elementFactory, bool deltas) : base(elementFactory, deltas)
         {
         }
 
         public override object GetValue()
         {
-            List<T> items = new List<T>(Elements.Count);
+            T[] items = new T[Elements.Count];
             for (int i = 0; i < Elements.Count; i++)
             {
-                items.Add((T)Elements[i].GetValue());
+                items[i] = (T)Elements[i].GetValue();
             }
             return items;
         }
@@ -27,15 +28,15 @@ namespace NetCode.SyncField.Implementations
         public override bool TrackChanges(object newValue, SyncContext context)
         {
             bool changesFound = false;
-            List<T> items = (List<T>)newValue;
-            int count = items.Count;
+            T[] items = (T[])newValue;
+            int count = items.Length;
 
             if (Elements.Count != count)
             {
                 changesFound = true;
                 SetElementLength(count);
             }
-
+            
             for (int i = 0; i < count; i++)
             {
                 if (Elements[i].TrackChanges(items[i], context))
@@ -49,22 +50,6 @@ namespace NetCode.SyncField.Implementations
                 Revision = context.Revision;
             }
             return changesFound;
-        }
-    }
-
-    public class SyncFieldListFactory<T> : SyncFieldFactory
-    {
-        SyncFieldFactory ElementFactory;
-        bool DeltaEncoding;
-        public SyncFieldListFactory(SyncFieldFactory elementFactory, SyncFlags flags)
-        {
-            DeltaEncoding = (flags & SyncFlags.NoDeltas) == 0;
-            ElementFactory = elementFactory;
-        }
-
-        public sealed override SynchronisableField Construct()
-        {
-            return new SyncFieldList<T>(ElementFactory, DeltaEncoding);
         }
     }
 }

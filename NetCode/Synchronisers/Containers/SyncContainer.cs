@@ -7,16 +7,16 @@ using NetCode.SyncPool;
 using NetCode.Util;
 
 
-namespace NetCode.SyncField.Implementations
+namespace NetCode.Synchronisers.Containers
 {   
-    public abstract class SyncFieldContainer<T> : SynchronisableField
+    public abstract class SyncContainer<T> : Synchroniser
     {
-        protected List<SynchronisableField> Elements = new List<SynchronisableField>();
+        protected List<Synchroniser> Elements = new List<Synchroniser>();
         
-        private readonly SyncFieldFactory ElementFactory;
+        private readonly SynchroniserFactory ElementFactory;
         private readonly bool DeltaEncoding;
         
-        public SyncFieldContainer( SyncFieldFactory elementFactory, bool deltas )
+        public SyncContainer( SynchroniserFactory elementFactory, bool deltas )
         {
             DeltaEncoding = deltas;
             ElementFactory = elementFactory;
@@ -25,7 +25,7 @@ namespace NetCode.SyncField.Implementations
         public sealed override void SetSynchonised(bool sync)
         {
             Synchronised = sync;
-            foreach(SynchronisableField element in Elements)
+            foreach(Synchroniser element in Elements)
             {
                 if (element.Synchronised != sync)
                 {
@@ -83,7 +83,7 @@ namespace NetCode.SyncField.Implementations
 
                     if (index < Elements.Count)
                     {
-                        SynchronisableField element = Elements[index];
+                        Synchroniser element = Elements[index];
                         element.ReadFromBuffer(buffer, context);
                         ReferencesPending |= element.ReferencesPending;
                         Synchronised &= element.Synchronised;
@@ -104,7 +104,7 @@ namespace NetCode.SyncField.Implementations
                     Synchronised = false;
                 }
 
-                foreach (SynchronisableField element in Elements)
+                foreach (Synchroniser element in Elements)
                 {
                     element.ReadFromBuffer(buffer, context);
                     ReferencesPending |= element.ReferencesPending;
@@ -147,7 +147,7 @@ namespace NetCode.SyncField.Implementations
             }
             else if (DeltaEncoding)
             {
-                foreach ( SynchronisableField element in Elements)
+                foreach ( Synchroniser element in Elements)
                 {
                     if (element.ContainsRevision(revision))
                     {
@@ -176,7 +176,7 @@ namespace NetCode.SyncField.Implementations
                 buffer.WriteVWidth((ushort)updatedElements.Count);
                 if (updatedElements.Count == Elements.Count)
                 {
-                    foreach (SynchronisableField element in Elements)
+                    foreach (Synchroniser element in Elements)
                     {
                         element.WriteToBuffer(buffer, context);
                     }
@@ -203,7 +203,7 @@ namespace NetCode.SyncField.Implementations
             {
                 buffer.WriteVWidth((ushort)Elements.Count);
             }
-            foreach (SynchronisableField element in Elements)
+            foreach (Synchroniser element in Elements)
             {
                 element.WriteToBuffer(buffer);
             }
@@ -218,7 +218,7 @@ namespace NetCode.SyncField.Implementations
                 ushort changeCount = 0;
                 for (int i = 0; i < Elements.Count; i++)
                 {
-                    SynchronisableField element = Elements[i];
+                    Synchroniser element = Elements[i];
                     if (element.ContainsRevision(revision))
                     {
                         changeCount += 1;
@@ -248,7 +248,7 @@ namespace NetCode.SyncField.Implementations
                 count += NetBuffer.SizeofVWidth((ushort)Elements.Count);
             }
 
-            foreach (SynchronisableField element in Elements)
+            foreach (Synchroniser element in Elements)
             {
                 count += element.WriteToBufferSize();
             }
@@ -258,7 +258,7 @@ namespace NetCode.SyncField.Implementations
         public sealed override void UpdateReferences(SyncContext context)
         {
             ReferencesPending = false;
-            foreach (SynchronisableField element in Elements)
+            foreach (Synchroniser element in Elements)
             {
                 if (element.ReferencesPending)
                 {

@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 using NetCode.Util;
 using NetCode.SyncPool;
 
-namespace NetCode.SyncField
+namespace NetCode.Synchronisers.Values
 {
-    public abstract class SynchronisableValue : SynchronisableField
+    public abstract class SyncValue : Synchroniser
     {
         public sealed override bool TrackChanges(object newValue, SyncContext context)
         {
@@ -52,25 +51,5 @@ namespace NetCode.SyncField
         /// </summary>
         /// <param name="newValue"></param>
         public abstract bool ValueEqual(object newValue);
-
-
-        public class Factory : SyncFieldFactory
-        {
-            Func<SynchronisableField> Constructor;
-            public Factory(Func<SynchronisableField> constructor)
-            {
-                Constructor = constructor;
-            }
-
-            public Factory(Type syncFieldType)
-            {
-                Constructor = DelegateGenerator.GenerateConstructor<SynchronisableField>(syncFieldType);
-            }
-
-            public sealed override SynchronisableField Construct()
-            {
-                return Constructor.Invoke();
-            }
-        }
     }
 }

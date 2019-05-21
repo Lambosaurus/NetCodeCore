@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
+using NetCode.SyncPool;
 
-namespace NetCode.SyncPool
+namespace NetCode.Synchronisers
 {
     public class SyncContext
     {

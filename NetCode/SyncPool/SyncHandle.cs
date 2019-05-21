@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using NetCode.SyncField.Entities;
+using NetCode.Synchronisers.Entities;
 
 namespace NetCode.SyncPool
 {
@@ -53,9 +53,9 @@ namespace NetCode.SyncPool
         
 
         internal const ushort NullEntityID = 0;
-        internal SyncFieldEntity Sync;
+        internal SyncEntity Sync;
 
-        internal SyncHandle(SyncFieldEntity syncEntity, ushort entityID)
+        internal SyncHandle(SyncEntity syncEntity, ushort entityID)
         {
             Sync = syncEntity;
             Obj = Sync.Value; // This is cheaper than GetValue(), as it doesnt flush field data.

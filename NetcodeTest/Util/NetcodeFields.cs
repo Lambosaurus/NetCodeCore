@@ -5,13 +5,13 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 
 using NetCode;
-using NetCode.SyncField;
-using NetCode.Util;
+using NetCode.Synchronisers.Values;
+
 
 namespace NetcodeTest.Util
 {
-    [EnumerateSyncField(typeof(Vector2))]
-    public class SynchronisableVector2 : SynchronisableValue
+    [EnumerateSyncValue(typeof(Vector2))]
+    public class SynchronisableVector2 : SyncValue
     {
         private Vector2 value;
         public override void SetValue(object new_value) { value = (Vector2)new_value; }
@@ -31,8 +31,8 @@ namespace NetcodeTest.Util
         public override void SkipFromBuffer(NetBuffer buffer) { buffer.Index += sizeof(float) * 2; }
     }
 
-    [EnumerateSyncField(typeof(Vector2), SyncFlags.HalfPrecision)]
-    public class SynchronisableHalfVector2 : SynchronisableValue
+    [EnumerateSyncValue(typeof(Vector2), SyncFlags.HalfPrecision)]
+    public class SynchronisableHalfVector2 : SyncValue
     {
         private Half x;
         private Half y;
@@ -62,8 +62,8 @@ namespace NetcodeTest.Util
         public override void SkipFromBuffer(NetBuffer buffer) { buffer.Index += NetBuffer.SizeofHalf * 2; }
     }
 
-    [EnumerateSyncField(typeof(Color))]
-    public class SynchronisableColor : SynchronisableValue
+    [EnumerateSyncValue(typeof(Color))]
+    public class SynchronisableColor : SyncValue
     {
         private Color value;
         public override void SetValue(object new_value)

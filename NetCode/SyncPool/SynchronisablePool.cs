@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using NetCode.SyncField.Entities;
+using NetCode.Synchronisers;
+using NetCode.Synchronisers.Entities;
 
 namespace NetCode.SyncPool
 {

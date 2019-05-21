@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
-using NetCode.Util;
-
-namespace NetCode.SyncField.Implementations
+namespace NetCode.Synchronisers.Values
 {
-    [EnumerateSyncField(typeof(string))]
-    public class SyncFieldString : SynchronisableValue
+    [EnumerateSyncValue(typeof(string))]
+    public class SyncFieldString : SyncValue
     {
         protected string value;
         public override void SetValue(object new_value) { value = (string)new_value; }

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 
 using NetCode.Util;
-using NetCode.SyncField.Entities;
+using NetCode.Synchronisers.Entities;
 
-namespace NetCode.SyncField.Entities
+namespace NetCode.Synchronisers.Entities
 {
     internal class EntityDescriptorCache
     {

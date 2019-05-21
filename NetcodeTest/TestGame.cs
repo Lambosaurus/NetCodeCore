@@ -35,8 +35,6 @@ namespace NetcodeTest
         OutgoingSyncPool outgoingPool;
         PlayerControl controlVector;
 
-        List<Event> events = new List<Event>();
-
         Point Resolution = new Point(1200, 800);
 
         Plotter networkPlot;

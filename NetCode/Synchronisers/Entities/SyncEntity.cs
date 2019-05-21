@@ -1,28 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using NetCode.SyncPool;
-using NetCode.Util;
 
-namespace NetCode.SyncField.Entities
+
+namespace NetCode.Synchronisers.Entities
 {
-    internal class SyncFieldEntity : SynchronisableField
+    internal class SyncEntity : Synchroniser
     {
         protected EntityDescriptor Descriptor;        
-        protected SynchronisableField[] Fields;
+        protected Synchroniser[] Fields;
 
         public object Value { get; private set; }
 
         public ushort TypeID { get { return Descriptor.TypeID; } }
 
-        public SyncFieldEntity(EntityDescriptor descriptor, object obj, uint revision)
+        public SyncEntity(EntityDescriptor descriptor, object obj, uint revision)
         {
             Descriptor = descriptor;
             Revision = revision;
             Value = obj;
 
-            Fields = new SynchronisableField[Descriptor.Fields.Length];
+            Fields = new Synchroniser[Descriptor.Fields.Length];
             for (int i = 0; i < Fields.Length; i++)
             {
                 Fields[i] = Descriptor.Fields[i].Factory.Construct();
@@ -49,7 +47,7 @@ namespace NetCode.SyncField.Entities
                 return true;
             }
 
-            foreach (SynchronisableField field in Fields)
+            foreach (Synchroniser field in Fields)
             {
                 if (field.ContainsRevision(revision))
                 {
@@ -62,7 +60,7 @@ namespace NetCode.SyncField.Entities
         public sealed override void SetSynchonised(bool sync)
         {
             Synchronised = sync;
-            foreach (SynchronisableField field in Fields)
+            foreach (Synchroniser field in Fields)
             {
                 if (field.Synchronised != sync)
                 {
@@ -74,7 +72,7 @@ namespace NetCode.SyncField.Entities
         public sealed override void UpdateReferences(SyncContext context)
         {
             ReferencesPending = false;
-            foreach ( SynchronisableField field in Fields)
+            foreach ( Synchroniser field in Fields)
             {
                 if (field.ReferencesPending)
                 {
@@ -122,7 +120,7 @@ namespace NetCode.SyncField.Entities
 
             if (skipHeaders)
             {
-                foreach (SynchronisableField field in Fields)
+                foreach (Synchroniser field in Fields)
                 {
                     field.WriteToBuffer(buffer, context);
                 }
@@ -140,7 +138,7 @@ namespace NetCode.SyncField.Entities
         public sealed override void WriteToBuffer(NetBuffer buffer)
         {
             buffer.WriteByte((byte)Fields.Length);
-            foreach ( SynchronisableField field in Fields )
+            foreach ( Synchroniser field in Fields )
             {
                 field.WriteToBuffer(buffer);
             }
@@ -151,7 +149,7 @@ namespace NetCode.SyncField.Entities
             int size = sizeof(byte);
 
             byte updatedFields = 0;
-            foreach (SynchronisableField field in Fields)
+            foreach (Synchroniser field in Fields)
             {
                 if (field.ContainsRevision(revision))
                 {
@@ -170,7 +168,7 @@ namespace NetCode.SyncField.Entities
         public sealed override int WriteToBufferSize()
         {
             int size = sizeof(byte);
-            foreach (SynchronisableField field in Fields)
+            foreach (Synchroniser field in Fields)
             {
                 size += field.WriteToBufferSize();
             }
@@ -190,7 +188,7 @@ namespace NetCode.SyncField.Entities
             for (int i = 0; i < updated; i++)
             {
                 int index = (skipHeaders) ? i : buffer.ReadByte();
-                SynchronisableField field = Fields[index];
+                Synchroniser field = Fields[index];
                 field.ReadFromBuffer(buffer, context);
                 Synchronised &= field.Synchronised;
                 ReferencesPending |= field.ReferencesPending;
@@ -210,7 +208,7 @@ namespace NetCode.SyncField.Entities
         }
     }
 
-    internal class SyncFieldEntityFactory : SyncFieldFactory
+    internal class SyncFieldEntityFactory : SynchroniserFactory
     {
         public EntityDescriptor Descriptor { get; private set; }
 
@@ -219,19 +217,19 @@ namespace NetCode.SyncField.Entities
             Descriptor = descriptor;
         }
 
-        public override SynchronisableField Construct()
+        public override Synchroniser Construct()
         {
-            return new SyncFieldEntity(Descriptor, Descriptor.Constructor.Invoke(), 0);
+            return new SyncEntity(Descriptor, Descriptor.Constructor.Invoke(), 0);
         }
 
-        public SyncFieldEntity ConstructNewEntity(uint revision)
+        public SyncEntity ConstructNewEntity(uint revision)
         {
-            return new SyncFieldEntity(Descriptor, Descriptor.Constructor.Invoke(), revision);
+            return new SyncEntity(Descriptor, Descriptor.Constructor.Invoke(), revision);
         }
 
-        public SyncFieldEntity ConstructForExisting(object obj)
+        public SyncEntity ConstructForExisting(object obj)
         {
-            return new SyncFieldEntity(Descriptor, obj, 0);
+            return new SyncEntity(Descriptor, obj, 0);
         }
     }
 }

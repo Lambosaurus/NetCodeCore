@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace NetCode.SyncField
+namespace NetCode.Synchronisers.Entities
 {
     internal class FieldDescriptor
     {
-        public SyncFieldFactory Factory { get; private set; }
+        public SynchroniserFactory Factory { get; private set; }
         public Func<object, object> Getter { get; private set; }
         public Action<object, object> Setter { get; private set; }
 
-        public FieldDescriptor(SyncFieldFactory fieldFactory, Func<object, object> fieldGetter, Action<object, object> fieldSetter)
+        public FieldDescriptor(SynchroniserFactory fieldFactory, Func<object, object> fieldGetter, Action<object, object> fieldSetter)
         {
             Factory = fieldFactory;
             Getter = fieldGetter;

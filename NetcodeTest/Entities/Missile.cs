@@ -15,7 +15,7 @@ namespace NetcodeTest.Entities
     public class Missile : Projectile 
     {
         const float Acceleration = 500f;
-        const float Speed = 100f;
+        const float Speed = 120f;
         const float Recoil = 1000;
         const float ExplosiveForce = 50000;
         const float ExplosiveDamage = 300;

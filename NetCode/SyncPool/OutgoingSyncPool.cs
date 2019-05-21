@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using NetCode.SyncField.Entities;
+using NetCode.Synchronisers;
+using NetCode.Synchronisers.Entities;
 using NetCode.Connection;
 using NetCode.Payloads;
 using NetCode.Util;
@@ -72,7 +73,7 @@ namespace NetCode.SyncPool
         {
             ushort entityID = GetNextEntityID();
             RuntimeTypeHandle typeHandle = instance.GetType().TypeHandle;
-            SyncFieldEntity entity = EntityGenerator.GetEntityFactory(typeHandle).ConstructForExisting(instance);
+            SyncEntity entity = EntityGenerator.GetEntityFactory(typeHandle).ConstructForExisting(instance);
             SyncHandle handle = new SyncHandle(entity, entityID);
             AddHandle(handle);
             return handle;
@@ -80,7 +81,7 @@ namespace NetCode.SyncPool
 
         public void AddEvent(object instance, bool guaranteeReceipt = true, bool urgent = true)
         {
-            SyncFieldEntity entity = EntityGenerator.GetEntityFactory(instance.GetType().TypeHandle).ConstructForExisting(instance);
+            SyncEntity entity = EntityGenerator.GetEntityFactory(instance.GetType().TypeHandle).ConstructForExisting(instance);
             entity.TrackChanges(instance, Context);
             int size = entity.WriteToBufferSize() + sizeof(ushort);
             PoolEventPayload payload = PoolEventPayload.Generate(PoolID, size, guaranteeReceipt, urgent);

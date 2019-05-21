@@ -2,19 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using NetCode.Util;
 using NetCode.SyncPool;
 
-namespace NetCode.SyncField.Implementations
+namespace NetCode.Synchronisers.References
 {
-    internal class SyncFieldReference : SynchronisableField
+    internal class SyncReference : Synchroniser
     {
         protected object value;
         protected ushort EntityID = SyncHandle.NullEntityID;
 
         private Type ReferenceType;
 
-        public SyncFieldReference(Type referenceType)
+        public SyncReference(Type referenceType)
         {
             ReferenceType = referenceType;
         }
@@ -94,26 +93,6 @@ namespace NetCode.SyncField.Implementations
         public sealed override void SkipFromBuffer(NetBuffer buffer)
         {
             buffer.Index += sizeof(ushort);
-        }
-    }
-
-    public class SyncFieldReferenceFactory : SyncFieldFactory
-    {
-        private readonly Type ReferenceType;
-        private readonly bool Linked;
-        public SyncFieldReferenceFactory(Type refType, SyncFlags flags)
-        {
-            Linked = (flags & SyncFlags.Linked) != 0;
-            ReferenceType = refType;
-        }
-
-        public sealed override SynchronisableField Construct()
-        {
-            if (Linked)
-            {
-                return new SyncFieldLinkedReference(ReferenceType);
-            }
-            return new SyncFieldReference(ReferenceType);
         }
     }
 }

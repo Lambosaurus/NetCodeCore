@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 using NetCode.Util;
 
-namespace NetCode.SyncField.Entities
+namespace NetCode.Synchronisers.Entities
 {
     internal class EntityDescriptor
     {

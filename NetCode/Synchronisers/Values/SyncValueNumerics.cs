@@ -1,10 +1,11 @@
-﻿using NetCode.Util;
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace NetCode.SyncField.Implementations
+namespace NetCode.Synchronisers.Values
 {
-    [EnumerateSyncField(typeof(Enum))]
-    public class SyncFieldEnum : SynchronisableValue
+    [EnumerateSyncValue(typeof(Enum))]
+    public class SyncValueEnum : SyncValue
     {
         protected byte value;
         public override void SetValue(object new_value) { value = (byte)(int)new_value; }
@@ -16,8 +17,8 @@ namespace NetCode.SyncField.Implementations
         public override void SkipFromBuffer(NetBuffer buffer) { buffer.Index += sizeof(byte); }
     }
 
-    [EnumerateSyncField(typeof(bool))]
-    public class SyncFieldBool : SynchronisableValue
+    [EnumerateSyncValue(typeof(bool))]
+    public class SyncValueBool : SyncValue
     {
         protected bool value;
         public override void SetValue(object new_value) { value = (bool)new_value; }
@@ -29,8 +30,8 @@ namespace NetCode.SyncField.Implementations
         public override void SkipFromBuffer(NetBuffer buffer) { buffer.Index += sizeof(byte); }
     }
 
-    [EnumerateSyncField(typeof(byte))]
-    public class SyncFieldByte : SynchronisableValue
+    [EnumerateSyncValue(typeof(byte))]
+    public class SyncValueByte : SyncValue
     {
         protected byte value;
         public override void SetValue(object new_value) { value = (byte)new_value; }
@@ -42,8 +43,8 @@ namespace NetCode.SyncField.Implementations
         public override void SkipFromBuffer(NetBuffer buffer) { buffer.Index += sizeof(byte); }
     }
 
-    [EnumerateSyncField(typeof(char))]
-    public class SyncFieldChar : SynchronisableValue
+    [EnumerateSyncValue(typeof(char))]
+    public class SyncValueChar : SyncValue
     {
         protected char value;
         public override void SetValue(object new_value) { value = (char)new_value; }
@@ -55,8 +56,8 @@ namespace NetCode.SyncField.Implementations
         public override void SkipFromBuffer(NetBuffer buffer) { buffer.Index += sizeof(byte); }
     }
 
-    [EnumerateSyncField(typeof(short))]
-    public class SyncFieldShort : SynchronisableValue
+    [EnumerateSyncValue(typeof(short))]
+    public class SyncValueShort : SyncValue
     {
         protected short value;
         public override void SetValue(object new_value) { value = (short)new_value; }
@@ -68,8 +69,8 @@ namespace NetCode.SyncField.Implementations
         public override void SkipFromBuffer(NetBuffer buffer) { buffer.Index += sizeof(short); }
     }
 
-    [EnumerateSyncField(typeof(ushort))]
-    public class SyncFieldUShort : SynchronisableValue
+    [EnumerateSyncValue(typeof(ushort))]
+    public class SyncValueUShort : SyncValue
     {
         protected ushort value;
         public override void SetValue(object new_value) { value = (ushort)new_value; }
@@ -81,8 +82,8 @@ namespace NetCode.SyncField.Implementations
         public override void SkipFromBuffer(NetBuffer buffer) { buffer.Index += sizeof(ushort); }
     }
 
-    [EnumerateSyncField(typeof(int))]
-    public class SyncFieldInt : SynchronisableValue
+    [EnumerateSyncValue(typeof(int))]
+    public class SyncValueInt : SyncValue
     {
         protected int value;
         public override void SetValue(object new_value) { value = (int)new_value; }
@@ -94,8 +95,8 @@ namespace NetCode.SyncField.Implementations
         public override void SkipFromBuffer(NetBuffer buffer) { buffer.Index += sizeof(int); }
     }
 
-    [EnumerateSyncField(typeof(uint))]
-    public class SyncFieldUInt : SynchronisableValue
+    [EnumerateSyncValue(typeof(uint))]
+    public class SyncValueUInt : SyncValue
     {
         protected uint value;
         public override void SetValue(object new_value) { value = (uint)new_value; }
@@ -107,8 +108,8 @@ namespace NetCode.SyncField.Implementations
         public override void SkipFromBuffer(NetBuffer buffer) { buffer.Index += sizeof(uint); }
     }
 
-    [EnumerateSyncField(typeof(long))]
-    public class SyncFieldLong : SynchronisableValue
+    [EnumerateSyncValue(typeof(long))]
+    public class SyncValueLong : SyncValue
     {
         protected long value;
         public override void SetValue(object new_value) { value = (long)new_value; }
@@ -120,8 +121,8 @@ namespace NetCode.SyncField.Implementations
         public override void SkipFromBuffer(NetBuffer buffer) { buffer.Index += sizeof(long); }
     }
 
-    [EnumerateSyncField(typeof(ulong))]
-    public class SyncFieldULong : SynchronisableValue
+    [EnumerateSyncValue(typeof(ulong))]
+    public class SyncValueULong : SyncValue
     {
         protected ulong value;
         public override void SetValue(object new_value) { value = (ulong)new_value; }
@@ -133,8 +134,8 @@ namespace NetCode.SyncField.Implementations
         public override void SkipFromBuffer(NetBuffer buffer) { buffer.Index += sizeof(ulong); }
     }
 
-    [EnumerateSyncField(typeof(float))]
-    public class SyncFieldFloat : SynchronisableValue
+    [EnumerateSyncValue(typeof(float))]
+    public class SyncValueFloat : SyncValue
     {
         protected float value;
         public override void SetValue(object new_value) { value = (float)new_value; }
@@ -146,8 +147,8 @@ namespace NetCode.SyncField.Implementations
         public override void SkipFromBuffer(NetBuffer buffer) { buffer.Index += sizeof(float); }
     }
 
-    [EnumerateSyncField(typeof(double))]
-    public class SyncFieldDouble : SynchronisableValue
+    [EnumerateSyncValue(typeof(double))]
+    public class SyncValueDouble : SyncValue
     {
         protected double value;
         public override void SetValue(object new_value) { value = (double)new_value; }
@@ -159,8 +160,8 @@ namespace NetCode.SyncField.Implementations
         public override void SkipFromBuffer(NetBuffer buffer) { buffer.Index += sizeof(double); }
     }
 
-    [EnumerateSyncField(typeof(float), SyncFlags.HalfPrecision)]
-    public class SyncFieldHalf : SynchronisableValue
+    [EnumerateSyncValue(typeof(float), SyncFlags.HalfPrecision)]
+    public class SyncValueHalf : SyncValue
     {
         protected Half value;
         public override void SetValue(object new_value) { value = (Half)((float)new_value); }

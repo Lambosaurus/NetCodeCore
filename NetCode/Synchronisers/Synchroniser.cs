@@ -2,12 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using NetCode.Util;
-using NetCode.SyncPool;
-
-namespace NetCode.SyncField
+namespace NetCode.Synchronisers
 {
-    public abstract class SynchronisableField
+    public abstract class Synchroniser
     {
         /// <summary>
         /// Returns the number of bytes required by Write()
