@@ -15,4 +15,10 @@ namespace NetCode
     {
         public NetcodeGenerationException(string message) : base(message) { }
     }
+
+    [Serializable]
+    public class NetcodeUnexpectedEntityException : Exception
+    {
+        public NetcodeUnexpectedEntityException(string message) : base(message) { }
+    }
 }

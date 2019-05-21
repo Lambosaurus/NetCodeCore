@@ -84,6 +84,14 @@ namespace NetCode.Synchronisers.Entities
 
         public override bool TrackChanges(object newValue, SyncContext context)
         {
+            if (!Descriptor.EntityType.TypeHandle.Equals(newValue.GetType().TypeHandle))
+            {
+                throw new NetcodeUnexpectedEntityException(
+                    string.Format("Object of type {0} was assigned when type {1} was expected. Consider using {2}.{3} if inheritance is required for this entity.",
+                    newValue.GetType().FullName, Descriptor.EntityType.FullName, typeof(SyncFlags).Name, SyncFlags.DynamicEntity
+                    ));
+            }
+
             bool changesFound = false;
             Value = newValue;
 
@@ -205,31 +213,6 @@ namespace NetCode.Synchronisers.Entities
                 int index = (skipHeaders) ? i : buffer.ReadByte();
                 Descriptor.Fields[index].Factory.SkipFromBuffer(buffer);
             }
-        }
-    }
-
-    internal class SyncFieldEntityFactory : SynchroniserFactory
-    {
-        public EntityDescriptor Descriptor { get; private set; }
-
-        public SyncFieldEntityFactory(EntityDescriptor descriptor)
-        {
-            Descriptor = descriptor;
-        }
-
-        public override Synchroniser Construct()
-        {
-            return new SyncEntity(Descriptor, Descriptor.Constructor.Invoke(), 0);
-        }
-
-        public SyncEntity ConstructNewEntity(uint revision)
-        {
-            return new SyncEntity(Descriptor, Descriptor.Constructor.Invoke(), revision);
-        }
-
-        public SyncEntity ConstructForExisting(object obj)
-        {
-            return new SyncEntity(Descriptor, obj, 0);
         }
     }
 }

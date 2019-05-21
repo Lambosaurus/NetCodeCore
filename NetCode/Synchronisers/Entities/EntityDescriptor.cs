@@ -12,6 +12,8 @@ namespace NetCode.Synchronisers.Entities
         public Func<object> Constructor { get; protected set; }
         public ushort TypeID { get; protected set; }
 
+        public Type EntityType { get; protected set; }
+
         public EntityDescriptor(ushort typeID)
         {
             TypeID = typeID;
@@ -19,6 +21,7 @@ namespace NetCode.Synchronisers.Entities
 
         public void GenerateFieldDescriptors(Type type, FieldDescriptorCache fieldGenerator)
         {
+            EntityType = type;
             Constructor = DelegateGenerator.GenerateConstructor<object>(type);
 
             List<FieldDescriptor> descriptors = new List<FieldDescriptor>();

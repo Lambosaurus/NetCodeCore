@@ -24,7 +24,7 @@ namespace NetcodeTest.Entities
         [Synchronisable(SyncFlags.HalfPrecision)]
         protected float baseAngle { get; set; }
         [Synchronisable(SyncFlags.Timestamp)]
-        protected long baseTimestamp { get; set; }
+        protected int baseTimestamp { get; set; }
         
         public bool NeedsMotionReset { get; private set; } = true;
         public bool IsDestroyed { get; protected set; } = false;
@@ -46,7 +46,7 @@ namespace NetcodeTest.Entities
 
         public virtual void UpdateMotion(long timestamp)
         {
-            baseTimestamp = timestamp;
+            baseTimestamp = (int)timestamp;
             basePosition = Position;
             baseAngle = Angle;
             baseVelocity = Velocity;

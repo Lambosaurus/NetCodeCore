@@ -37,11 +37,11 @@ namespace NetCode.Synchronisers.Entities
 
         private static void RegisterFieldType(Type syncFieldType, Type fieldType, SyncFlags syncFlags = SyncFlags.None)
         {
-            if (!syncFieldType.IsSubclassOf(typeof(Synchroniser)))
+            if (!syncFieldType.IsSubclassOf(typeof(SyncValue)))
             {
-                throw new NotSupportedException(string.Format(
-                    "{0} must inherit from SynchronisableField.",
-                    syncFieldType.Name
+                throw new NetcodeGenerationException(string.Format(
+                    "{0} must inherit from {1}.",
+                    syncFieldType.FullName, typeof(SyncValue).Name
                     ));
             }
             RuntimeTypeHandle fieldTypeHandle = fieldType.TypeHandle;
@@ -50,9 +50,9 @@ namespace NetCode.Synchronisers.Entities
 
             if (lookup.ContainsKey(fieldTypeHandle))
             {
-                throw new NotSupportedException(string.Format(
-                    "A SynchronisableField has already been registered against {0} with flags {1}",
-                    fieldType.Name, syncFlags
+                throw new NetcodeGenerationException(string.Format(
+                    "A {0} has already been registered against {1} with flags {2}",
+                    typeof(SyncValue).Name, fieldType.FullName, syncFlags
                     ));
             }
             lookup[fieldTypeHandle] = new SyncValueFactory(syncFieldType); ;
@@ -88,7 +88,7 @@ namespace NetCode.Synchronisers.Entities
             {
                 if (type.IsValueType)
                 {
-                    throw new NotSupportedException(string.Format("{0}.{1} can not be used on ValueType", typeof(SyncFlags).Name, SyncFlags.NestedEntity));
+                    throw new NetcodeGenerationException(string.Format("{0}.{1} can not be used on ValueType", typeof(SyncFlags).Name, SyncFlags.NestedEntity));
                 }
                 return EntityGenerator.GetEntityFactory(type.TypeHandle);
             }
@@ -96,7 +96,7 @@ namespace NetCode.Synchronisers.Entities
             {
                 if (type.IsValueType)
                 {
-                    throw new NotSupportedException(string.Format("{0}.{1} can not be used on ValueType", typeof(SyncFlags).Name, SyncFlags.Reference));
+                    throw new NetcodeGenerationException(string.Format("{0}.{1} can not be used on ValueType", typeof(SyncFlags).Name, SyncFlags.Reference));
                 }
                 return new SyncReferenceFactory(type, flags);
             }
@@ -110,7 +110,7 @@ namespace NetCode.Synchronisers.Entities
                 {
                     return TimestampIntFactory;
                 }
-                throw new NotSupportedException(string.Format("{0}.{1} must be used on type long or int", typeof(SyncFlags).Name, SyncFlags.Timestamp));
+                throw new NetcodeGenerationException(string.Format("{0}.{1} must be used on type long or int", typeof(SyncFlags).Name, SyncFlags.Timestamp));
             }
 
             RuntimeTypeHandle typeHandle = (type.IsEnum)
@@ -125,9 +125,9 @@ namespace NetCode.Synchronisers.Entities
                 }
                 else
                 {
-                    throw new NotSupportedException(string.Format(
+                    throw new NetcodeGenerationException(string.Format(
                         "No SyncField registered for type {0} with {1}.{2}",
-                        type.Name, typeof(SyncFlags).Name, SyncFlags.HalfPrecision
+                        type.FullName, typeof(SyncFlags).Name, SyncFlags.HalfPrecision
                         ));
                 }
             }
@@ -139,7 +139,7 @@ namespace NetCode.Synchronisers.Entities
                 }
                 else
                 {
-                    throw new NotSupportedException(string.Format("No SyncField registered for type {0}",type.Name));
+                    throw new NetcodeGenerationException(string.Format("No {0} registered for type {1}",typeof(SyncValue).Name, type.FullName));
                 }
             }
         }

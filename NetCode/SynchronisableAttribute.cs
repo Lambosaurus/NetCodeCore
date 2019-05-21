@@ -46,6 +46,12 @@ namespace NetCode
         /// This entity will not be given an EntityID or handle.
         /// </summary>
         NestedEntity = (1 << 5),
+
+        /// <summary>
+        /// The type information will be transmitted with the entity, so inheritance is supported.
+        /// </summary>
+        DynamicEntity = (1 << 6),
+        NestedDynamicEntity = NestedEntity | DynamicEntity,
     };
 
 

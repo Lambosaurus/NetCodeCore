@@ -9,8 +9,8 @@ namespace NetCode.Synchronisers.Entities
 {
     internal class EntityDescriptorCache
     {
-        private List<SyncFieldEntityFactory> EntityFactories = new List<SyncFieldEntityFactory>();
-        private Dictionary<RuntimeTypeHandle, SyncFieldEntityFactory> EntityFactoriesByType = new Dictionary<RuntimeTypeHandle, SyncFieldEntityFactory>();
+        private List<SyncEntityFactory> EntityFactories = new List<SyncEntityFactory>();
+        private Dictionary<RuntimeTypeHandle, SyncEntityFactory> EntityFactoriesByType = new Dictionary<RuntimeTypeHandle, SyncEntityFactory>();
 
         private FieldDescriptorCache FieldCache;
 
@@ -25,32 +25,32 @@ namespace NetCode.Synchronisers.Entities
         {
             if (EntityFactories.Count == ushort.MaxValue)
             {
-                throw new NetcodeItemcountException(string.Format("There may not be more than {0} unique types registered.", ushort.MaxValue));
+                throw new NetcodeGenerationException(string.Format("There may not be more than {0} unique types registered.", ushort.MaxValue));
             }
             return (ushort)(EntityFactories.Count);
         }
 
-        public SyncFieldEntityFactory GetEntityFactory(ushort typeID)
+        public SyncEntityFactory GetEntityFactory(ushort typeID)
         {
             if (typeID < EntityFactories.Count)
             {
                 return EntityFactories[typeID];
             }
 
-            throw new NetcodeGenerationException(string.Format(
+            throw new NetcodeUnexpectedEntityException(string.Format(
                 "No definitions are found for entityID {0}. Are both SyncPools using the same NetDefinitions?",
                 typeID
                 ));
         }
 
-        public SyncFieldEntityFactory GetEntityFactory(RuntimeTypeHandle typeHandle)
+        public SyncEntityFactory GetEntityFactory(RuntimeTypeHandle typeHandle)
         {
-            if (EntityFactoriesByType.TryGetValue(typeHandle, out SyncFieldEntityFactory descriptor))
+            if (EntityFactoriesByType.TryGetValue(typeHandle, out SyncEntityFactory descriptor))
             {
                 return descriptor;
             }
 
-            throw new NetcodeGenerationException(string.Format(
+            throw new NetcodeUnexpectedEntityException(string.Format(
                 "No definitions are found for type {0}. Have you enumerated this type as a SyncEntity?",
                 typeHandle.GetType().FullName
                 ));
@@ -100,7 +100,7 @@ namespace NetCode.Synchronisers.Entities
             // Create all the descriptors and give them ID's
             foreach (Type type in entityTypes)
             {
-                SyncFieldEntityFactory factory = new SyncFieldEntityFactory(new EntityDescriptor(GetNewTypeID()));
+                SyncEntityFactory factory = new SyncEntityFactory(new EntityDescriptor(GetNewTypeID()));
                 EntityFactories.Add(factory);
                 EntityFactoriesByType[type.TypeHandle] = factory;
             }
