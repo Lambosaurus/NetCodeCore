@@ -53,9 +53,9 @@ namespace NetCode.SyncPool
         
 
         internal const ushort NullEntityID = 0;
-        internal SyncEntity Sync;
+        internal SynchronisableEntity Sync;
 
-        internal SyncHandle(SyncEntity syncEntity, ushort entityID)
+        internal SyncHandle(SynchronisableEntity syncEntity, ushort entityID)
         {
             Sync = syncEntity;
             Obj = Sync.Value; // This is cheaper than GetValue(), as it doesnt flush field data.

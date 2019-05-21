@@ -7,7 +7,7 @@ using NetCode.SyncPool;
 
 namespace NetCode.Synchronisers.Values
 {
-    public abstract class SyncValue : Synchroniser
+    public abstract class SynchronisableValue : Synchroniser
     {
         public sealed override bool TrackChanges(object newValue, SyncContext context)
         {

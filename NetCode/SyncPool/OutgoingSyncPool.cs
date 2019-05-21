@@ -73,7 +73,7 @@ namespace NetCode.SyncPool
         {
             ushort entityID = GetNextEntityID();
             RuntimeTypeHandle typeHandle = instance.GetType().TypeHandle;
-            SyncEntity entity = EntityGenerator.GetEntityFactory(typeHandle).ConstructForExisting(instance);
+            SynchronisableEntity entity = EntityGenerator.GetEntityFactory(typeHandle).ConstructForExisting(instance);
             SyncHandle handle = new SyncHandle(entity, entityID);
             AddHandle(handle);
             return handle;
@@ -81,7 +81,7 @@ namespace NetCode.SyncPool
 
         public void AddEvent(object instance, bool guaranteeReceipt = true, bool urgent = true)
         {
-            SyncEntity entity = EntityGenerator.GetEntityFactory(instance.GetType().TypeHandle).ConstructForExisting(instance);
+            SynchronisableEntity entity = EntityGenerator.GetEntityFactory(instance.GetType().TypeHandle).ConstructForExisting(instance);
             entity.TrackChanges(instance, Context);
             int size = entity.WriteToBufferSize() + sizeof(ushort);
             PoolEventPayload payload = PoolEventPayload.Generate(PoolID, size, guaranteeReceipt, urgent);

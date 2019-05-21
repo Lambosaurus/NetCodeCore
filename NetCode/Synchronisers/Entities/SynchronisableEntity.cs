@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace NetCode.Synchronisers.Entities
 {
-    internal class SyncEntity : Synchroniser
+    internal class SynchronisableEntity : Synchroniser
     {
         protected EntityDescriptor Descriptor;        
         protected Synchroniser[] Fields;
@@ -14,7 +14,7 @@ namespace NetCode.Synchronisers.Entities
 
         public ushort TypeID { get { return Descriptor.TypeID; } }
 
-        public SyncEntity(EntityDescriptor descriptor, object obj, uint revision)
+        public SynchronisableEntity(EntityDescriptor descriptor, object obj, uint revision)
         {
             Descriptor = descriptor;
             Revision = revision;

@@ -45,11 +45,11 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Synchronisers\Containers\SyncContainerFactory.cs" />
     <Compile Include="Synchronisers\Entities\EntityDescriptor.cs" />
-    <Compile Include="Synchronisers\Entities\SyncEntity.cs" />
+    <Compile Include="Synchronisers\Entities\SynchronisableEntity.cs" />
     <Compile Include="Synchronisers\Entities\SyncEntityFactory.cs" />
     <Compile Include="Synchronisers\References\SyncReferenceFactory.cs" />
     <Compile Include="Synchronisers\Timestamp\SyncIntTimestamp.cs" />
-    <Compile Include="Synchronisers\Values\SyncValue.cs" />
+    <Compile Include="Synchronisers\Values\SynchronisableValue.cs" />
     <Compile Include="Synchronisers\SynchroniserFactory.cs" />
     <Compile Include="NetBuffer.cs" />
     <Compile Include="Connection\ConnectionStats.cs" />
@@ -68,7 +68,7 @@
     <Compile Include="Payloads\PoolEventPayload.cs" />
     <Compile Include="Synchronisers\Values\EnumerateSyncValueAttribute.cs" />
     <Compile Include="Synchronisers\Containers\SyncContainerArray.cs" />
-    <Compile Include="Synchronisers\Containers\SyncContainer.cs" />
+    <Compile Include="Synchronisers\Containers\SynchronisableContainer.cs" />
     <Compile Include="Synchronisers\References\SyncLinkedReference.cs" />
     <Compile Include="Synchronisers\Timestamp\SyncLongTimestamp.cs" />
     <Compile Include="Synchronisers\Containers\SyncContainerList.cs" />

@@ -27,10 +27,10 @@ namespace NetCode.SyncPool
         };
         
         public object Obj { get; protected set; }
-        internal SyncEntity Sync { get; private set; }
+        internal SynchronisableEntity Sync { get; private set; }
         public SyncState State { get; internal set; }
 
-        internal SyncEvent(SyncEntity sync)
+        internal SyncEvent(SynchronisableEntity sync)
         {
             Obj = sync.GetValue();
             Sync = sync;

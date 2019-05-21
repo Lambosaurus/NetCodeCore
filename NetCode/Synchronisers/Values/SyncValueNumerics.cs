@@ -5,7 +5,7 @@ using System.Linq;
 namespace NetCode.Synchronisers.Values
 {
     [EnumerateSyncValue(typeof(Enum))]
-    public class SyncValueEnum : SyncValue
+    public class SyncValueEnum : SynchronisableValue
     {
         protected byte value;
         public override void SetValue(object new_value) { value = (byte)(int)new_value; }
@@ -18,7 +18,7 @@ namespace NetCode.Synchronisers.Values
     }
 
     [EnumerateSyncValue(typeof(bool))]
-    public class SyncValueBool : SyncValue
+    public class SyncValueBool : SynchronisableValue
     {
         protected bool value;
         public override void SetValue(object new_value) { value = (bool)new_value; }
@@ -31,7 +31,7 @@ namespace NetCode.Synchronisers.Values
     }
 
     [EnumerateSyncValue(typeof(byte))]
-    public class SyncValueByte : SyncValue
+    public class SyncValueByte : SynchronisableValue
     {
         protected byte value;
         public override void SetValue(object new_value) { value = (byte)new_value; }
@@ -44,7 +44,7 @@ namespace NetCode.Synchronisers.Values
     }
 
     [EnumerateSyncValue(typeof(char))]
-    public class SyncValueChar : SyncValue
+    public class SyncValueChar : SynchronisableValue
     {
         protected char value;
         public override void SetValue(object new_value) { value = (char)new_value; }
@@ -57,7 +57,7 @@ namespace NetCode.Synchronisers.Values
     }
 
     [EnumerateSyncValue(typeof(short))]
-    public class SyncValueShort : SyncValue
+    public class SyncValueShort : SynchronisableValue
     {
         protected short value;
         public override void SetValue(object new_value) { value = (short)new_value; }
@@ -70,7 +70,7 @@ namespace NetCode.Synchronisers.Values
     }
 
     [EnumerateSyncValue(typeof(ushort))]
-    public class SyncValueUShort : SyncValue
+    public class SyncValueUShort : SynchronisableValue
     {
         protected ushort value;
         public override void SetValue(object new_value) { value = (ushort)new_value; }
@@ -83,7 +83,7 @@ namespace NetCode.Synchronisers.Values
     }
 
     [EnumerateSyncValue(typeof(int))]
-    public class SyncValueInt : SyncValue
+    public class SyncValueInt : SynchronisableValue
     {
         protected int value;
         public override void SetValue(object new_value) { value = (int)new_value; }
@@ -96,7 +96,7 @@ namespace NetCode.Synchronisers.Values
     }
 
     [EnumerateSyncValue(typeof(uint))]
-    public class SyncValueUInt : SyncValue
+    public class SyncValueUInt : SynchronisableValue
     {
         protected uint value;
         public override void SetValue(object new_value) { value = (uint)new_value; }
@@ -109,7 +109,7 @@ namespace NetCode.Synchronisers.Values
     }
 
     [EnumerateSyncValue(typeof(long))]
-    public class SyncValueLong : SyncValue
+    public class SyncValueLong : SynchronisableValue
     {
         protected long value;
         public override void SetValue(object new_value) { value = (long)new_value; }
@@ -122,7 +122,7 @@ namespace NetCode.Synchronisers.Values
     }
 
     [EnumerateSyncValue(typeof(ulong))]
-    public class SyncValueULong : SyncValue
+    public class SyncValueULong : SynchronisableValue
     {
         protected ulong value;
         public override void SetValue(object new_value) { value = (ulong)new_value; }
@@ -135,7 +135,7 @@ namespace NetCode.Synchronisers.Values
     }
 
     [EnumerateSyncValue(typeof(float))]
-    public class SyncValueFloat : SyncValue
+    public class SyncValueFloat : SynchronisableValue
     {
         protected float value;
         public override void SetValue(object new_value) { value = (float)new_value; }
@@ -148,7 +148,7 @@ namespace NetCode.Synchronisers.Values
     }
 
     [EnumerateSyncValue(typeof(double))]
-    public class SyncValueDouble : SyncValue
+    public class SyncValueDouble : SynchronisableValue
     {
         protected double value;
         public override void SetValue(object new_value) { value = (double)new_value; }
@@ -161,7 +161,7 @@ namespace NetCode.Synchronisers.Values
     }
 
     [EnumerateSyncValue(typeof(float), SyncFlags.HalfPrecision)]
-    public class SyncValueHalf : SyncValue
+    public class SyncValueHalf : SynchronisableValue
     {
         protected Half value;
         public override void SetValue(object new_value) { value = (Half)((float)new_value); }

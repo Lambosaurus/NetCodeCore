@@ -5,7 +5,7 @@ using System.Linq;
 namespace NetCode.Synchronisers.Values
 {
     [EnumerateSyncValue(typeof(string))]
-    public class SyncFieldString : SyncValue
+    public class SyncFieldString : SynchronisableValue
     {
         protected string value;
         public override void SetValue(object new_value) { value = (string)new_value; }

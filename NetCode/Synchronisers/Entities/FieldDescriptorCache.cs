@@ -37,11 +37,11 @@ namespace NetCode.Synchronisers.Entities
 
         private static void RegisterFieldType(Type syncFieldType, Type fieldType, SyncFlags syncFlags = SyncFlags.None)
         {
-            if (!syncFieldType.IsSubclassOf(typeof(SyncValue)))
+            if (!syncFieldType.IsSubclassOf(typeof(SynchronisableValue)))
             {
                 throw new NetcodeGenerationException(string.Format(
                     "{0} must inherit from {1}.",
-                    syncFieldType.FullName, typeof(SyncValue).Name
+                    syncFieldType.FullName, typeof(SynchronisableValue).Name
                     ));
             }
             RuntimeTypeHandle fieldTypeHandle = fieldType.TypeHandle;
@@ -52,7 +52,7 @@ namespace NetCode.Synchronisers.Entities
             {
                 throw new NetcodeGenerationException(string.Format(
                     "A {0} has already been registered against {1} with flags {2}",
-                    typeof(SyncValue).Name, fieldType.FullName, syncFlags
+                    typeof(SynchronisableValue).Name, fieldType.FullName, syncFlags
                     ));
             }
             lookup[fieldTypeHandle] = new SyncValueFactory(syncFieldType); ;
@@ -139,7 +139,7 @@ namespace NetCode.Synchronisers.Entities
                 }
                 else
                 {
-                    throw new NetcodeGenerationException(string.Format("No {0} registered for type {1}",typeof(SyncValue).Name, type.FullName));
+                    throw new NetcodeGenerationException(string.Format("No {0} registered for type {1}",typeof(SynchronisableValue).Name, type.FullName));
                 }
             }
         }
