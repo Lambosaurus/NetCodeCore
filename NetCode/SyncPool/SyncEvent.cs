@@ -30,9 +30,9 @@ namespace NetCode.SyncPool
         internal SynchronisableEntity Sync { get; private set; }
         public SyncState State { get; internal set; }
 
-        internal SyncEvent(SynchronisableEntity sync)
+        internal SyncEvent(SynchronisableEntity sync, object obj)
         {
-            Obj = sync.GetValue();
+            Obj = obj);
             Sync = sync;
             State = sync.ReferencesPending ? SyncState.PendingReferences : SyncState.Ready;
         }

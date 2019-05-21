@@ -55,10 +55,10 @@ namespace NetCode.SyncPool
         internal const ushort NullEntityID = 0;
         internal SynchronisableEntity Sync;
 
-        internal SyncHandle(SynchronisableEntity syncEntity, ushort entityID)
+        internal SyncHandle(SynchronisableEntity syncEntity, object obj, ushort entityID)
         {
             Sync = syncEntity;
-            Obj = Sync.Value; // This is cheaper than GetValue(), as it doesnt flush field data.
+            Obj = obj; // This is cheaper than GetValue(), as it doesnt flush field data.
             State = SyncState.Live;
             EntityID = entityID;
         }

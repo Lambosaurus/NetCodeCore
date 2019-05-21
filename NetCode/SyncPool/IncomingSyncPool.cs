@@ -82,7 +82,7 @@ namespace NetCode.SyncPool
         private void SpawnEntity(ushort entityID, ushort typeID, uint revision)
         {
             SynchronisableEntity entity = EntityGenerator.GetEntityFactory(typeID).ConstructNewEntity(revision);
-            SyncHandle handle = new SyncHandle( entity, entityID );
+            SyncHandle handle = new SyncHandle( entity, entity.GetValue(), entityID );
             newHandles.Add(handle);
             AddHandle(handle);
         }
@@ -92,7 +92,7 @@ namespace NetCode.SyncPool
             ushort typeID = payload.EventData.ReadUShort();
             SynchronisableEntity entity = EntityGenerator.GetEntityFactory(typeID).ConstructNewEntity(0);
             entity.ReadFromBuffer(payload.EventData, Context);
-            RecievedEvents.Add(new SyncEvent(entity));
+            RecievedEvents.Add(new SyncEvent(entity, entity.GetValue()));
         }
 
         internal void UnpackRevisionDatagram(PoolRevisionPayload payload, long offsetMilliseconds)

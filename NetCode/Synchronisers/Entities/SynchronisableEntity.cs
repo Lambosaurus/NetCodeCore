@@ -29,6 +29,11 @@ namespace NetCode.Synchronisers.Entities
 
         public sealed override object GetValue()
         {
+            if (Value == null)
+            {
+                Value = Descriptor.Constructor.Invoke();
+            }
+
             for (int i = 0; i < Fields.Length; i++)
             {
                 Descriptor.Fields[i].Setter(Value, Fields[i].GetValue());

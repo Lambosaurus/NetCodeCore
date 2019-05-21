@@ -15,12 +15,12 @@ namespace NetCode.Synchronisers.Entities
 
         public override Synchroniser Construct()
         {
-            return new SynchronisableEntity(Descriptor, Descriptor.Constructor.Invoke(), 0);
+            return new SynchronisableEntity(Descriptor, null, 0);
         }
 
         public SynchronisableEntity ConstructNewEntity(uint revision)
         {
-            return new SynchronisableEntity(Descriptor, Descriptor.Constructor.Invoke(), revision);
+            return new SynchronisableEntity(Descriptor, null, revision);
         }
 
         public SynchronisableEntity ConstructForExisting(object obj)

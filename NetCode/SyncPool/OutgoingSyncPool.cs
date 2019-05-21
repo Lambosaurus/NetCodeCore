@@ -74,7 +74,7 @@ namespace NetCode.SyncPool
             ushort entityID = GetNextEntityID();
             RuntimeTypeHandle typeHandle = instance.GetType().TypeHandle;
             SynchronisableEntity entity = EntityGenerator.GetEntityFactory(typeHandle).ConstructForExisting(instance);
-            SyncHandle handle = new SyncHandle(entity, entityID);
+            SyncHandle handle = new SyncHandle(entity, instance, entityID);
             AddHandle(handle);
             return handle;
         }
