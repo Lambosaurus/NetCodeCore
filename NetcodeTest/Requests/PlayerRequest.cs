@@ -13,7 +13,8 @@ namespace NetcodeTest.Requests
     {
         public enum RequestType {
             None = 0,
-            FireMissile
+            FireMissile,
+            FireMultiMissile,
         }
 
         [Synchronisable]

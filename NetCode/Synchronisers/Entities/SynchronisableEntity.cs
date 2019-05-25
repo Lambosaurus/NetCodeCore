@@ -14,6 +14,7 @@ namespace NetCode.Synchronisers.Entities
 
         public ushort TypeID { get { return Descriptor.TypeID; } }
 
+        public SynchronisableEntity(EntityDescriptor descriptor) : this(descriptor, null, 0) { }
         public SynchronisableEntity(EntityDescriptor descriptor, object obj, uint revision)
         {
             Descriptor = descriptor;
@@ -25,6 +26,11 @@ namespace NetCode.Synchronisers.Entities
             {
                 Fields[i] = Descriptor.Fields[i].Factory.Construct();
             }
+        }
+
+        public bool TypeMatches( RuntimeTypeHandle type )
+        {
+            return Descriptor.EntityType.TypeHandle.Equals(type);
         }
 
         public sealed override object GetValue()
@@ -89,16 +95,22 @@ namespace NetCode.Synchronisers.Entities
 
         public override bool TrackChanges(object newValue, SyncContext context)
         {
-            if (!Descriptor.EntityType.TypeHandle.Equals(newValue.GetType().TypeHandle))
+            if (newValue != Value)
             {
-                throw new NetcodeUnexpectedEntityException(
-                    string.Format("Object of type {0} was assigned when type {1} was expected. Consider using {2}.{3} if inheritance is required for this entity.",
-                    newValue.GetType().FullName, Descriptor.EntityType.FullName, typeof(SyncFlags).Name, SyncFlags.DynamicEntity
-                    ));
+                // Avoid the typecheck if the object hasnt changed.
+
+                if (!TypeMatches(newValue.GetType().TypeHandle))
+                {
+                    throw new NetcodeUnexpectedEntityException(
+                        string.Format("Object of type {0} was assigned when type {1} was expected. Consider using {2}.{3} if inheritance is required for this entity.",
+                        newValue.GetType().FullName, Descriptor.EntityType.FullName, typeof(SyncFlags).Name, SyncFlags.Dynamic
+                        ));
+                }
+                Value = newValue;
             }
 
             bool changesFound = false;
-            Value = newValue;
+            
 
             for (int i = 0; i < Fields.Length; i++)
             {

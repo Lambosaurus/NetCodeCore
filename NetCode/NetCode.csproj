@@ -45,6 +45,8 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Synchronisers\Containers\SyncContainerFactory.cs" />
     <Compile Include="Synchronisers\Entities\EntityDescriptor.cs" />
+    <Compile Include="Synchronisers\Entities\SyncDynamicEntity.cs" />
+    <Compile Include="Synchronisers\Entities\SyncDynamicEntityFactory.cs" />
     <Compile Include="Synchronisers\Entities\SynchronisableEntity.cs" />
     <Compile Include="Synchronisers\Entities\SyncEntityFactory.cs" />
     <Compile Include="Synchronisers\References\SyncReferenceFactory.cs" />

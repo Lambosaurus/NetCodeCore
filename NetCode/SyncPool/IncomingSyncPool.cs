@@ -102,10 +102,10 @@ namespace NetCode.SyncPool
 
             NetBuffer buffer = payload.RevisionData;
 
-            while (buffer.Remaining > (sizeof(ushort) + sizeof(ushort)))
+            while (buffer.Remaining >= (sizeof(byte) + sizeof(ushort)))
             {
                 ushort entityID = buffer.ReadUShort();
-                ushort typeID = buffer.ReadUShort();
+                ushort typeID = buffer.ReadVWidth(); // This could fail if not enough bytes remaining.
                 
                 while (entityID >= SyncSlots.Length)
                 {

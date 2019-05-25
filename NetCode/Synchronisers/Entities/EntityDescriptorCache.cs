@@ -19,14 +19,18 @@ namespace NetCode.Synchronisers.Entities
         public EntityDescriptorCache()
         {
             FieldCache = new FieldDescriptorCache(this);
+
+            // This is done to reserve EntityDescriptor.NullTypeID = 0.
+            EntityFactories.Add(null); 
         }
 
         private ushort GetNewTypeID()
         {
-            if (EntityFactories.Count == ushort.MaxValue)
+            if (EntityFactories.Count == EntityDescriptor.MaxTypeID)
             {
-                throw new NetcodeGenerationException(string.Format("There may not be more than {0} unique types registered.", ushort.MaxValue));
+                throw new NetcodeGenerationException(string.Format("There may not be more than {0} unique types registered.", EntityDescriptor.MaxTypeID));
             }
+            // 0 is reserved to respect NullTypeID.
             return (ushort)(EntityFactories.Count);
         }
 

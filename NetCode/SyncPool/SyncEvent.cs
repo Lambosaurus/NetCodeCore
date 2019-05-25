@@ -32,7 +32,7 @@ namespace NetCode.SyncPool
 
         internal SyncEvent(SynchronisableEntity sync, object obj)
         {
-            Obj = obj);
+            Obj = obj;
             Sync = sync;
             State = sync.ReferencesPending ? SyncState.PendingReferences : SyncState.Ready;
         }

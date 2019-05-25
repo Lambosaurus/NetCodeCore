@@ -142,6 +142,10 @@ namespace NetcodeTest
             {
                 outgoingPool.AddEvent(new PlayerRequest(PlayerRequest.RequestType.FireMissile));
             }
+            if (keys.IsKeyDown(Keys.E) && !lastKeys.IsKeyDown(Keys.E))
+            {
+                outgoingPool.AddEvent(new PlayerRequest(PlayerRequest.RequestType.FireMultiMissile));
+            }
 
             tickCounter += delta;
             if (tickCounter >= 1f / 20)

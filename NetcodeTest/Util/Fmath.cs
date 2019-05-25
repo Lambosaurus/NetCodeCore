@@ -69,7 +69,7 @@ namespace NetcodeTest.Util
                 );
         }
 
-        public static float Clamp(float value, float min = -1.0f, float max = 1.0f)
+        public static float Clamp(float value, float min = 0f, float max = 1.0f)
         {
             if (value < min) { return min; }
             if (value > max) { return max; }
@@ -114,6 +114,11 @@ namespace NetcodeTest.Util
         public static float Abs(float value)
         {
             return value < 0 ? -value : value;
+        }
+
+        public static float Sqrt(float value)
+        {
+            return (float)Math.Sqrt(value);
         }
     }
 }

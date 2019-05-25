@@ -169,7 +169,7 @@ namespace NetCode.SyncPool
             {
                 if (handle.Sync.ContainsRevision(revision))
                 {
-                    size += sizeof(ushort) + sizeof(ushort);
+                    size += sizeof(ushort) + NetBuffer.SizeofVWidth(handle.Sync.TypeID);
                     size += handle.Sync.WriteToBufferSize(revision);
                     updatedEntities.Add(handle.EntityID);
                 }
@@ -183,7 +183,7 @@ namespace NetCode.SyncPool
                 {
                     SyncHandle handle = SyncSlots[entityID].Handle;
                     payload.RevisionData.WriteUShort(entityID);
-                    payload.RevisionData.WriteUShort(handle.Sync.TypeID);
+                    payload.RevisionData.WriteVWidth(handle.Sync.TypeID);
                     handle.Sync.WriteToBuffer(payload.RevisionData, Context);
                 }
                 
@@ -197,7 +197,7 @@ namespace NetCode.SyncPool
             int size = 0;
             foreach (SyncHandle handle in SyncHandles)
             {
-                size += sizeof(ushort) + sizeof(ushort);
+                size += sizeof(ushort) + NetBuffer.SizeofVWidth(handle.Sync.TypeID);
                 size += handle.Sync.WriteToBufferSize();
             }
             
@@ -206,7 +206,7 @@ namespace NetCode.SyncPool
             foreach (SyncHandle handle in SyncHandles)
             {
                 payload.RevisionData.WriteUShort(handle.EntityID);
-                payload.RevisionData.WriteUShort(handle.Sync.TypeID);
+                payload.RevisionData.WriteVWidth(handle.Sync.TypeID);  //payload.RevisionData.WriteUShort(handle.Sync.TypeID);
                 handle.Sync.WriteToBuffer(payload.RevisionData);
             }
 

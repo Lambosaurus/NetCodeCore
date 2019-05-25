@@ -18,11 +18,13 @@ namespace NetCode.Synchronisers.Entities
         private static Dictionary<RuntimeTypeHandle, SynchroniserFactory> FieldFactoryLookup = new Dictionary<RuntimeTypeHandle, SynchroniserFactory>();
         private static SynchroniserFactory TimestampLongFactory;
         private static SynchroniserFactory TimestampIntFactory;
+        private SynchroniserFactory DynamicEntityFactory;
 
-        EntityDescriptorCache EntityGenerator;
-        public FieldDescriptorCache(EntityDescriptorCache entityGenerator)
+        EntityDescriptorCache EntityCache;
+        public FieldDescriptorCache(EntityDescriptorCache entityCache)
         {
-            EntityGenerator = entityGenerator;
+            EntityCache = entityCache;
+            DynamicEntityFactory = new SyncDynamicEntityFactory(entityCache);
         }
 
         static FieldDescriptorCache()
@@ -84,13 +86,17 @@ namespace NetCode.Synchronisers.Entities
                 ConstructorInfo constructor = syncFactoryType.GetConstructor(new Type[] { typeof(SynchroniserFactory), typeof(SyncFlags) });
                 return (SynchroniserFactory)constructor.Invoke(new object[] { elementFactory, flags });
             }
-            else if ((flags & SyncFlags.NestedEntity) != 0)
+            else if ((flags & SyncFlags.Entity) != 0)
             {
                 if (type.IsValueType)
                 {
-                    throw new NetcodeGenerationException(string.Format("{0}.{1} can not be used on ValueType", typeof(SyncFlags).Name, SyncFlags.NestedEntity));
+                    throw new NetcodeGenerationException(string.Format("{0}.{1} can not be used on ValueType", typeof(SyncFlags).Name, SyncFlags.Entity));
                 }
-                return EntityGenerator.GetEntityFactory(type.TypeHandle);
+                if ((flags & SyncFlags.Dynamic) != 0)
+                {
+                    return DynamicEntityFactory;
+                }
+                return EntityCache.GetEntityFactory(type.TypeHandle);
             }
             else if ((flags & SyncFlags.Reference) != 0)
             {

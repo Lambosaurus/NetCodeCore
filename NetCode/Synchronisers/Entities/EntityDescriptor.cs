@@ -8,6 +8,9 @@ namespace NetCode.Synchronisers.Entities
 {
     internal class EntityDescriptor
     {
+        public const ushort NullTypeID = 0;
+        public const ushort MaxTypeID = NetBuffer.MaxVWidthValue;
+
         public FieldDescriptor[] Fields { get; protected set; }
         public Func<object> Constructor { get; protected set; }
         public ushort TypeID { get; protected set; }

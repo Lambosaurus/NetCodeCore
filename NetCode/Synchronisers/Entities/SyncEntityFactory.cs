@@ -15,7 +15,7 @@ namespace NetCode.Synchronisers.Entities
 
         public override Synchroniser Construct()
         {
-            return new SynchronisableEntity(Descriptor, null, 0);
+            return new SynchronisableEntity(Descriptor);
         }
 
         public SynchronisableEntity ConstructNewEntity(uint revision)
