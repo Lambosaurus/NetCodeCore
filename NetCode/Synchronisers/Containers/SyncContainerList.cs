@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using NetCode.SyncPool;
-using NetCode.Util;
 
-using System.Reflection;
 
-namespace NetCode.SyncField.Implementations
+namespace NetCode.Synchronisers.Containers
 {   
-    public class SyncFieldList<T> : SyncFieldContainer<T>
+    public class SyncContainerList<T> : SyncContainer<T>
     {
-        public SyncFieldList(SyncFieldFactory elementFactory) : base(elementFactory)
+        public SyncContainerList(SynchroniserFactory elementFactory, bool deltas) : base(elementFactory, deltas)
         {
         }
 
@@ -50,20 +46,6 @@ namespace NetCode.SyncField.Implementations
                 Revision = context.Revision;
             }
             return changesFound;
-        }
-    }
-
-    public class SyncFieldListFactory<T> : SyncFieldFactory
-    {
-        SyncFieldFactory ElementFactory;
-        public SyncFieldListFactory(SyncFieldFactory elementFactory)
-        {
-            ElementFactory = elementFactory;
-        }
-
-        public sealed override SynchronisableField Construct()
-        {
-            return new SyncFieldList<T>(ElementFactory);
         }
     }
 }

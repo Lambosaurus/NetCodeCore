@@ -21,12 +21,15 @@ namespace NetcodeTest.Entities
         public Vector2 Size { get; protected set; }
         
         float Thrust = 300;
-        float Torque = 500;
-        float FireRate = 10f;
+        float Torque = 400;
+        float FireRate = 20f;
         float Cooldown = 0.0f;
         bool Firing = false;
         float MissileCooldown = 0.0f;
         float MissilePeriod = 5f;
+        float MultiMissilePeriod = 0.2f;
+
+        int MultiMissilesLeft = 0;
 
         public Ship()
         {
@@ -53,7 +56,21 @@ namespace NetcodeTest.Entities
             }
             else if (Cooldown > 0) { Cooldown -= delta; }
 
-            if (MissileCooldown > 0) { MissileCooldown -= delta; }
+            if (MissileCooldown > 0)
+            {
+                MissileCooldown -= delta;
+            }
+
+            if (MissileCooldown <= 0 && MultiMissilesLeft > 0)
+            {
+                MissileCooldown = MultiMissilePeriod;
+                Context.AddEntity(new Missile(this, 0.3f));
+                MultiMissilesLeft -= 1;
+                if (MultiMissilesLeft <= 0)
+                {
+                    MissileCooldown = MissilePeriod;
+                }
+            }
 
             base.Update(delta);
         }
@@ -74,6 +91,13 @@ namespace NetcodeTest.Entities
             Firing = firing;
 
             thrust = Fmath.Clamp(thrust, 0.0f, 1.0f);
+            
+
+            if (torque == 0)
+            {
+                // This is negative feedback, so im unsure why torque and angular velocity have different signs.
+                torque = AngularVelocity * 10f;
+            }
             torque = Fmath.Clamp(torque, -1.0f, 1.0f);
 
             /*
@@ -95,7 +119,17 @@ namespace NetcodeTest.Entities
             if (MissileCooldown <= 0)
             {
                 MissileCooldown = MissilePeriod;
-                Context.AddEntity(new Missile(this));
+                Context.AddEntity(new Missile(this, 1f));
+            }
+        }
+        
+        public void FireMultiMissile()
+        {
+            if (MissileCooldown <= 0)
+            {
+                MultiMissilesLeft = 4;
+                MissileCooldown = MultiMissilePeriod;
+                Context.AddEntity(new Missile(this, 0.3f));
             }
         }
 

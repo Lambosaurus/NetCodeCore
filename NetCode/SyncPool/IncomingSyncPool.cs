@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using NetCode.SyncField;
-using NetCode.SyncEntity;
+using NetCode.Synchronisers;
+using NetCode.Synchronisers.Entities;
 using NetCode.Payloads;
 using NetCode.Util;
 
@@ -36,11 +36,14 @@ namespace NetCode.SyncPool
         {
             foreach (SyncHandle handle in SyncHandles)
             {
-                if (handle.Sync.ReferencesPending) { handle.Sync.UpdateReferences(Context); }
+                if (handle.Sync.ReferencesPending)
+                {
+                    handle.Sync.UpdateReferences(Context);
+                }
                 handle.Updated = !handle.Sync.Synchronised;
                 if (handle.Updated)
                 {
-                    handle.Sync.PushChanges(handle.Obj);
+                    handle.Obj = handle.Sync.GetValue();
                 }
             }
             
@@ -78,26 +81,18 @@ namespace NetCode.SyncPool
         
         private void SpawnEntity(ushort entityID, ushort typeID, uint revision)
         {
-            SyncEntityDescriptor descriptor = entityGenerator.GetEntityDescriptor(typeID);
-
-            SyncHandle handle = new SyncHandle(
-                new SynchronisableEntity(descriptor, entityID, revision),
-                descriptor.ConstructObject()
-                );
-            
+            SynchronisableEntity entity = EntityGenerator.GetEntityFactory(typeID).ConstructNewEntity(revision);
+            SyncHandle handle = new SyncHandle( entity, entity.GetValue(), entityID );
             newHandles.Add(handle);
             AddHandle(handle);
         }
 
         internal void UnpackEventDatagram(PoolEventPayload payload)
         {
-            SynchronisableEntity.ReadHeader(payload.EventData, out ushort entityID, out ushort typeID);
-            SyncEntityDescriptor descriptor = entityGenerator.GetEntityDescriptor(typeID);
-            SynchronisableEntity sync = new SynchronisableEntity(descriptor, entityID, 0);
-            object obj = descriptor.ConstructObject();
-            sync.ReadRevisionFromBuffer(payload.EventData, Context);
-            sync.PushChanges(obj);
-            RecievedEvents.Add(new SyncEvent( sync, obj ));
+            ushort typeID = payload.EventData.ReadUShort();
+            SynchronisableEntity entity = EntityGenerator.GetEntityFactory(typeID).ConstructNewEntity(0);
+            entity.ReadFromBuffer(payload.EventData, Context);
+            RecievedEvents.Add(new SyncEvent(entity, entity.GetValue()));
         }
 
         internal void UnpackRevisionDatagram(PoolRevisionPayload payload, long offsetMilliseconds)
@@ -107,58 +102,56 @@ namespace NetCode.SyncPool
 
             NetBuffer buffer = payload.RevisionData;
 
-
-            while (buffer.Remaining >= SynchronisableEntity.HeaderSize)
+            while (buffer.Remaining >= (sizeof(byte) + sizeof(ushort)))
             {
-                SynchronisableEntity.ReadHeader(buffer, out ushort entityID, out ushort typeID);
-
-                bool skipUpdate = false;
+                ushort entityID = buffer.ReadUShort();
+                ushort typeID = buffer.ReadVWidth(); // This could fail if not enough bytes remaining.
                 
                 while (entityID >= SyncSlots.Length)
                 {
                     ResizeSyncHandleArray();
                 }
-                
+
+                bool skipUpdate = false;
+                 
                 SyncHandle handle = GetHandle(entityID);
                 if ( handle == null )
                 {
                     if (SyncSlots[entityID].Revision > Context.Revision)
                     {
+                        // The revision contains content for a deleted entity.
                         skipUpdate = true;
                     }
                     else
                     {
+                        // We are talking about an new entity.
                         SpawnEntity(entityID, typeID, Context.Revision);
                     }
                 }
-                else
+                else if (handle.Sync.TypeID != typeID)
                 {
-                    if (handle.Sync.TypeID != typeID)
+                    // We have a type missmatch.
+                    if (handle.Sync.Revision < Context.Revision)
                     {
-                        if (handle.Sync.Revision < Context.Revision)
-                        {
-                            // Entity already exists, but is incorrect type and wrong revision
-                            // Assume it should have been deleted and recreate it.
-                            RemoveHandle(entityID, Context.Revision);
-                            SpawnEntity(entityID, typeID, Context.Revision);
-                        }
-                        else
-                        {
-                            // Entity is new type, and has a newer revision. Do not disturb it.
-                            skipUpdate = true;
-                        }
+                        // Entity already exists, but is incorrect type and wrong revision
+                        // Assume it should have been deleted and recreate it.
+                        RemoveHandle(entityID, Context.Revision);
+                        SpawnEntity(entityID, typeID, Context.Revision);
+                    }
+                    else
+                    {
+                        // Entity is new type, and has a newer revision. Do not disturb it.
+                        skipUpdate = true;
                     }
                 }
 
                 if (skipUpdate)
                 {
-                    SyncEntityDescriptor descriptor = entityGenerator.GetEntityDescriptor(typeID);
-                    SynchronisableEntity.SkipRevisionFromBuffer(buffer, descriptor);
+                    EntityGenerator.GetEntityFactory(typeID).SkipFromBuffer(buffer);
                 }
                 else
                 {
-                    SynchronisableEntity entity = SyncSlots[entityID].Handle.Sync;
-                    entity.ReadRevisionFromBuffer(buffer, Context);
+                    SyncSlots[entityID].Handle.Sync.ReadFromBuffer(buffer, Context);
                 }
             }
         }

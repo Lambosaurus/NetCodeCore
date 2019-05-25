@@ -2,19 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using NetCode.Util;
 using NetCode.SyncPool;
 
-namespace NetCode.SyncField.Implementations
+namespace NetCode.Synchronisers.References
 {
-    internal class SyncFieldLinkedReference : SynchronisableField
+    internal class SyncReference : Synchroniser
     {
         protected object value;
-        protected ushort PoolID;
         protected ushort EntityID = SyncHandle.NullEntityID;
 
         private Type ReferenceType;
-        public SyncFieldLinkedReference(Type referenceType)
+
+        public SyncReference(Type referenceType)
         {
             ReferenceType = referenceType;
         }
@@ -26,22 +25,15 @@ namespace NetCode.SyncField.Implementations
                 value = newValue;
                 if (value == null)
                 {
-                    PoolID = 0;
                     EntityID = SyncHandle.NullEntityID;
                 }
                 else
                 {
-                    SyncHandle handle = context.GetLinkedHandleByObject(value, out ushort poolID);
-                    if (handle != null)
-                    {
-                        EntityID = handle.EntityID;
-                        PoolID = poolID;
-                    }
-                    else
-                    {
-                        EntityID = SyncHandle.NullEntityID;
-                        PoolID = 0;
-                    }
+                    SyncHandle handle = context.GetHandleByObject(value);
+
+                    // If no handle is found, then the supplie object is not in the syncpool.
+                    //TODO: Here we could optionally add the object to the pool for laughs.
+                    EntityID = (handle != null) ? handle.EntityID : SyncHandle.NullEntityID;
                 }
 
                 Synchronised = false;
@@ -53,7 +45,7 @@ namespace NetCode.SyncField.Implementations
 
         public sealed override void UpdateReferences(SyncContext context)
         {
-            SyncHandle handle = context.GetHandle(EntityID, PoolID);
+            SyncHandle handle = context.GetHandle(EntityID);
             if (handle != null)
             {
                 if (ReferenceType.IsAssignableFrom(handle.Obj.GetType()))
@@ -64,15 +56,13 @@ namespace NetCode.SyncField.Implementations
                 ReferencesPending = false;
             }
         }
-
-        public override int WriteToBufferSize()
+        public sealed override int WriteToBufferSize()
         {
-            return sizeof(ushort) + NetBuffer.SizeofVWidth(PoolID);
+            return sizeof(ushort);
         }
 
-        public override void WriteToBuffer(NetBuffer buffer)
+        public sealed override void WriteToBuffer(NetBuffer buffer)
         {
-            buffer.WriteVWidth(PoolID);
             buffer.WriteUShort(EntityID);
         }
 
@@ -80,7 +70,6 @@ namespace NetCode.SyncField.Implementations
         {
             if (context.Revision > Revision)
             {
-                PoolID = buffer.ReadVWidth();
                 EntityID = buffer.ReadUShort();
                 Revision = context.Revision;
 
@@ -103,21 +92,7 @@ namespace NetCode.SyncField.Implementations
 
         public sealed override void SkipFromBuffer(NetBuffer buffer)
         {
-            buffer.ReadVWidth();
             buffer.Index += sizeof(ushort);
-        }
-    }
-
-    public class SyncFieldLinkedReferenceFactory : SyncFieldFactory
-    {
-        Type ReferenceType;
-        public SyncFieldLinkedReferenceFactory(Type refType)
-        {
-            ReferenceType = refType;
-        }
-        public sealed override SynchronisableField Construct()
-        {
-            return new SyncFieldReference(ReferenceType);
         }
     }
 }

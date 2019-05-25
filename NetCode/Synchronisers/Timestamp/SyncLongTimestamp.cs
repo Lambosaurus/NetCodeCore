@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
-using NetCode.SyncPool;
-using NetCode.Util;
 
-namespace NetCode.SyncField.Implementations
+namespace NetCode.Synchronisers.Timestamp
 {
-    public class SyncFieldTimestamp : SynchronisableField
+    public class SyncLongTimestamp : Synchroniser
     {
         protected long value;
         public sealed override object GetValue()

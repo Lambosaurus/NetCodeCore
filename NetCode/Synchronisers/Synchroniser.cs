@@ -2,17 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using NetCode.Util;
-using NetCode.SyncPool;
-
-namespace NetCode.SyncField
+namespace NetCode.Synchronisers
 {
-    public abstract class SynchronisableField
+    public abstract class Synchroniser
     {
         /// <summary>
         /// Returns the number of bytes required by Write()
         /// </summary>
-        protected uint Revision { get; set; } = 0;
+        public uint Revision { get; protected set; } = 0;
         public bool Synchronised { get; protected set; } = false;
         public bool ReferencesPending { get; protected set; } = false;
 

@@ -35,8 +35,6 @@ namespace NetcodeTest
         OutgoingSyncPool outgoingPool;
         PlayerControl controlVector;
 
-        List<Event> events = new List<Event>();
-
         Point Resolution = new Point(1200, 800);
 
         Plotter networkPlot;
@@ -78,6 +76,7 @@ namespace NetcodeTest
                 (server != null) ? 11003 : 11002
                 ));
             client.Connection.Compression = AsteroidServer.NetworkCompression;
+            client.Connection.Stats.ByteAggregationPeriodMilliseconds = 100;
 
             // Note, when using NetProxy with this setup, the Open command should be:
             // open 12002 11003 12003 11002
@@ -143,6 +142,10 @@ namespace NetcodeTest
             if (keys.IsKeyDown(Keys.Q) && !lastKeys.IsKeyDown(Keys.Q))
             {
                 outgoingPool.AddEvent(new PlayerRequest(PlayerRequest.RequestType.FireMissile));
+            }
+            if (keys.IsKeyDown(Keys.E) && !lastKeys.IsKeyDown(Keys.E))
+            {
+                outgoingPool.AddEvent(new PlayerRequest(PlayerRequest.RequestType.FireMultiMissile));
             }
 
             tickCounter += delta;

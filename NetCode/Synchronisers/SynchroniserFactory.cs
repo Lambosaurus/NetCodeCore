@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
-using NetCode.SyncField.Implementations;
-using NetCode.Util;
-
-namespace NetCode.SyncField
+namespace NetCode.Synchronisers
 {
-    public abstract class SyncFieldFactory
+    public abstract class SynchroniserFactory
     {
-        SynchronisableField StaticField;
-        public abstract SynchronisableField Construct();
+        Synchroniser StaticField;
+        public abstract Synchroniser Construct();
 
         public void SkipFromBuffer(NetBuffer buffer)
         {

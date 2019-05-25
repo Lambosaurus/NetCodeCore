@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using NetCode.SyncEntity;
+using NetCode.Synchronisers.Entities;
 
 namespace NetCode.SyncPool
 {
@@ -30,7 +30,7 @@ namespace NetCode.SyncPool
         internal SynchronisableEntity Sync { get; private set; }
         public SyncState State { get; internal set; }
 
-        public SyncEvent(SynchronisableEntity sync, object obj)
+        internal SyncEvent(SynchronisableEntity sync, object obj)
         {
             Obj = obj;
             Sync = sync;

@@ -7,11 +7,11 @@ using NetCode.Util;
 
 using System.Reflection;
 
-namespace NetCode.SyncField.Implementations
+namespace NetCode.Synchronisers.Containers
 {   
-    public class SyncFieldArray<T> : SyncFieldContainer<T>
+    public class SyncContainerArray<T> : SyncContainer<T>
     {
-        public SyncFieldArray(SyncFieldFactory elementFactory) : base(elementFactory)
+        public SyncContainerArray(SynchroniserFactory elementFactory, bool deltas) : base(elementFactory, deltas)
         {
         }
 
@@ -50,20 +50,6 @@ namespace NetCode.SyncField.Implementations
                 Revision = context.Revision;
             }
             return changesFound;
-        }
-    }
-
-    public class SyncFieldArrayFactory<T> : SyncFieldFactory
-    {
-        SyncFieldFactory ElementFactory;
-        public SyncFieldArrayFactory(SyncFieldFactory elementFactory)
-        {
-            ElementFactory = elementFactory;
-        }
-
-        public sealed override SynchronisableField Construct()
-        {
-            return new SyncFieldArray<T>(ElementFactory);
         }
     }
 }

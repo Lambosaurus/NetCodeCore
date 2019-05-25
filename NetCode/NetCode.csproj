@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>NetCode</RootNamespace>
     <AssemblyName>NetCode</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFrameworkProfile />
@@ -23,6 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -32,6 +33,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
@@ -41,10 +43,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Synchronisers\Containers\SyncContainerFactory.cs" />
+    <Compile Include="Synchronisers\Entities\EntityDescriptor.cs" />
+    <Compile Include="Synchronisers\Entities\SyncDynamicEntity.cs" />
+    <Compile Include="Synchronisers\Entities\SyncDynamicEntityFactory.cs" />
+    <Compile Include="Synchronisers\Entities\SynchronisableEntity.cs" />
+    <Compile Include="Synchronisers\Entities\SyncEntityFactory.cs" />
+    <Compile Include="Synchronisers\References\SyncReferenceFactory.cs" />
+    <Compile Include="Synchronisers\Timestamp\SyncIntTimestamp.cs" />
+    <Compile Include="Synchronisers\Values\SynchronisableValue.cs" />
+    <Compile Include="Synchronisers\SynchroniserFactory.cs" />
+    <Compile Include="NetBuffer.cs" />
     <Compile Include="Connection\Compression.cs" />
-    <Compile Include="SyncField\SynchronisableValue.cs" />
-    <Compile Include="SyncField\SyncFieldFactory.cs" />
-    <Compile Include="Util\NetBuffer.cs" />
     <Compile Include="Connection\ConnectionStats.cs" />
     <Compile Include="Connection\NetworkConnection.cs" />
     <Compile Include="Connection\NetworkClient.cs" />
@@ -53,22 +63,23 @@
     <Compile Include="Connection\UDP\UDPServer.cs" />
     <Compile Include="Connection\VirtualConnection.cs" />
     <Compile Include="EnumerateSyncEntityAttribute.cs" />
-    <Compile Include="Exceptions.cs" />
+    <Compile Include="NetExceptions.cs" />
     <Compile Include="Payloads\EnumeratePayloadAttribute.cs" />
     <Compile Include="Payloads\HandshakePayload.cs" />
     <Compile Include="Payloads\PayloadGenerator.cs" />
     <Compile Include="Payloads\PoolDeletionPayload.cs" />
     <Compile Include="Payloads\PoolEventPayload.cs" />
-    <Compile Include="SyncField\EnumerateSyncFieldAttribute.cs" />
-    <Compile Include="SyncField\Implementations\SyncFieldArray.cs" />
-    <Compile Include="SyncField\Implementations\SyncFieldContainer.cs" />
-    <Compile Include="SyncField\Implementations\SyncFieldLinkedReference.cs" />
-    <Compile Include="SyncField\Implementations\SyncFieldTimestamp.cs" />
-    <Compile Include="SyncField\Implementations\SyncFieldList.cs" />
-    <Compile Include="SyncField\Implementations\SyncFieldString.cs" />
+    <Compile Include="Synchronisers\Values\EnumerateSyncValueAttribute.cs" />
+    <Compile Include="Synchronisers\Containers\SyncContainerArray.cs" />
+    <Compile Include="Synchronisers\Containers\SynchronisableContainer.cs" />
+    <Compile Include="Synchronisers\References\SyncLinkedReference.cs" />
+    <Compile Include="Synchronisers\Timestamp\SyncLongTimestamp.cs" />
+    <Compile Include="Synchronisers\Containers\SyncContainerList.cs" />
+    <Compile Include="Synchronisers\Values\SyncValueFactory.cs" />
+    <Compile Include="Synchronisers\Values\SyncValueString.cs" />
     <Compile Include="SyncPool\SyncEvent.cs" />
-    <Compile Include="SyncPool\SyncContext.cs" />
-    <Compile Include="SyncField\Implementations\SyncFieldReference.cs" />
+    <Compile Include="Synchronisers\SyncContext.cs" />
+    <Compile Include="Synchronisers\References\SyncReference.cs" />
     <Compile Include="Util\Aggregators\IAggregator.cs" />
     <Compile Include="Util\Aggregators\PeriodAggregator.cs" />
     <Compile Include="Util\AttributeHelper.cs" />
@@ -80,14 +91,12 @@
     <Compile Include="Payloads\Packet.cs" />
     <Compile Include="Payloads\AcknowledgementPayload.cs" />
     <Compile Include="Util\FormatHelpers.cs" />
-    <Compile Include="SyncEntity\SyncEntityDescriptor.cs" />
-    <Compile Include="SyncEntity\SyncEntityGenerator.cs" />
-    <Compile Include="SyncField\SyncFieldDescriptor.cs" />
-    <Compile Include="SyncEntity\SynchronisableEntity.cs" />
-    <Compile Include="SyncField\SyncFieldGenerator.cs" />
-    <Compile Include="SyncField\Implementations\SyncFieldNumerics.cs" />
+    <Compile Include="Synchronisers\Entities\EntityDescriptorCache.cs" />
+    <Compile Include="Synchronisers\Entities\FieldDescriptor.cs" />
+    <Compile Include="Synchronisers\Entities\FieldDescriptorCache.cs" />
+    <Compile Include="Synchronisers\Values\SyncValueNumerics.cs" />
     <Compile Include="SynchronisableAttribute.cs" />
-    <Compile Include="SyncField\SynchronisableField.cs" />
+    <Compile Include="Synchronisers\Synchroniser.cs" />
     <Compile Include="Payloads\PoolRevisionPayload.cs" />
     <Compile Include="SyncPool\SyncHandle.cs" />
     <Compile Include="SyncPool\SynchronisablePool.cs" />

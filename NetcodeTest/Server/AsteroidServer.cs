@@ -225,9 +225,14 @@ namespace NetcodeTest.Server
                 {
                     if (evt.Obj is PlayerRequest request)
                     {
-                        if (request.Request == PlayerRequest.RequestType.FireMissile)
+                        switch (request.Request)
                         {
-                            client.Player?.FireMissile();
+                            case PlayerRequest.RequestType.FireMissile:
+                                client.Player?.FireMissile();
+                                break;
+                            case PlayerRequest.RequestType.FireMultiMissile:
+                                client.Player?.FireMultiMissile();
+                                break;
                         }
                     }
                     evt.Clear();
