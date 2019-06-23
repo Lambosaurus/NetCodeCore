@@ -11,7 +11,7 @@ using NetcodeTest.Entities;
 
 namespace NetcodeTest.Events
 {
-    [EnumerateSynchEntity]
+    [EnumerateSyncEntity]
     public class Explosion : Event
     {
         [Synchronisable(SyncFlags.HalfPrecision)]

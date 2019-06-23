@@ -8,7 +8,7 @@ using NetCode;
 
 namespace NetcodeTest.Requests
 {
-    [EnumerateSynchEntity]
+    [EnumerateSyncEntity]
     public class PlayerRequest
     {
         public enum RequestType {

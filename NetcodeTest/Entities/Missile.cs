@@ -11,7 +11,7 @@ using NetCode;
 
 namespace NetcodeTest.Entities
 {
-    [EnumerateSynchEntity]
+    [EnumerateSyncEntity]
     public class Missile : Projectile 
     {
         const float Acceleration = 500f;

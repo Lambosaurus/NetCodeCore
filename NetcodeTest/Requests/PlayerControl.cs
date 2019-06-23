@@ -9,7 +9,7 @@ using NetCode;
 
 namespace NetcodeTest.Requests
 {
-    [EnumerateSynchEntity]
+    [EnumerateSyncEntity]
     public class PlayerControl
     {
         [Synchronisable(SyncFlags.HalfPrecision)]

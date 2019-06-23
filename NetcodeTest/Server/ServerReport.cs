@@ -9,7 +9,7 @@ using NetcodeTest.Entities;
 
 namespace NetcodeTest.Server
 {
-    [EnumerateSynchEntity]
+    [EnumerateSyncEntity]
     public class ServerReport
     {
         
