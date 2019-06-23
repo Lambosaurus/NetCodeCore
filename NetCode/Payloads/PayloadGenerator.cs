@@ -22,11 +22,6 @@ namespace NetCode.Payloads
 
             PayloadTypes.Sort((a, b) => (a.Name.CompareTo(b.Name)));
 
-            if (PayloadTypes.Count >= MaxPayloadID)
-            {
-                throw new NetcodeGenerationException(string.Format("There may not be more than {0} enumerated payloads.", MaxPayloadID));
-            }
-
             for (int i = 0; i < PayloadTypes.Count; i++)
             {
                 Type type = PayloadTypes[i];

@@ -75,7 +75,7 @@ namespace NetCode.Synchronisers.Entities
                 entityTypesByTag[i] = new List<Type>();
             }
             
-            AttributeHelper.ForAllTypesWithAttribute<EnumerateSynchEntityAttribute>(
+            AttributeHelper.ForAllTypesWithAttribute<EnumerateSyncEntityAttribute>(
                 (type, attribute) => {
                     for (int i = 0; i < tags.Length; i++)
                     {

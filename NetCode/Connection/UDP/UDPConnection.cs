@@ -8,7 +8,7 @@ using NetCode.Payloads;
 
 namespace NetCode.Connection.UDP
 {
-    public class UDPConnection : NetworkConnection
+    public class UDPConnection : NetworkConnection, IDisposable
     {
         private UdpClient Socket;
         private NetworkClient.ConnectionClosedReason connectionStatus = NetworkClient.ConnectionClosedReason.None;
@@ -49,7 +49,7 @@ namespace NetCode.Connection.UDP
                 }
                 else
                 {
-                    throw ex;
+                    throw;
                 }
             }
 
@@ -60,7 +60,20 @@ namespace NetCode.Connection.UDP
         {
             Socket.Close();
         }
-        
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                ((IDisposable)Socket).Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
         public override NetworkClient.ConnectionClosedReason ConnectionStatus
         { get
             {

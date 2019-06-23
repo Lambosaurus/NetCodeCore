@@ -9,7 +9,7 @@ using NetCode.Payloads;
 
 namespace NetCode.Connection.UDP
 {
-    public class UDPServer
+    public class UDPServer : IDisposable
     {
         public int Port { get; protected set; }
         public int IncomingConnectionLimit { get; set; } = 0;
@@ -179,6 +179,19 @@ namespace NetCode.Connection.UDP
                 feed.Destroy();
             }
             Socket.Close();
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                ((IDisposable)Socket).Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

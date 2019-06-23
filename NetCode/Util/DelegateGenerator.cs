@@ -20,8 +20,11 @@ namespace NetCode.Util
         /// <returns>A function that returns a new instance of the given type</returns>
         public static Func<T> GenerateConstructor<T>(Type type)
         {
+            BindingFlags constructorFlags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
             //TODO: Cache these.
-            ConstructorInfo constructor = type.GetConstructor(Type.EmptyTypes);
+            ConstructorInfo constructor = type.GetConstructor(constructorFlags, null, Type.EmptyTypes, null);
+            //ConstructorInfo constructor = type.GetConstructor(Type.EmptyTypes);
+
             if (constructor == null)
             {
                 throw new NetcodeGenerationException(string.Format("Type {0} does not provide a constructor with zero arguments.", type.Name));
