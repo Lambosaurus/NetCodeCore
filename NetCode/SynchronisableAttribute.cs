@@ -33,24 +33,33 @@ namespace NetCode
         /// This allows the SyncEntity to be referenced if it is contained in a Linked SyncPool.
         /// </summary>
         Linked = (1 << 3),
+
+        /// <summary>
+        /// For reference types, this will automatically add them to the pool if the reference cannot be found.
+        /// Reference counting will also be used to automatially removed them from the pool - unless origionally added by a user
+        /// </summary>
+        Auto = (1 << 4),
+
+        AutoReference = Reference | Auto,
         LinkedReference = Reference | Linked,
+        LinkedAutoReference = Reference | Linked | Auto,
 
         /// <summary>
         /// For delta based synchronoisers, this will cause them to rewrite all fields if any are changes
         /// This may reduce traffic if the individual items are one byte long, and over half are changed at once.
         /// </summary>
-        NoDeltas = (1 << 4),
+        NoDeltas = (1 << 5),
 
         /// <summary>
         /// Synchronises this field as a nested entity.
         /// This entity will not be given an EntityID or handle.
         /// </summary>
-        Entity = (1 << 5),
+        Entity = (1 << 6),
 
         /// <summary>
         /// The type information will be transmitted with the entity, so inheritance is supported.
         /// </summary>
-        Dynamic = (1 << 6),
+        Dynamic = (1 << 7),
         DynamicEntity = Entity | Dynamic,
     };
 

@@ -44,6 +44,7 @@ namespace NetCode.SyncPool
                 if (handle.Updated)
                 {
                     handle.Obj = handle.Sync.GetValue();
+                    handle.Sync.SetSynchonised(true);
                 }
             }
             

@@ -12,7 +12,7 @@ using NetcodeTest.Events;
 
 namespace NetcodeTest.Entities
 {
-    [EnumerateSynchEntity]
+    [EnumerateSyncEntity]
     public class Ship : Physical
     {
         [Synchronisable]
